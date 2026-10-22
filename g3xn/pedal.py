@@ -199,12 +199,15 @@ class Pedal:
             self.set_name(patch.name)
 
     def save_scratch(self, location):
-        """Copy what's on the scratch slot into a real slot, then switch to it."""
+        """Store what you are hearing on the scratch slot into a real slot, then
+        switch to it. Reads the live edit buffer: autosave can lag behind live edits."""
         if location == self.scratch:
             raise PedalError("that is the scratch slot")
-        if self.current() == location:
-            self.select(self.scratch)
-        self.write(location, self.read_raw(self.scratch))
+        if self.current() != self.scratch:
+            raise PedalError("the pedal is not on the scratch slot; nothing is being auditioned")
+        patch = self.edit_buffer()
+        patch.size = self.patch_size
+        self.write(location, patch)
         self.select(location)
 
     # --- live edits (scratch slot only) ---

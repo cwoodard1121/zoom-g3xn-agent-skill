@@ -335,5 +335,22 @@ class Patch:
         return {"name": self.name, "volume": self.volume, "dsp_percent": self.dsp_percent,
                 "description": self.description, "chain": [c.to_dict() for c in self.chain]}
 
+    @classmethod
+    def from_dict(cls, spec):
+        """Build a patch from the JSON tone format:
+
+            {"name": "BLUES", "volume": 90,
+             "chain": [{"effect": "TS Drive", "on": true, "knobs": {"Gain": 40}},
+                       {"effect": "FD TWNR", "knobs": {"Gain": 35}}]}
+
+        Effects go in signal order; unspecified knobs keep the pedal defaults."""
+        p = cls.blank(spec.get("name", "NEW PATCH"))
+        for item in spec.get("chain", []):
+            p.add(item.get("effect") or item["name"], enabled=item.get("on", item.get("enabled", True)),
+                  knobs=item.get("knobs"))
+        if "volume" in spec:
+            p.volume = spec["volume"]
+        return p
+
     def __repr__(self):
         return "<Patch %r vol %d: %s>" % (self.name, self.volume, " > ".join(c.name for c in self.chain) or "empty")

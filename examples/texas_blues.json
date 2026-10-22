@@ -1,0 +1,9 @@
+{
+ "name": "TEXAS BLUE",
+ "volume": 90,
+ "chain": [
+  {"effect": "TS Drive", "on": true, "knobs": {"Gain": 35, "Tone": 60, "VOL": 85}},
+  {"effect": "FD TWNR", "knobs": {"Bass": 40, "MID": 50, "Treble": 55, "Gain": 40, "VOL": 70}},
+  {"effect": "Spring", "knobs": {"Mix": 25}}
+ ]
+}
