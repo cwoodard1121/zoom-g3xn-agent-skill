@@ -1,8 +1,0 @@
-{
-  "mcpServers": {
-    "g3xn": {
-      "command": "uv",
-      "args": ["run", "--quiet", "--directory", "${CLAUDE_PLUGIN_ROOT}", "--extra", "mcp", "g3xn-mcp"]
-    }
-  }
-}
