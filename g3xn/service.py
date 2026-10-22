@@ -158,22 +158,22 @@ def morph(pedal, to, seconds=3.0, steps_per_second=12):
 # --- storing patches ---
 
 def save_to_slot(pedal, slot, name=None, replace=False):
-    """Store the auditioned tone into `slot` and switch to it."""
-    if not replace:
-        _refuse_if_taken(pedal, slot)
+    """Store the auditioned tone into `slot` and switch to it. A patch it replaces is kept
+    as a file first ("kept" in the result)."""
+    kept = _keep_or_refuse(pedal, slot, replace)
     if name:
         pedal.set_name(name[:10])
     pedal.save_scratch(slot)
-    return {"saved": pedal.read(slot).name, "slot": slot}
+    return dict({"saved": pedal.read(slot).name, "slot": slot}, **kept)
 
 
 def write_tone(pedal, tone, slot, replace=False):
-    """Write a tone straight into a slot without auditioning it."""
-    if not replace:
-        _refuse_if_taken(pedal, slot)
+    """Write a tone straight into a slot without auditioning it. A patch it replaces is kept
+    as a file first ("kept" in the result)."""
+    kept = _keep_or_refuse(pedal, slot, replace)
     patch = Patch.from_dict(tone)
     pedal.write(slot, patch)
-    return {"written": patch.name, "slot": slot}
+    return dict({"written": patch.name, "slot": slot}, **kept)
 
 
 def select_patch(pedal, slot):
@@ -263,6 +263,25 @@ def _refuse_if_taken(pedal, slot):
     if name != "Empty":
         raise PedalError("slot %d holds %r. Ask the user before replacing it, then call again with "
                          "replace=true (or pick an Empty slot)." % (slot, name))
+
+
+def _keep_or_refuse(pedal, slot, replace):
+    """Before writing a slot: refuse if it holds a patch (unless replace), else keep a copy
+    of that patch in <backups>/replaced. Returns {"kept": path} or {}."""
+    if not replace:
+        _refuse_if_taken(pedal, slot)
+        return {}
+    data = pedal.read_raw(slot)
+    name = Patch.decode(data).name
+    if name == "Empty":
+        return {}
+    folder = os.path.join(getattr(pedal.device, "backup_root", BACKUP_ROOT), "replaced")
+    os.makedirs(folder, exist_ok=True)
+    plain = "".join(c if c.isalnum() or c in " -_" else "_" for c in name).strip() or "blank"
+    path = os.path.join(folder, "%s_%03d_%s.zptc" % (datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S"), slot, plain))
+    with open(path, "wb") as f:
+        f.write(data)
+    return {"kept": path}
 
 
 def _backup_folder(pedal):

@@ -1,5 +1,6 @@
 // The tone playing now: its chain as a row of stompboxes you can tweak, rearrange and
-// add to, live. Tweaks only ever happen on the scratch slot; a stored patch is copied there first.
+// add to, live. Tweaks only ever happen on the scratch slot: the first change to a stored
+// patch copies it there, and the stored patch stays as it is until it's saved over.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, effectInfo } from "../api";
 import type { ChainEffect, EffectInfo, Tone, TweakChange } from "../api";
@@ -19,10 +20,11 @@ type Panel = { kind: "add" } | { kind: "swap"; index: number } | { kind: "histor
 
 export function ToneView() {
   const pedal = usePedal();
-  const { live, status, onScratch, act, setLive, refreshLive, history } = pedal;
+  const { live, status, onScratch, act, setLive, refreshLive, history, copyOf, setCopyOf } = pedal;
   const infos = useEffectInfos(live);
-  const { draft, queue, queueMany } = useTweaks(setLive, refreshLive, pedal.say);
-  const [saving, setSaving] = useState(false);
+  const copyFirst = useCopyFirst();
+  const { draft, queue, queueMany } = useTweaks(setLive, refreshLive, pedal.say, copyFirst);
+  const [saving, setSaving] = useState<"new" | "over" | null>(null);
   const [panel, setPanel] = useState<Panel>(null);
   const [drag, setDrag] = useState<{ from: number; over: number | null } | null>(null);
 
@@ -41,11 +43,13 @@ export function ToneView() {
   const slot = status.current_slot!;
 
   /** Send the whole tone with a new chain; the pedal reloads the scratch slot (about 0.1 s). */
-  const setChain = (chain: ChainEffect[], done: string) =>
-    act(() => api.audition({ tone: { ...tone, chain: chain.map(plainEffect) } }), (view) => {
+  const setChain = (chain: ChainEffect[], done: string) => {
+    if (!onScratch) setCopyOf({ slot, name: tone.name });
+    return act(() => api.audition({ tone: { ...tone, chain: chain.map(plainEffect) } }), (view) => {
       setLive(view);
       return done;
     });
+  };
   const move = (from: number, to: number) => {
     if (from === to) return;
     const chain = [...tone.chain];
@@ -72,12 +76,14 @@ export function ToneView() {
     <section className="tone" aria-labelledby="tone-name">
       <div className="tone-head">
         <div className="tone-title">
-          <p className="eyebrow">{onScratch ? `Trying out · slot ${slot}` : `Your patch · slot ${slot}`}</p>
-          {onScratch ? (
-            <NameField key={live.name} name={tone.name} onCommit={(name) => queue("name", { name })} />
-          ) : (
-            <h1 id="tone-name" className="tone-name">{tone.name}</h1>
-          )}
+          <p className="eyebrow">
+            {!onScratch
+              ? `Slot ${slot} · as stored`
+              : copyOf
+                ? `Copy of ${copyOf.name} on slot ${slot} · slot ${copyOf.slot} is untouched`
+                : `Trying out · slot ${slot}`}
+          </p>
+          <NameField key={`${slot}-${live.name}`} name={tone.name} onCommit={(name) => queue("name", { name })} />
         </div>
         <div className="tone-meters">
           <Meter label="DSP" value={tone.dsp_percent} max={100} text={`${Math.round(tone.dsp_percent)}%`} />
@@ -89,7 +95,6 @@ export function ToneView() {
             value={tone.volume}
             max={MAX_VOLUME}
             text={String(tone.volume)}
-            disabled={!onScratch}
             onChange={(v) => queue("volume", { volume: v })}
           />
         </div>
@@ -105,58 +110,42 @@ export function ToneView() {
         </div>
         {onScratch && <ABSwitch tone={tone} />}
         <div className="toolbar-group">
-          {onScratch && (
-            <button className="button" disabled={used >= MAX_POSITIONS} onClick={() => setPanel({ kind: "add" })}>
-              Add an effect
-            </button>
-          )}
+          <button className="button" disabled={used >= MAX_POSITIONS} onClick={() => setPanel({ kind: "add" })}>
+            Add an effect
+          </button>
           <button
             className="button"
-            onClick={() => act(() => api.audition({ tone: NEW_TONE }), () => "Started a new tone on the scratch slot")}
+            onClick={() => {
+              setCopyOf(null);
+              act(() => api.audition({ tone: NEW_TONE }), () => "Started a new tone on the scratch slot");
+            }}
           >
             New tone
           </button>
         </div>
       </div>
 
-      {onScratch && (
-        <Macros
-          tone={tone}
-          infos={infos}
-          onMove={(m) =>
-            queueMany([
-              ...m.knobs.map((k) => [`k:${k.index + 1}:${k.knob}`, { change: { effect: k.index + 1, knob: k.knob, value: k.value } }] as const),
-              ...(m.volume !== undefined ? [["volume", { volume: m.volume }] as const] : []),
-            ])
-          }
-        />
-      )}
-
-      {!onScratch && (
-        <div className="notice">
-          <p>
-            This is your patch, so it can't be tweaked in place. Tweak a copy on slot {status.scratch_slot} and keep it
-            when it sounds right.
-          </p>
-          <button
-            className="button primary"
-            onClick={() => act(() => api.audition({ slot }), () => `Copied ${tone.name} to slot ${status.scratch_slot}`)}
-          >
-            Tweak a copy
-          </button>
-        </div>
-      )}
+      <Macros
+        tone={tone}
+        infos={infos}
+        onMove={(m) =>
+          queueMany([
+            ...m.knobs.map((k) => [`k:${k.index + 1}:${k.knob}`, { change: { effect: k.index + 1, knob: k.knob, value: k.value } }] as const),
+            ...(m.volume !== undefined ? [["volume", { volume: m.volume }] as const] : []),
+          ])
+        }
+      />
 
       <div className="board" role="list" aria-label="Effect chain, in signal order">
         {tone.chain.length === 0 && (
-          <p className="board-empty">{onScratch ? "No effects yet. Add one to start." : "No effects in this patch."}</p>
+          <p className="board-empty">No effects yet. Add one to start.</p>
         )}
         {tone.chain.map((fx, i) => (
           <div
             role="listitem"
             className={`board-slot${drag?.over === i && drag.from !== i ? " drop-here" : ""}${drag?.from === i ? " dragging" : ""}`}
             key={`${i}-${fx.effect}`}
-            draggable={onScratch}
+            draggable
             onDragStart={(e) => {
               e.dataTransfer.effectAllowed = "move";
               setDrag({ from: i, over: null });
@@ -176,19 +165,19 @@ export function ToneView() {
             <Enclosure
               fx={fx}
               info={infos[fx.effect]}
-              editable={onScratch}
+              editable
               onKnob={(knob, value) => queue(`k:${i + 1}:${knob}`, { change: { effect: i + 1, knob, value } })}
               onToggle={(on) => queue(`on:${i + 1}`, { change: { effect: i + 1, on } })}
-              actions={onScratch ? {
+              actions={{
                 onMoveLeft: i > 0 ? () => move(i, i - 1) : undefined,
                 onMoveRight: i < tone.chain.length - 1 ? () => move(i, i + 1) : undefined,
                 onSwap: () => setPanel({ kind: "swap", index: i }),
                 onRemove: () => setChain(tone.chain.filter((_, j) => j !== i), `Removed ${fx.effect}`),
-              } : undefined}
+              }}
             />
           </div>
         ))}
-        {onScratch && used < MAX_POSITIONS && (
+        {used < MAX_POSITIONS && (
           <div role="listitem" className="board-slot">
             <button className="enclosure-ghost" onClick={() => setPanel({ kind: "add" })}>
               <span aria-hidden="true">+</span>
@@ -198,16 +187,25 @@ export function ToneView() {
         )}
       </div>
 
-      {onScratch && (
-        <div className="tone-actions">
-          <button className="button primary" onClick={() => setSaving(true)}>Keep it in a slot…</button>
-          <span className="tone-hint">
-            Drag a knob up or down, or scroll on it. Click a footswitch to turn an effect on or off. Drag a pedal to move it.
-          </span>
-        </div>
-      )}
+      <div className="tone-actions">
+        {onScratch && copyOf && (
+          <button className="button primary" onClick={() => setSaving("over")}>Save over {copyOf.name}…</button>
+        )}
+        {onScratch && (
+          <button className={`button${copyOf ? "" : " primary"}`} onClick={() => setSaving("new")}>
+            {copyOf ? "Keep as a new patch…" : "Keep it in a slot…"}
+          </button>
+        )}
+        <span className="tone-hint">
+          {onScratch
+            ? "Drag a knob up or down, or scroll on it. Click a footswitch to turn an effect on or off. Drag a pedal to move it."
+            : `Change anything and the pedal switches to a copy on slot ${status.scratch_slot}. ${tone.name} on slot ${slot} stays as it is until you save over it.`}
+        </span>
+      </div>
 
-      {saving && <SaveDialog tone={tone} onClose={() => setSaving(false)} />}
+      {saving && (
+        <SaveDialog tone={tone} over={saving === "over" ? copyOf ?? undefined : undefined} onClose={() => setSaving(null)} />
+      )}
       {(panel?.kind === "add" || panel?.kind === "swap") && (
         <EffectBrowser
           title={swapping ? `Swap ${swapping.effect} for…` : "Add an effect"}
@@ -303,10 +301,44 @@ function useEffectInfos(tone: Tone | null) {
 type Pending = { change?: TweakChange; volume?: number; name?: string };
 
 /**
+ * Before the first tweak to a stored patch, copy it to the scratch slot (once, however
+ * many tweaks are waiting). Returns null when the scratch slot is already playing.
+ */
+function useCopyFirst() {
+  const { status, onScratch, setLive, setCopyOf, live, say } = usePedal();
+  const copying = useRef<Promise<void> | null>(null);
+  const now = useRef({ status, onScratch, live });
+  now.current = { status, onScratch, live };
+  useEffect(() => {
+    if (onScratch) copying.current = null;
+  }, [onScratch]);
+  return useCallback(() => {
+    const { status, onScratch, live } = now.current;
+    if (onScratch || !status?.current_slot) return null;
+    if (!copying.current) {
+      const slot = status.current_slot;
+      const name = live?.name ?? status.current_name ?? `slot ${slot}`;
+      copying.current = api.audition({ slot }).then((view) => {
+        setLive(view);
+        setCopyOf({ slot, name });
+        say(`Tweaking a copy of ${name} on slot ${status.scratch_slot}. Slot ${slot} is untouched.`);
+      });
+      copying.current.catch(() => (copying.current = null));
+    }
+    return copying.current;
+  }, [setLive, setCopyOf, say]);
+}
+
+/**
  * Sends tweaks one request at a time, always with the newest values. While a knob
  * is moving, its value is shown straight away (the draft) until the pedal confirms it.
  */
-function useTweaks(setLive: (t: Tone) => void, refreshLive: () => void, say: (t: string, e?: boolean) => void) {
+function useTweaks(
+  setLive: (t: Tone) => void,
+  refreshLive: () => void,
+  say: (t: string, e?: boolean) => void,
+  before: () => Promise<void> | null,
+) {
   const [draft, setDraft] = useState<Record<string, number | boolean | string>>({});
   const pending = useRef(new Map<string, Pending>());
   const busy = useRef(false);
@@ -317,6 +349,7 @@ function useTweaks(setLive: (t: Tone) => void, refreshLive: () => void, say: (t:
     pending.current.clear();
     busy.current = true;
     try {
+      await before();
       const volume = batch.findLast((p) => p.volume !== undefined)?.volume;
       const name = batch.findLast((p) => p.name !== undefined)?.name;
       setLive(await api.tweak({ changes: batch.flatMap((p) => (p.change ? [p.change] : [])), volume, name }));
@@ -329,7 +362,7 @@ function useTweaks(setLive: (t: Tone) => void, refreshLive: () => void, say: (t:
       if (pending.current.size) flush();
       else setDraft({});
     }
-  }, [setLive, refreshLive, say]);
+  }, [setLive, refreshLive, say, before]);
 
   /** Several changes that belong together (a macro) go out in one request. */
   const queueMany = useCallback(

@@ -7,7 +7,7 @@ import { usePedal } from "../pedal";
 const BANK_SIZE = 3;
 
 export function Library({ onTry }: { onTry: () => void }) {
-  const { names, status, act } = usePedal();
+  const { names, status, act, setCopyOf } = usePedal();
   const [filter, setFilter] = useState("");
   const [picked, setPicked] = useState<number | null>(null);
   const slots = Object.keys(names).map(Number).sort((a, b) => a - b);
@@ -81,7 +81,10 @@ export function Library({ onTry }: { onTry: () => void }) {
             onSelect={() => act(() => api.select(picked), (r) => `Switched the pedal to ${r.name}`)}
             onTry={async () => {
               const ok = await act(() => api.audition({ slot: picked }), () => `Copied ${names[picked]} to slot ${status?.scratch_slot} to tweak`);
-              if (ok) onTry();
+              if (ok) {
+                setCopyOf({ slot: picked, name: names[picked] });
+                onTry();
+              }
             }}
             onClose={() => setPicked(null)}
           />

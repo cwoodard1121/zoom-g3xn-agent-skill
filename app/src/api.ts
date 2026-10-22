@@ -24,7 +24,7 @@ export interface Status {
   connection: Connection;
   problem: string;
   doing: string | null;
-  pedal: { firmware?: string; patches?: number };
+  pedal: { firmware?: string; patches?: number; virtual?: boolean };
   current_slot: number | null;
   current_name: string | null;
   scratch_slot: number | null;
@@ -162,7 +162,7 @@ export const api = {
     call<Gig>("GET", `/api/gigs/export?first_slot=${first}&last_slot=${last}&name=${encodeURIComponent(name)}`),
   tweak: (req: { changes?: TweakChange[]; volume?: number; name?: string }) => call<Tone>("POST", "/api/tweak", req),
   save: (slot: number, name: string | undefined, replace: boolean) =>
-    call<{ saved: string; slot: number }>("POST", `/api/patches/${slot}/save`, { name, replace }),
+    call<{ saved: string; slot: number; kept?: string }>("POST", `/api/patches/${slot}/save`, { name, replace }),
   effect: (name: string) => call<EffectInfo>("GET", `/api/effects/${encodeURIComponent(name)}`),
   tuner: (on: boolean) => call<{ tuner: boolean }>("POST", "/api/tuner", { on }),
   release: () => call<Status>("POST", "/api/release"),

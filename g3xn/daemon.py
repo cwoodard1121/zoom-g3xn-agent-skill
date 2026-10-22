@@ -163,7 +163,7 @@ class PedalWorker(threading.Thread):
             return
         self.pedal, self.connection, self.problem = pedal, "connected", ""
         try:
-            self.info = pedal.identity()
+            self.info = dict(pedal.identity(), virtual=pedal.device is not None)
             self._status()
             self._read_names()
             self._poll_current()

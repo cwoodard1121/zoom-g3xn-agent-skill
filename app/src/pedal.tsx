@@ -48,8 +48,16 @@ export interface Toast {
   error?: boolean;
 }
 
+/** The stored patch the scratch slot holds a copy of, while it's being tweaked. */
+export interface CopyOf {
+  slot: number;
+  name: string;
+}
+
 interface Pedal extends State {
   onScratch: boolean;
+  copyOf: CopyOf | null;
+  setCopyOf: (c: CopyOf | null) => void;
   /** Run an action; failures become an error toast instead of an exception. */
   act: <T>(fn: () => Promise<T>, done?: (result: T) => string | void) => Promise<T | undefined>;
   toasts: Toast[];
@@ -66,6 +74,7 @@ export function PedalProvider({ children }: { children: ReactNode }) {
     gigs: { list: [], active: null },
   });
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [copyOf, setCopyOf] = useState<CopyOf | null>(null);
   const nextToast = useRef(1);
 
   useEffect(() => subscribe((e) => dispatch(e), (open) => dispatch({ type: "linked", open })), []);
@@ -105,13 +114,15 @@ export function PedalProvider({ children }: { children: ReactNode }) {
     () => ({
       ...state,
       onScratch: !!state.status && state.status.current_slot === state.status.scratch_slot,
+      copyOf,
+      setCopyOf,
       act,
       toasts,
       say,
       refreshLive,
       setLive,
     }),
-    [state, act, toasts, say, refreshLive, setLive],
+    [state, copyOf, act, toasts, say, refreshLive, setLive],
   );
   return <PedalContext.Provider value={value}>{children}</PedalContext.Provider>;
 }

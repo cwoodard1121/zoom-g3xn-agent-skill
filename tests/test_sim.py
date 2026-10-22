@@ -41,6 +41,19 @@ class VirtualPedalTest(unittest.TestCase):
         p.save_scratch(149)
         self.assertEqual((p.current(), p.read(149).name), (149, "SIMTEST"))
 
+    def test_saving_over_keeps_the_old_patch(self):
+        from g3xn import service
+        self.pedal.audition(Patch.from_dict(TONE))
+        self.pedal.select(150)
+        with self.assertRaises(PedalError):
+            service.save_to_slot(self.pedal, 1)                     # MINE: asks first
+        self.pedal.select(150)
+        result = service.save_to_slot(self.pedal, 1, replace=True)
+        self.assertEqual(result["saved"], "SIMTEST")
+        self.assertTrue(result["kept"].startswith(self.vp.backup_root))
+        self.assertEqual(Patch.load(result["kept"]).name, "MINE")
+        self.assertNotIn("kept", service.write_tone(self.pedal, TONE, 2, replace=True))   # was Empty
+
     def test_screen_text(self):
         self.pedal.audition(Patch.from_dict(TONE))
         shown = {d["effect"]: d["knobs"] for d in self.pedal.display()}

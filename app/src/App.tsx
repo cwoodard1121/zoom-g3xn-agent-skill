@@ -77,7 +77,8 @@ function StatusBar() {
     } else if (status.connection === "connected") {
       light = "ok";
       const fw = status.pedal.firmware ? ` · firmware ${status.pedal.firmware}` : "";
-      text = `G3Xn connected${fw} · on slot ${status.current_slot}${status.current_name ? `, ${status.current_name}` : ""}`;
+      const which = status.pedal.virtual ? "Virtual pedal (not your G3Xn)" : `G3Xn connected${fw}`;
+      text = `${which} · on slot ${status.current_slot}${status.current_name ? `, ${status.current_name}` : ""}`;
       action = { label: "Let go of the pedal", run: () => act(() => api.release(), () => "The pedal is free for ToneLib and other programs") };
     } else if (status.connection === "released") {
       text = "The pedal is free for other programs.";
@@ -92,7 +93,7 @@ function StatusBar() {
   }
 
   return (
-    <header className="status" role="status">
+    <header className={`status${status?.pedal.virtual ? " virtual" : ""}`} role="status">
       <span className={`status-light ${light}`} aria-hidden="true" />
       <span className="status-text">{text}</span>
       {action && (

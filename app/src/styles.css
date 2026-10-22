@@ -104,6 +104,9 @@ button, input { font: inherit; color: inherit; }
   color: var(--ink-dim); cursor: pointer; flex: none;
 }
 .status-action:hover { color: var(--ink); border-color: var(--ink-faint); }
+/* The virtual pedal: a striped amber edge so it's never mistaken for the real one. */
+.status.virtual { box-shadow: inset 0 -3px 0 var(--busy); }
+.status.virtual .status-text { color: var(--busy); }
 
 @keyframes blink { 50% { opacity: 0.35; } }
 
@@ -208,7 +211,13 @@ button, input { font: inherit; color: inherit; }
   box-shadow: 0 3px 4px rgba(0, 0, 0, 0.45);
 }
 
-.tone-actions { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+/* Saving stays in reach however long the chain is. */
+.tone-actions {
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  position: sticky; bottom: 0; z-index: 2;
+  margin: 0 -8px; padding: 14px 8px;
+  background: linear-gradient(to top, var(--board) 70%, transparent);
+}
 .tone-hint { color: var(--ink-faint); font-size: 13px; }
 
 /* ---------- toolbar ---------- */
