@@ -33,14 +33,21 @@ class PedalError(RuntimeError):
 
 
 class Pedal:
-    def __init__(self, scratch=150, timeout=2.0):
+    def __init__(self, scratch=150, timeout=2.0, device=None):
+        """device: something with connect() -> (inport, outport) to use instead of
+        the USB-MIDI ports, e.g. g3xn.sim.VirtualPedal()."""
         self.scratch = scratch
         self.timeout = timeout
+        self.device = device
+        self.state_file = getattr(device, "state_file", STATE_FILE)
         self.inport = self.outport = None
 
     # --- connection ---
 
     def open(self):
+        if self.device:
+            self.inport, self.outport = self.device.connect()
+            return self._start()
         ins = [p for p in mido.get_input_names() if p.startswith(P.PORT_PREFIX)]
         outs = [p for p in mido.get_output_names() if p.startswith(P.PORT_PREFIX)]
         if not ins or not outs:
@@ -50,6 +57,9 @@ class Pedal:
             self.outport = mido.open_output(outs[0])
         except Exception as err:
             raise PedalError("could not open %s (another program may be using it): %s" % (ins[0], err))
+        return self._start()
+
+    def _start(self):
         self._drain()
         self._send(P.msg(P.EDITOR_ON))
         time.sleep(0.05)
@@ -374,7 +384,7 @@ class Pedal:
     def _claim_scratch(self):
         """The scratch slot may be overwritten only if it is Empty or still holds
         the last patch g3xn put there (so a tone saved into it by hand is safe)."""
-        state = _load_state()
+        state = _load_state(self.state_file)
         name = self.read(self.scratch).name
         ours = state.get("scratch") == self.scratch and name == state.get("scratch_name")
         if name != "Empty" and not ours:
@@ -382,24 +392,24 @@ class Pedal:
                              "--scratch N / Pedal(scratch=N), or clear it first." % (self.scratch, name))
 
     def _remember_scratch(self, name):
-        state = _load_state()
+        state = _load_state(self.state_file)
         state.update(scratch=self.scratch, scratch_name=name)
-        _save_state(state)
+        _save_state(self.state_file, state)
 
 
 def _cstr(s):
     return [ord(c) for c in s] + [0]
 
 
-def _load_state():
+def _load_state(path):
     try:
-        with open(STATE_FILE) as f:
+        with open(path) as f:
             return json.load(f)
     except (OSError, ValueError):
         return {}
 
 
-def _save_state(state):
-    os.makedirs(os.path.dirname(STATE_FILE), exist_ok=True)
-    with open(STATE_FILE, "w") as f:
+def _save_state(path, state):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
         json.dump(state, f, indent=1)
