@@ -27,8 +27,12 @@ import os
 import re
 import uuid
 
-from .history import describe
+from .catalog import catalog
+from .history import changes, describe
 from .patch import Patch
+
+FOLDER = os.path.join(os.path.expanduser("~"), ".g3xn", "gigs")     # where the app keeps saved gigs
+CHANGES = ("knob", "volume", "on", "off", "add", "remove")
 
 
 def load(path):
@@ -84,15 +88,15 @@ def snapshot(steps):
 
 def differences(pedal, loaded):
     """The songs whose slot no longer holds what the gig loaded there (`loaded` from `snapshot`).
-    Each has "change", e.g. "Hall Mix 40 → 55" (from what was loaded to what's there now)."""
+    Each has "change", e.g. "Hall Mix 40 → 55; Volume 90 → 80" (from what was loaded to what's there now)."""
     out = []
     for s in loaded:
         if "data" not in s:                       # loaded before snapshots were kept
             continue
         want, now = Patch.decode(base64.b64decode(s["data"])), pedal.read(s["slot"])
         if _plain(now) != _plain(want):
-            change = describe(_plain(want), _plain(now))[0]
-            if change.startswith("Loaded "):      # a different tone altogether
+            change = "; ".join(changes(_plain(want), _plain(now)))
+            if describe(_plain(want), _plain(now))[0].startswith("Loaded "):     # a different tone altogether
                 change = "Replaced by %s" % now.name
             out.append({"song": s["song"], "slot": s["slot"], "patch": s["patch"], "now": now.name,
                         "change": change, "_patch": want, "_now": now})
@@ -139,6 +143,138 @@ def export(pedal, first, last, name="Exported gig"):
                         "tone": {"name": p.name, "volume": p.volume,
                                  "chain": [{"effect": c.name, "on": c.enabled, "knobs": c.knobs()} for c in p.chain]}})
     return {"name": name, "start_slot": first, "patches": patches}
+
+
+def batch_edit(pedal, gig, edit):
+    """Make one change to every song of a gig. The pedal is only read (for from_slot songs);
+    load the gig again to put the result on it. Returns (edited gig, report).
+
+    edit is one of:
+        {"change": "knob", "effects": "reverb", "knob": "Mix", "percent": -10}
+        {"change": "volume", "by": 5}
+        {"change": "off", "effects": "delay"}                (or "on")
+        {"change": "add", "effect": "Gt GEQ", "at": 1, "knobs": {...}}   (at: chain number; default the end)
+        {"change": "remove", "effects": "Comp"}
+    "effects" is a group (reverb, delay, drive, amp, cabinet, modulation, filter, dynamics,
+    pedal, sfx), an effect name, a list of those, or "all". Amounts: "percent" (of the
+    current value), "by" (added to the stored value) or "to" (set), clamped to the knob's range.
+
+    A song is left as it was, and the report says why, when nothing in it matches, when the
+    result wouldn't fit on the pedal (positions or DSP), or when it's already that way. A song
+    that copied a slot (from_slot) becomes its own tone when it changes."""
+    kind = edit.get("change")
+    if kind not in CHANGES:
+        raise ValueError("change must be one of: %s" % ", ".join(CHANGES))
+    if kind in ("knob", "volume") and not {"percent", "by", "to"} & set(edit):
+        raise ValueError("say how much: percent, by or to")
+    if kind == "knob" and not edit.get("knob"):
+        raise ValueError("which knob? e.g. \"knob\": \"Mix\"")
+    if kind == "add":
+        edit = dict(edit, effect=catalog().get(edit.get("effect") or "").name)
+    match = _matcher(edit.get("effects")) if kind in ("knob", "on", "off", "remove") else None
+
+    entries, report, knobs = [], [], set()
+    for i, entry in enumerate(gig["patches"], 1):
+        patch = _resolve(pedal, entry, gig.get("_dir", "."))
+        song = entry.get("song") or patch.name
+        before = _plain(patch)
+        if match:
+            knobs.update(p.name for c in patch.chain if c.effect and match(c) for p in c.effect.params)
+        try:
+            why_not = _apply(patch, kind, edit, match)
+        except (ValueError, KeyError, IndexError) as err:
+            why_not = err.args[0] if err.args else str(err)
+        if not why_not and patch.problems():
+            why_not = "wouldn't fit: " + "; ".join(patch.problems())
+        elif not why_not and _plain(patch) == before:
+            why_not = "already that way"
+        if why_not:
+            entries.append(entry)
+            report.append({"order": i, "song": song, "change": None, "left_alone": why_not})
+            continue
+        after = _plain(patch)
+        entries.append(dict({k: v for k, v in entry.items() if k not in ("tone", "from_slot", "file")}, tone=after))
+        report.append({"order": i, "song": song, "change": "; ".join(changes(before, after)), "left_alone": None,
+                       "was_a_copy_of_slot": entry.get("from_slot")})
+    if kind == "knob" and knobs and not _has_knob_named(knobs, edit["knob"]):
+        raise ValueError("no %s in this gig has a %r knob; their knobs are: %s"
+                         % (_describe_match(edit["effects"]), edit["knob"], ", ".join(sorted(knobs))))
+    return dict(gig, patches=entries), report
+
+
+def _apply(patch, kind, edit, match):
+    """Change one patch; returns why it was left alone, or None."""
+    if kind == "volume":
+        patch.volume = _amount(patch.volume, edit, 100)
+        return None
+    if kind == "add":
+        if any(c.name == edit["effect"] for c in patch.chain):
+            return "already has %s" % edit["effect"]
+        at = edit.get("at")
+        patch.add(edit["effect"], at=at if isinstance(at, int) and at <= len(patch.chain) else None,
+                  knobs=edit.get("knobs"))
+        return None
+    hits = [n for n, c in enumerate(patch.chain, 1) if match(c)]
+    if kind == "knob":
+        hits = [n for n in hits if _has_knob(patch.chain[n - 1], edit["knob"])]
+    if not hits:
+        return "no %s%s" % (_describe_match(edit.get("effects")),
+                             " with a %s knob" % edit["knob"] if kind == "knob" else "")
+    for n in sorted(hits, reverse=True):          # from the end, so removing keeps the numbers right
+        c = patch.chain[n - 1]
+        if kind == "knob":
+            p = c.effect.param(edit["knob"])
+            c[p.name] = _amount(c[p.name], edit, p.max)
+        elif kind == "remove":
+            patch.remove(n)
+        else:
+            c.enabled = kind == "on"
+    return None
+
+
+def _amount(value, edit, top):
+    if "to" in edit:
+        new = edit["to"]
+    elif "by" in edit:
+        new = value + edit["by"]
+    else:
+        new = value * (1 + edit["percent"] / 100)
+    return max(0, min(top, int(round(new))))
+
+
+def _matcher(effects):
+    """A test for chain effects from a group name, an effect name, a list of those, or "all"."""
+    if not effects:
+        raise ValueError("which effects? a group (%s), an effect name, or \"all\"" % ", ".join(catalog().groups()).lower())
+    groups = {g.lower() for g in catalog().groups()}
+    names, kinds = set(), set()
+    for item in [effects] if isinstance(effects, str) else effects:
+        if item.lower() == "all":
+            return lambda c: True
+        group = item.lower() if item.lower() in groups else item.lower()[:-1]    # "reverbs" works too
+        if group in groups:
+            kinds.add(group)
+        else:
+            names.add(catalog().get(item).name)
+    return lambda c: c.name in names or (c.effect is not None and c.effect.group.lower() in kinds)
+
+
+def _has_knob(c, knob):
+    try:
+        return c.effect is not None and c.effect.param(knob) is not None
+    except KeyError:
+        return False
+
+
+def _has_knob_named(names, knob):
+    key = re.sub(r"[^a-z0-9]", "", knob.lower())
+    return any(re.sub(r"[^a-z0-9]", "", n.lower()) == key for n in names)
+
+
+def _describe_match(effects):
+    if effects == "all" or effects == ["all"]:
+        return "effect"
+    return effects if isinstance(effects, str) else " or ".join(effects or [])
 
 
 class GigLibrary:

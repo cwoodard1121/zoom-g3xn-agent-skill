@@ -40,6 +40,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from . import service
+from . import gig as gig_files
 from .gig import GigLibrary, shown as shown_gig
 from .history import History
 from .pedal import Pedal, PedalError
@@ -47,7 +48,7 @@ from .pedal import Pedal, PedalError
 DEFAULT_PORT = 8370
 DISCOVERY_FILE = os.path.join(os.path.expanduser("~"), ".g3xn", "daemon.json")
 HISTORY_FILE = os.path.join(os.path.expanduser("~"), ".g3xn", "history.json")
-GIGS_FOLDER = os.path.join(os.path.expanduser("~"), ".g3xn", "gigs")
+GIGS_FOLDER = gig_files.FOLDER
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 UI_DIR = os.path.join(REPO, "app", "dist")          # the built web UI (npm run build in app/)
 RETRY_SECONDS = 2.0
@@ -295,6 +296,11 @@ class TunerRequest(BaseModel):
 
 class LockRequest(BaseModel):
     on: bool = True
+
+
+class BatchRequest(BaseModel):
+    edit: dict
+    save: bool = False
 
 
 class TunerReadRequest(BaseModel):
@@ -570,12 +576,25 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
         """Back up every slot, write the gig, and make it the one the stage view follows."""
         refuse_if_locked()
         gig = _gig_or_404(gig_id)
-        result = await run("loading %s" % gig.get("name", "the gig"), lambda p: service.load_gig(p, gig, snapshot=True),
+        result = await run("loading %s" % gig.get("name", "the gig"), lambda p: service.load_saved_gig(p, gigs, gig_id),
                            touches=lambda r: [s["slot"] for s in r["written"]])
-        gig["loaded"] = {"time": time.time(), "backup": result["backup"], "slots": result.pop("loaded")}
-        gigs.save(gig)
         state["active_gig"] = gig_id
         hub.emit(gigs_event())
+        return result
+
+    @app.post("/api/setlists/{gig_id}/batch", tags=["gigs"])
+    async def batch_setlist(gig_id: str, req: BatchRequest):
+        """One change to every song: "every reverb down 10%", "a venue EQ on every song". The forms:
+        {"change": "knob", "effects": "reverb", "knob": "Mix", "percent": -10} (or "by"/"to"),
+        {"change": "volume", "by": 5}, {"change": "on"|"off", "effects": "delay"},
+        {"change": "add", "effect": "Gt GEQ", "at": 1}, {"change": "remove", "effects": "Comp"}.
+        save=false previews it (what each song would get, and why any are left alone); save=true
+        keeps it in the gig. The pedal isn't written: load the gig again for that."""
+        gig = _gig_or_404(gig_id)
+        result = await run("editing %s" % gig.get("name", "the gig"),
+                           lambda p: service.edit_gig(p, gigs, gig_id, req.edit, req.save))
+        if result["saved"]:
+            hub.emit(gigs_event())
         return result
 
     @app.post("/api/setlists/{gig_id}/check", tags=["gigs"])

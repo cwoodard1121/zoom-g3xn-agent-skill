@@ -20,6 +20,9 @@ You drive a real guitar pedal. The user is usually holding a guitar and listenin
 | `save_to_slot(slot, name)` | keep the auditioned tone (only when the user says so; a non-Empty slot needs `replace=true` after they say yes) |
 | `write_tone(tone, slot)` | write a tone to a slot without auditioning (same `replace` rule) |
 | `load_gig(gig)` / `export_gig(first, last)` | setlists: plan, then `confirm=true` to write (backs up first) |
+| `saved_gigs` / `get_gig(id)` | the gigs saved in the g3xn app |
+| `edit_gig(id, edit)` | one change to every song of a saved gig (preview first, then `save=true`) |
+| `load_saved_gig(id)` / `check_gig(id)` | put a saved gig on the pedal; find (and with `restore=true` undo) changes made on the pedal since |
 | `backup_pedal` / `select_patch` / `tuner` | housekeeping |
 
 If the MCP tools are missing, the same things work from a shell: `uv run --directory <plugin root> g3xn --json <command>` (`g3xn --help` lists them).
@@ -85,3 +88,14 @@ A gig is an ordered list of patches loaded into consecutive slots, so the footsw
 ```
 
 Build or reuse tones per song, `load_gig(gig)` to show the plan (it flags real patches that would be replaced), then `confirm=true`. `export_gig` turns a run of slots back into a gig file to keep.
+
+The g3xn app keeps saved gigs (`saved_gigs`, `get_gig`). For a change across a whole set ("every reverb down 10%", "add an EQ for this venue"), use `edit_gig`:
+
+```json
+{"change": "knob", "effects": "reverb", "knob": "Mix", "percent": -10}
+{"change": "add", "effect": "Gt GEQ 7", "at": 1}
+```
+
+Other forms: `{"change": "volume", "by": 5}`, `{"change": "off", "effects": "delay"}` and `{"change": "remove", "effects": "Comp"}`. Call it with `save=false` first and tell the user what each song gets and which are left alone (and why: no match, or it wouldn't fit). Then call `save=true` and `load_saved_gig` to put it on the pedal. Knob names are the pedal's own, and many effects call their level `VOL`; a wrong name comes back with the right ones.
+
+If the user turned knobs on the pedal during a show (autosave keeps them), `check_gig` lists what changed and `restore=true` puts the gig back. Ask before restoring. While the app has a gig locked for a show, writes to its slots are refused: tell the user, and don't try to get around it.

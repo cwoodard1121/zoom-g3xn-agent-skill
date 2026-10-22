@@ -203,6 +203,26 @@ def load_gig(pedal, gig, snapshot=False):
     return result
 
 
+def load_saved_gig(pedal, library, gig_id):
+    """Load a saved gig (from a gig.GigLibrary) and remember what went where, for check_gig/restore_gig."""
+    gig = library.get(gig_id)
+    result = load_gig(pedal, gig, snapshot=True)
+    gig["loaded"] = {"time": time.time(), "backup": result["backup"], "slots": result.pop("loaded")}
+    library.save(gig)
+    return result
+
+
+def edit_gig(pedal, library, gig_id, edit, save=False):
+    """One change to every song of a saved gig (the forms are in gig.batch_edit). save=False
+    previews; save=True keeps it in the gig. Nothing is written to the pedal: load the gig again."""
+    gig = library.get(gig_id)
+    edited, songs = gigs.batch_edit(pedal, gig, edit)
+    changed = sum(1 for s in songs if s["change"])
+    if save and changed:
+        library.save(edited)
+    return {"gig": gig.get("name", gig_id), "songs": songs, "changed": changed, "saved": bool(save and changed)}
+
+
 def check_gig(pedal, loaded):
     """Songs whose slot changed since the gig was loaded (say a knob was turned on the pedal,
     which autosaves). `loaded` is load_gig's snapshot."""

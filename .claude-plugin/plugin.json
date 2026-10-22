@@ -1,6 +1,6 @@
 {
   "name": "g3xn",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Design, audition and tweak Zoom G3n/G3Xn guitar tones live on the pedal: build patches by name, hear them instantly, adjust them by talking (\"less fizzy\", \"more like the record\"), back up the pedal and load gig setlists.",
   "author": {
     "name": "cwoodard1121"

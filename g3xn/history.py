@@ -121,6 +121,23 @@ def describe(before, after):
         if not set(old) & set(new):                     # nothing in common: a different tone
             return "Loaded %s" % after["name"], "load:%d" % next(_unique)
         return _chain_label(old, new), "chain:%d" % next(_unique)
+    changes, keys = _differences(before, after)
+    if not changes:
+        return "", None
+    label = changes[0] if len(changes) == 1 else "%s and %d more" % (changes[0], len(changes) - 1)
+    return label, "|".join(sorted(keys))
+
+
+def changes(before, after):
+    """Every difference between two tones, in words: ["Hall Mix 40 → 36", "Volume 90 → 95"]."""
+    old, new = [f["effect"] for f in before["chain"]], [f["effect"] for f in after["chain"]]
+    if old != new:
+        return [_chain_label(old, new)]
+    return _differences(before, after)[0]
+
+
+def _differences(before, after):
+    """(changes, keys) between two tones with the same effects in the same order."""
     changes, keys = [], []
     for i, (a, b) in enumerate(zip(before["chain"], after["chain"])):
         if a["on"] != b["on"]:
@@ -138,10 +155,7 @@ def describe(before, after):
     if before["name"] != after["name"]:
         changes.append("Renamed to %s" % after["name"])
         keys.append("name")
-    if not changes:
-        return "", None
-    label = changes[0] if len(changes) == 1 else "%s and %d more" % (changes[0], len(changes) - 1)
-    return label, "|".join(sorted(keys))
+    return changes, keys
 
 
 def _chain_label(old, new):

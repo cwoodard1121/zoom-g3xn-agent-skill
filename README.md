@@ -33,7 +33,7 @@ $ g3xn save 123                    # keep it
 | **Tuner** | Turn it on and stream the note + meter |
 | **Effect catalog** | 162 effects: name, group, description, DSP cost, chain positions, every knob's range/default/explanation |
 | **Backups** | Dump every slot to `.zptc` files in one command |
-| **Gigs** | A setlist file → consecutive slots, with a plan showing what gets replaced and an automatic backup first |
+| **Gigs** | A setlist file → consecutive slots, with a plan showing what gets replaced and an automatic backup first. Change every song at once ("every reverb down 10%"), lock a gig for the show, and put back anything a stray knob changed |
 | **AI agent plugin** | Claude Code / Claude Desktop (or any MCP client): design tones by talking, research them on the web, audition and tweak live |
 | **ToneLib import** | Reads `.zg3xn` exports directly |
 | **Desktop app** (early) | Your effect chain as a row of stompboxes with knobs you turn, a patch library, and a big tuner; works in a window, a browser tab or on a phone |
@@ -56,6 +56,7 @@ Restart Claude Code, then try:
 - *"Too fizzy."* / *"More gain for the solo."* / *"Turn the reverb down."*
 - *"Save it to slot 123."* (it asks before replacing anything that isn't Empty)
 - *"Back up the pedal"*, *"tune"*, *"load my Friday setlist starting at slot 100"*
+- *"Turn every reverb in the Friday set down 10%"*, *"did I change anything on the pedal during the show? put it back"*
 
 Everything you hear while designing happens on **slot 150** (the scratch slot), so your patches stay untouched until you say save. Use Claude in Chrome or web search alongside and it researches rigs ("what did Knopfler use on Sultans?") before building.
 
@@ -209,7 +210,7 @@ Patch format notes live at the top of [`g3xn/patch.py`](g3xn/patch.py).
 ## Roadmap
 
 - ~~**Agent plugin**~~: done (see *Use it with Claude*)
-- **Desktop app**: started (tone editor with A/B, history and macros, patch library, gigs and stage view, tuner). Next: gig tools, phone remote, MIDI footswitches, built-in Claude chat. Plan: [`docs/APP_PLAN.md`](docs/APP_PLAN.md)
+- **Desktop app**: started (tone editor with A/B, history and macros, patch library, gigs and stage view, tuner). Gig tools are in the daemon and the Claude plugin, with screens to come. Next: phone remote, MIDI footswitches, built-in Claude chat. Plan: [`docs/APP_PLAN.md`](docs/APP_PLAN.md)
 
 ## Credits
 

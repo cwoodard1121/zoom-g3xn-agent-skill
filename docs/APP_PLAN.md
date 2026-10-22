@@ -5,7 +5,9 @@ Status: building. Done so far:
 - Stage 2, first cut: the app (`g3xn-app`) with the tone view (stompboxes, live knobs, footswitches, keep in a slot), the patch library (banks of three, tweak a copy, switch to it) and the tuner.
 - Tone: chain editing (add, swap, reorder, remove), A/B with morph, undo/redo and a history of every version, macro knobs (Gain, Brightness, Space).
 - Gigs: saved setlists (song, patch, tempo, key, notes), a slot plan that names every patch it would replace, load with a backup first, and the stage view (follows the pedal; arrows, space and page-turner pedals step through the set).
-- Next: gig tools (batch edits, gig lock, panic restore), phone remote, MIDI footswitches, Claude in the app.
+- Gig tools (API and Claude tools; screens wait for the UI design pass): one change to every song of a gig (`/api/setlists/{id}/batch`, `edit_gig`), a lock that refuses writes to a gig's slots during a show (`/lock`), and a check/restore of anything changed on the pedal since loading (`/check`, `/restore`, `check_gig`).
+- UI: the user is designing the screens; new features land as API + MCP first, then mockups, then screens.
+- Next: phone remote, MIDI footswitches, Claude in the app.
 
 The app is a full replacement for ToneLib / Guitar Lab, built on the `g3xn` library, with Claude built in. Everything the app does goes through the same library the agent uses, so a change made by hand, by voice, or from the phone shows up everywhere.
 
