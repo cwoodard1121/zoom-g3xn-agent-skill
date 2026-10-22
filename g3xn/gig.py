@@ -12,11 +12,16 @@
 
 Each entry is a tone (tone JSON), a copy of a slot already on the pedal
 (`from_slot`), or a .json/.zptc/.zg3xn file. An entry may set "slot" to pin
-it; otherwise entries fill consecutive slots from start_slot.
+it; otherwise entries fill consecutive slots from start_slot. Entries may
+also carry "notes", "tempo" and "key" for the stage view.
+
+GigLibrary keeps gigs as JSON files (the app's saved setlists).
 """
 import datetime
 import json
 import os
+import re
+import uuid
 
 from .patch import Patch
 
@@ -43,7 +48,7 @@ def plan(pedal, gig):
         if problems:
             raise ValueError("entry %d (%s): %s" % (i, patch.name, "; ".join(problems)))
         current = pedal.read(target).name
-        steps.append({"order": i, "song": entry.get("song", patch.name), "slot": target, "patch": patch.name,
+        steps.append({"order": i, "song": entry.get("song") or patch.name, "slot": target, "patch": patch.name,
                       "replaces": current, "overwrites_real_patch": current != "Empty",
                       "_patch": patch})
         slot = target + 1
@@ -75,6 +80,52 @@ def export(pedal, first, last, name="Exported gig"):
                         "tone": {"name": p.name, "volume": p.volume,
                                  "chain": [{"effect": c.name, "on": c.enabled, "knobs": c.knobs()} for c in p.chain]}})
     return {"name": name, "start_slot": first, "patches": patches}
+
+
+class GigLibrary:
+    """Saved gigs, one JSON file each. A gig's "id" is its file name."""
+
+    def __init__(self, folder):
+        self.folder = folder
+
+    def list(self):
+        out = []
+        for name in sorted(os.listdir(self.folder)) if os.path.isdir(self.folder) else []:
+            if name.endswith(".json"):
+                try:
+                    g = self.get(name[:-5])
+                except (OSError, ValueError):
+                    continue
+                out.append({"id": g["id"], "name": g.get("name", ""), "songs": len(g.get("patches", [])),
+                            "start_slot": g.get("start_slot"), "loaded": g.get("loaded")})
+        return sorted(out, key=lambda g: g["name"].lower())
+
+    def get(self, gig_id):
+        with open(self._path(gig_id), encoding="utf-8") as f:
+            gig = json.load(f)
+        gig["id"] = gig_id
+        return gig
+
+    def save(self, gig):
+        """Create or update; returns the saved gig (with its id)."""
+        gig = dict(gig)
+        gig_id = gig.get("id") or "%s-%s" % (re.sub(r"[^a-z0-9]+", "-", gig.get("name", "gig").lower()).strip("-")[:40]
+                                             or "gig", uuid.uuid4().hex[:6])
+        gig["id"] = gig_id
+        os.makedirs(self.folder, exist_ok=True)
+        tmp = self._path(gig_id) + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(gig, f, indent=1)
+        os.replace(tmp, self._path(gig_id))
+        return gig
+
+    def delete(self, gig_id):
+        os.remove(self._path(gig_id))
+
+    def _path(self, gig_id):
+        if not re.fullmatch(r"[a-z0-9-]+", gig_id or ""):
+            raise ValueError("bad gig id %r" % gig_id)
+        return os.path.join(self.folder, gig_id + ".json")
 
 
 def public(steps):

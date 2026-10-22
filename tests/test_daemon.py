@@ -120,6 +120,27 @@ class DaemonTest(unittest.TestCase):
         self.assertEqual(code, 409)
         self.assertIn("same effects", msg)
 
+    def test_saved_gigs(self):
+        gig = {"name": "Friday Set", "start_slot": 120, "patches": [
+            {"song": "Sultans", "tone": TONE, "notes": "capo off"}, {"song": "Mine", "from_slot": 1}]}
+        saved = self.call("PUT", "/api/setlists/new", gig)
+        gid = saved["id"]
+        self.assertTrue(gid.startswith("friday-set-"))
+        plan = self.call("POST", "/api/setlists/%s/plan" % gid)["plan"]
+        self.assertEqual([(s["slot"], s["patch"]) for s in plan], [(120, "DAEMON"), (121, "MINE")])
+        self.call("POST", "/api/setlists/%s/load" % gid)
+        listed = self.call("GET", "/api/setlists")
+        self.assertEqual(listed["active"], gid)
+        loaded = self.call("GET", "/api/setlists/%s" % gid)["loaded"]
+        self.assertEqual([(s["song"], s["slot"]) for s in loaded["slots"]], [("Sultans", 120), ("Mine", 121)])
+        names = {p["slot"]: p["name"] for p in self.call("GET", "/api/patches")["patches"]}
+        self.assertEqual((names[120], names[121]), ("DAEMON", "MINE"))
+        self.call("PUT", "/api/setlists/%s" % gid, dict(saved, name="Friday Late"))    # an edit from an old copy
+        self.assertEqual(self.call("GET", "/api/setlists/%s" % gid)["loaded"], loaded)  # keeps what's on the pedal
+        self.call("DELETE", "/api/setlists/%s" % gid)
+        self.assertIsNone(self.call("GET", "/api/setlists")["active"])
+        self.assertEqual(self.error("GET", "/api/setlists/%s" % gid)[0], 400)
+
     def test_effects_and_errors(self):
         self.assertTrue(self.call("GET", "/api/effects?query=fuzz")["effects"])
         code, _ = self.error("GET", "/api/effects/NoSuchPedal")

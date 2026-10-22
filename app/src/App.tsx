@@ -1,13 +1,17 @@
 import { useEffect, useState } from "react";
 import { api } from "./api";
 import { PedalProvider, usePedal } from "./pedal";
+import { Gigs } from "./views/Gigs";
 import { Library } from "./views/Library";
+import { Stage } from "./views/Stage";
 import { ToneView } from "./views/ToneView";
 import { Tuner } from "./views/Tuner";
 
 const VIEWS = [
   { id: "tone", label: "Tone" },
   { id: "library", label: "Patches" },
+  { id: "gigs", label: "Gigs" },
+  { id: "stage", label: "Stage" },
   { id: "tuner", label: "Tuner" },
 ] as const;
 type View = (typeof VIEWS)[number]["id"];
@@ -36,6 +40,8 @@ function Shell() {
       <main className="main">
         {view === "tone" && <ToneView />}
         {view === "library" && <Library onTry={() => setView("tone")} />}
+        {view === "gigs" && <Gigs onStage={() => setView("stage")} />}
+        {view === "stage" && <Stage />}
         {view === "tuner" && <Tuner />}
       </main>
       <Toasts />

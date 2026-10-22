@@ -183,7 +183,7 @@ def select_patch(pedal, slot):
 
 def backup(pedal, folder=""):
     """Copy every slot to .zptc files (default ~/g3xn-backups/<timestamp>)."""
-    return {"backup": pedal.backup(folder or _backup_folder())}
+    return {"backup": pedal.backup(folder or _backup_folder(pedal))}
 
 
 # --- gigs ---
@@ -195,7 +195,7 @@ def plan_gig(pedal, gig):
 
 def load_gig(pedal, gig):
     """Back up every slot, then write the gig."""
-    steps, folder = gigs.write(pedal, gig, _backup_folder())
+    steps, folder = gigs.write(pedal, gig, _backup_folder(pedal))
     return {"written": gigs.public(steps), "backup": folder, "confirmed": True}
 
 
@@ -228,5 +228,6 @@ def _refuse_if_taken(pedal, slot):
                          "replace=true (or pick an Empty slot)." % (slot, name))
 
 
-def _backup_folder():
-    return os.path.join(BACKUP_ROOT, datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S"))
+def _backup_folder(pedal):
+    root = getattr(pedal.device, "backup_root", BACKUP_ROOT)     # a virtual pedal backs up elsewhere
+    return os.path.join(root, datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S"))

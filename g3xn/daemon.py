@@ -29,6 +29,7 @@ import json
 import os
 import queue
 import socket
+import tempfile
 import threading
 import time
 
@@ -39,12 +40,14 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from . import service
+from .gig import GigLibrary
 from .history import History
 from .pedal import Pedal, PedalError
 
 DEFAULT_PORT = 8370
 DISCOVERY_FILE = os.path.join(os.path.expanduser("~"), ".g3xn", "daemon.json")
 HISTORY_FILE = os.path.join(os.path.expanduser("~"), ".g3xn", "history.json")
+GIGS_FOLDER = os.path.join(os.path.expanduser("~"), ".g3xn", "gigs")
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 UI_DIR = os.path.join(REPO, "app", "dist")          # the built web UI (npm run build in app/)
 RETRY_SECONDS = 2.0
@@ -294,12 +297,14 @@ class TunerReadRequest(BaseModel):
     seconds: float = 8.0
 
 
-def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None):
+def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, gigs_folder=None):
     """announce: write ~/.g3xn/daemon.json so g3xn-mcp finds this daemon.
-    history_file: where the time machine keeps its versions (None = memory only)."""
+    history_file: where the time machine keeps its versions (None = memory only).
+    gigs_folder: where saved gigs live (None = a temporary folder)."""
     hub = EventHub()
     worker = PedalWorker(make_pedal, hub.emit)
     history = History(history_file)
+    gigs = GigLibrary(gigs_folder or tempfile.mkdtemp(prefix="g3xn-gigs-"))
 
     @contextlib.asynccontextmanager
     async def lifespan(app):
@@ -317,6 +322,8 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None):
     app = FastAPI(title="g3xn", version="0.1.0", lifespan=lifespan,
                   description="Control a Zoom G3n / G3Xn: patches, live tone editing, gigs and the tuner.")
     app.state.worker = worker
+    loaded = [g for g in gigs.list() if g.get("loaded")]
+    state = {"active_gig": max(loaded, key=lambda g: g["loaded"]["time"])["id"] if loaded else None}
 
     async def run(label, fn, touches=()):
         return await asyncio.wrap_future(worker.submit(label, fn, touches))
@@ -509,6 +516,64 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None):
         return await run("reading slots %d-%d" % (first_slot, last_slot),
                          lambda p: service.export_gig(p, first_slot, last_slot, name))
 
+    # --- saved gigs (the app's setlists) ---
+
+    @app.get("/api/setlists", tags=["gigs"])
+    async def list_setlists():
+        """Saved gigs, by name. `active` is the one last loaded to the pedal (the stage view follows it)."""
+        return {"gigs": gigs.list(), "active": state.get("active_gig")}
+
+    @app.get("/api/setlists/{gig_id}", tags=["gigs"])
+    async def get_setlist(gig_id: str):
+        return _gig_or_404(gig_id)
+
+    @app.put("/api/setlists/{gig_id}", tags=["gigs"])
+    async def save_setlist(gig_id: str, gig: dict = Body(...)):
+        """Save a gig. Use the id "new" to create one. What was loaded to the pedal is kept as it was."""
+        gig = dict({k: v for k, v in gig.items() if k != "loaded"}, id=None if gig_id == "new" else gig_id)
+        if gig["id"]:
+            try:
+                gig["loaded"] = gigs.get(gig_id).get("loaded")
+            except OSError:
+                pass
+        saved = gigs.save(gig)
+        hub.emit({"type": "gigs", "gigs": gigs.list(), "active": state.get("active_gig")})
+        return saved
+
+    @app.delete("/api/setlists/{gig_id}", tags=["gigs"])
+    async def delete_setlist(gig_id: str):
+        _gig_or_404(gig_id)
+        gigs.delete(gig_id)
+        if state.get("active_gig") == gig_id:
+            state["active_gig"] = None
+        hub.emit({"type": "gigs", "gigs": gigs.list(), "active": state.get("active_gig")})
+        return {"deleted": gig_id}
+
+    @app.post("/api/setlists/{gig_id}/plan", tags=["gigs"])
+    async def plan_setlist(gig_id: str):
+        """Where each song would go and what it would replace. Writes nothing."""
+        gig = _gig_or_404(gig_id)
+        return await run("planning %s" % gig.get("name", "the gig"), lambda p: service.plan_gig(p, gig))
+
+    @app.post("/api/setlists/{gig_id}/load", tags=["gigs"])
+    async def load_setlist(gig_id: str):
+        """Back up every slot, write the gig, and make it the one the stage view follows."""
+        gig = _gig_or_404(gig_id)
+        result = await run("loading %s" % gig.get("name", "the gig"), lambda p: service.load_gig(p, gig),
+                           touches=lambda r: [s["slot"] for s in r["written"]])
+        gig["loaded"] = {"time": time.time(), "backup": result["backup"],
+                         "slots": [{"song": s["song"], "slot": s["slot"], "patch": s["patch"]} for s in result["written"]]}
+        gigs.save(gig)
+        state["active_gig"] = gig_id
+        hub.emit({"type": "gigs", "gigs": gigs.list(), "active": gig_id})
+        return result
+
+    def _gig_or_404(gig_id):
+        try:
+            return gigs.get(gig_id)
+        except OSError:
+            raise KeyError("no saved gig %r" % gig_id)
+
     # --- tuner ---
 
     @app.post("/api/tuner", tags=["tuner"])
@@ -542,6 +607,7 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None):
                 await ws.send_json({"type": "patches", "patches": [{"slot": n, "name": name}
                                                                    for n, name in sorted(worker.names.items())]})
             await ws.send_json(dict(history.summary(), type="history"))
+            await ws.send_json({"type": "gigs", "gigs": gigs.list(), "active": state.get("active_gig")})
             while True:
                 await ws.send_json(await q.get())
 
@@ -561,11 +627,11 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None):
     return app
 
 
-def start_in_thread(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None):
+def start_in_thread(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, gigs_folder=None):
     """Run the daemon on a background thread (for the desktop window and tests).
     Returns (url, stop) once it is serving."""
-    server = uvicorn.Server(uvicorn.Config(create_app(make_pedal, port, announce, history_file), host="127.0.0.1",
-                                           port=port, log_level="warning"))
+    app = create_app(make_pedal, port, announce, history_file, gigs_folder)
+    server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning"))
     thread = threading.Thread(target=server.run, name="g3xn-daemon", daemon=True)
     thread.start()
     while not server.started:
@@ -626,8 +692,9 @@ def main(argv=None):
     add_pedal_options(ap)
     args = ap.parse_args(argv)
 
-    app = create_app(pedal_factory(args), args.port, announce=args.sim is None,
-                     history_file=None if args.sim is not None else HISTORY_FILE)
+    real = args.sim is None
+    app = create_app(pedal_factory(args), args.port, announce=real, history_file=HISTORY_FILE if real else None,
+                     gigs_folder=GIGS_FOLDER if real else None)
     print("g3xn daemon on http://127.0.0.1:%d (API docs at /docs)%s" % (args.port, "" if os.path.isdir(UI_DIR) else
           "; build the app with: cd app && npm install && npm run build"))
     uvicorn.run(app, host="127.0.0.1", port=args.port, log_level="warning")

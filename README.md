@@ -82,6 +82,8 @@ The agent's playbook (how to research, translate "too muddy" into knob moves, st
 
 The app shows the tone playing now as a pedalboard: each effect is a stompbox coloured by its type, with the knobs the pedal has and the values its screen shows. Drag a knob up or down (or scroll on it, or use the arrow keys) and you hear it straight away; click a footswitch to turn an effect on or off. Your own patches are never edited in place: **Tweak a copy** puts one on the scratch slot, and **Keep it in a slot** saves it, refusing to replace a patch unless you tick the box that names it. **Patches** lists all 150 slots in their banks of three, and **Tuner** is the pedal's tuner, big.
 
+Add, swap and reorder effects by dragging; **A** and **B** keep two versions to flip between (or morph across); every change is in the history, so undo goes back as far as you like. **Gigs** holds your setlists: pick a patch, tempo, key and notes for each song, see exactly which slots it will use and what it would replace, and load it (the whole pedal is backed up first). **Stage** then shows the song you're on in letters you can read standing up, and follows the pedal as you stomp through the set.
+
 ```bash
 pip install -e ".[app]"
 cd app && npm install && npm run build && cd ..   # once, and after pulling UI changes
@@ -207,7 +209,7 @@ Patch format notes live at the top of [`g3xn/patch.py`](g3xn/patch.py).
 ## Roadmap
 
 - ~~**Agent plugin**~~: done (see *Use it with Claude*)
-- **Desktop app**: started (tone editor, patch library, tuner, the daemon). Next: gigs and stage view, built-in Claude chat, phone remote, MIDI controllers. Plan: [`docs/APP_PLAN.md`](docs/APP_PLAN.md)
+- **Desktop app**: started (tone editor with A/B, history and macros, patch library, gigs and stage view, tuner). Next: gig tools, phone remote, MIDI footswitches, built-in Claude chat. Plan: [`docs/APP_PLAN.md`](docs/APP_PLAN.md)
 
 ## Credits
 

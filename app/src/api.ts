@@ -75,6 +75,41 @@ export interface HistorySummary {
   entries: HistoryEntry[];
 }
 
+export interface GigEntry {
+  song: string;
+  tone?: Tone;
+  from_slot?: number;
+  slot?: number;
+  notes?: string;
+  tempo?: number;
+  key?: string;
+}
+
+export interface Gig {
+  id?: string;
+  name: string;
+  start_slot: number;
+  patches: GigEntry[];
+  loaded?: { time: number; backup: string; slots: { song: string; slot: number; patch: string }[] };
+}
+
+export interface GigSummary {
+  id: string;
+  name: string;
+  songs: number;
+  start_slot: number;
+  loaded?: Gig["loaded"];
+}
+
+export interface PlanStep {
+  order: number;
+  song: string;
+  slot: number;
+  patch: string;
+  replaces: string;
+  overwrites_real_patch: boolean;
+}
+
 export type PedalEvent =
   | ({ type: "status" } & Status)
   | { type: "patches"; patches: PatchName[] }
@@ -82,7 +117,8 @@ export type PedalEvent =
   | { type: "current"; slot: number; name: string | null }
   | { type: "live"; tone: Tone }
   | { type: "tuner"; note: string | null; meter: number }
-  | ({ type: "history" } & HistorySummary);
+  | ({ type: "history" } & HistorySummary)
+  | { type: "gigs"; gigs: GigSummary[]; active: string | null };
 
 export interface TweakChange {
   effect: number; // 1-based chain number
@@ -116,6 +152,13 @@ export const api = {
   redo: () => call<Tone>("POST", "/api/redo"),
   goTo: (entryId: number) => call<Tone>("POST", `/api/history/${entryId}/play`),
   effects: () => call<{ effects: EffectSummary[] }>("GET", "/api/effects"),
+  gig: (id: string) => call<Gig>("GET", `/api/setlists/${id}`),
+  saveGig: (gig: Gig) => call<Gig>("PUT", `/api/setlists/${gig.id ?? "new"}`, gig),
+  deleteGig: (id: string) => call<{ deleted: string }>("DELETE", `/api/setlists/${id}`),
+  planGig: (id: string) => call<{ plan: PlanStep[] }>("POST", `/api/setlists/${id}/plan`),
+  loadGig: (id: string) => call<{ written: PlanStep[]; backup: string }>("POST", `/api/setlists/${id}/load`),
+  exportGig: (first: number, last: number, name: string) =>
+    call<Gig>("GET", `/api/gigs/export?first_slot=${first}&last_slot=${last}&name=${encodeURIComponent(name)}`),
   tweak: (req: { changes?: TweakChange[]; volume?: number; name?: string }) => call<Tone>("POST", "/api/tweak", req),
   save: (slot: number, name: string | undefined, replace: boolean) =>
     call<{ saved: string; slot: number }>("POST", `/api/patches/${slot}/save`, { name, replace }),

@@ -41,7 +41,9 @@ class VirtualPedal:
         self.slots = {n: empty for n in range(1, PATCH_COUNT + 1)}
         for n, p in (patches or {}).items():
             self.slots[n] = p.encode() if isinstance(p, Patch) else bytes(p)
-        self.state_file = os.path.join(tempfile.mkdtemp(prefix="g3xn-sim-"), "state.json")
+        home = tempfile.mkdtemp(prefix="g3xn-sim-")
+        self.state_file = os.path.join(home, "state.json")
+        self.backup_root = os.path.join(home, "backups")      # never mixed with real backups
         self.autosave = True
         self.tempo = 120
         self.tuner_on = False

@@ -2,7 +2,10 @@
 
 Status: building. Done so far:
 - Stage 1: `g3xn.sim` (virtual pedal), `g3xn/service.py`, the daemon (`g3xn-daemon`), MCP through the daemon.
-- Stage 2, first cut: the app (`g3xn-app`) with the tone view (stompboxes, live knobs, footswitches, keep in a slot), the patch library (banks of three, tweak a copy, switch to it) and the tuner. Not yet: adding/removing/reordering effects, A/B, history, backups and import/export from the app.
+- Stage 2, first cut: the app (`g3xn-app`) with the tone view (stompboxes, live knobs, footswitches, keep in a slot), the patch library (banks of three, tweak a copy, switch to it) and the tuner.
+- Tone: chain editing (add, swap, reorder, remove), A/B with morph, undo/redo and a history of every version, macro knobs (Gain, Brightness, Space).
+- Gigs: saved setlists (song, patch, tempo, key, notes), a slot plan that names every patch it would replace, load with a backup first, and the stage view (follows the pedal; arrows, space and page-turner pedals step through the set).
+- Next: gig tools (batch edits, gig lock, panic restore), phone remote, MIDI footswitches, Claude in the app.
 
 The app is a full replacement for ToneLib / Guitar Lab, built on the `g3xn` library, with Claude built in. Everything the app does goes through the same library the agent uses, so a change made by hand, by voice, or from the phone shows up everywhere.
 

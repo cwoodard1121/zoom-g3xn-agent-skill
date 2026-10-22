@@ -2,7 +2,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { api, ApiError, subscribe } from "./api";
-import type { HistorySummary, PedalEvent, Status, Tone } from "./api";
+import type { GigSummary, HistorySummary, PedalEvent, Status, Tone } from "./api";
 
 interface State {
   linked: boolean; // WebSocket to the daemon is open
@@ -11,6 +11,7 @@ interface State {
   live: Tone | null;
   tuner: { note: string | null; meter: number } | null;
   history: HistorySummary;
+  gigs: { list: GigSummary[]; active: string | null };
 }
 
 type Action = PedalEvent | { type: "linked"; open: boolean } | { type: "live-read"; tone: Tone | null };
@@ -36,6 +37,8 @@ function reduce(s: State, a: Action): State {
       return { ...s, tuner: { note: a.note, meter: a.meter } };
     case "history":
       return { ...s, history: { position: a.position, entries: a.entries } };
+    case "gigs":
+      return { ...s, gigs: { list: a.gigs, active: a.active } };
   }
 }
 
@@ -60,6 +63,7 @@ const PedalContext = createContext<Pedal | null>(null);
 export function PedalProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reduce, {
     linked: false, status: null, names: {}, live: null, tuner: null, history: { position: -1, entries: [] },
+    gigs: { list: [], active: null },
   });
   const [toasts, setToasts] = useState<Toast[]>([]);
   const nextToast = useRef(1);
