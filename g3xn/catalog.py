@@ -10,7 +10,11 @@ import re
 
 DATA = os.path.join(os.path.dirname(__file__), "data", "effects.json")
 
-DSP_BUDGET = 250.0   # dsp units; 250 = 100% of the pedal (factory patches peak at 231)
+# DSP units as stored in each .ZD2. ToneLib's "DSP %" is this / 2.5, so 250 = 100%.
+# Inferred, not observed: no patch has been seen rejected. Factory patches peak at
+# 231 (92%), so anything up to that is known to work.
+DSP_BUDGET = 250.0
+DSP_PROVEN = 231.3
 MAX_POSITIONS = 7    # chain positions; two-screen effects take two
 
 
@@ -22,6 +26,27 @@ class Param:
         self.default = d["default"]
         self.explanation = d.get("explanation", "")
         self.pedal = d.get("pedal", False)
+        self.display = d.get("display")   # {"offset": n} or {"options": [...]}, if known
+
+    def shown(self, raw):
+        """The pedal's screen text for a stored value ('' if the mapping is unknown)."""
+        if not self.display:
+            return ""
+        if "options" in self.display:
+            opts = self.display["options"]
+            return opts[raw] if 0 <= raw < len(opts) else ""
+        return "%g" % (raw + self.display["offset"])
+
+    def from_shown(self, text):
+        """Stored value for a screen value (e.g. what a forum post quotes)."""
+        text = str(text).strip()
+        if self.display and "options" in self.display:
+            for i, o in enumerate(self.display["options"]):
+                if o.lower() == text.lower():
+                    return i
+            raise ValueError("%s shows one of %s" % (self.name, ", ".join(self.display["options"])))
+        offset = self.display["offset"] if self.display else 0
+        return self.check(int(round(float(text) - offset)))
 
     def check(self, value):
         if not isinstance(value, int) or not 0 <= value <= self.max:
@@ -62,7 +87,8 @@ class Effect:
             "positions": self.positions,
             "dsp_percent": self.dsp_percent,
             "description": self.description,
-            "params": [{"name": p.name, "max": p.max, "default": p.default, "explanation": p.explanation}
+            "params": [dict({"name": p.name, "max": p.max, "default": p.default, "explanation": p.explanation},
+                            **({"shown_as": p.display} if p.display else {}))
                        for p in self.params],
         }
 

@@ -172,6 +172,7 @@ class Pedal:
         self._claim_scratch()
         if self.current() == self.scratch:
             self.select(self.scratch - 1 if self.scratch > 1 else self.scratch + 1)
+        self._remember_scratch(patch.name)
         self.write(self.scratch, patch)
         self.select(self.scratch)
 
@@ -232,12 +233,17 @@ class Pedal:
     def set_name(self, name):
         for i, ch in enumerate(name[:10].ljust(10)):
             self._live(P.TARGET_NAME, i, ord(ch))
+        self._remember_scratch(name[:10].rstrip())
 
     def _live(self, target, param, value):
         if self.current() != self.scratch:
             raise PedalError("live edits only run on the scratch slot (%d); audition a patch first" % self.scratch)
         self._send(P.msg(P.EDIT, P.EDIT_PARAM, 0, target, param, P.u35(value)))
-        time.sleep(0.015)
+        if target == P.TARGET_SETTINGS:
+            # settings apply ~0.4 s later; the pedal confirms with 64 03 01 0A <param>
+            self._wait(P.msg(P.EDIT, P.EDIT_PARAM, 1, target, param), 1.0)
+        else:
+            time.sleep(0.015)
         self._drain()
 
     # --- tuner ---
@@ -267,7 +273,8 @@ class Pedal:
     def screen(self, position):
         """One display screen (one per chain position): six cells, each
         {"label", "text"}: on/off, effect name, then four knobs as shown."""
-        r = self._request(P.msg(P.EDIT, P.EDIT_SCREEN, position, position, 0))
+        r = self._request(P.msg(P.EDIT, P.EDIT_SCREEN, position, position, 0),
+                          expect=P.msg(P.EDIT, P.EDIT_SCREEN_REPLY, position))
         body = r[5:]
         cells = [{"label": "", "text": ""} for _ in range(6)]
         for i in range(0, len(body) - 13, 14):
@@ -339,14 +346,22 @@ class Pedal:
     def _request(self, data, expect=None):
         self._drain()
         self._send(data)
-        deadline = time.time() + self.timeout
+        reply = self._wait(expect, self.timeout)
+        if reply is None:
+            raise PedalError("no reply to %s" % " ".join("%02X" % b for b in data[3:10]))
+        return reply
+
+    def _wait(self, expect, timeout):
+        """The next SysEx starting with `expect` (any SysEx if None), or None.
+        The pedal also sends late confirmations of earlier edits; those are skipped."""
+        deadline = time.time() + timeout
         while time.time() < deadline:
             m = self.inport.poll()
             if m is None:
                 time.sleep(0.002)
             elif m.type == "sysex" and (expect is None or bytes(m.data).startswith(bytes(expect))):
                 return bytes(m.data)
-        raise PedalError("no reply to %s" % " ".join("%02X" % b for b in data[3:10]))
+        return None
 
     def _drain(self):
         for _ in self.inport.iter_pending():
@@ -357,14 +372,18 @@ class Pedal:
             raise PedalError("patch number must be 1..%d" % self.patch_count)
 
     def _claim_scratch(self):
+        """The scratch slot may be overwritten only if it is Empty or still holds
+        the last patch g3xn put there (so a tone saved into it by hand is safe)."""
         state = _load_state()
-        if state.get("scratch") == self.scratch:
-            return
         name = self.read(self.scratch).name
-        if name != "Empty":
-            raise PedalError("scratch slot %d holds %r. Pick an Empty slot with Pedal(scratch=N) "
-                             "or clear it first; it will be overwritten by auditions." % (self.scratch, name))
-        state["scratch"] = self.scratch
+        ours = state.get("scratch") == self.scratch and name == state.get("scratch_name")
+        if name != "Empty" and not ours:
+            raise PedalError("scratch slot %d holds %r, which g3xn did not put there. Pick an Empty slot with "
+                             "--scratch N / Pedal(scratch=N), or clear it first." % (self.scratch, name))
+
+    def _remember_scratch(self, name):
+        state = _load_state()
+        state.update(scratch=self.scratch, scratch_name=name)
         _save_state(state)
 
 

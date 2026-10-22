@@ -99,9 +99,30 @@ def observed_two_position(dump_dir):
     return two
 
 
+def display_rule(param_max, seen):
+    """From {raw: screen text} samples, a rule the library can apply offline:
+    {"offset": n} (shown = raw + n) or {"options": [...]} (shown = options[raw]).
+    Samples were read quickly, so blank/stale readings are ignored and only
+    rules that several clean readings agree on are kept."""
+    seen = {int(k): v for k, v in seen.items() if v}
+    nums = {k: float(v) for k, v in seen.items() if re.fullmatch(r"-?\d+(\.\d+)?", v)}
+    if nums:
+        offsets = {}
+        for k, v in nums.items():
+            offsets[round(v - k, 3)] = offsets.get(round(v - k, 3), 0) + 1
+        off, n = max(offsets.items(), key=lambda kv: kv[1])
+        if n >= 3 and n >= 0.7 * len(nums) and len(nums) >= 0.6 * len(seen):
+            return {"offset": int(off) if off == int(off) else off}
+    elif param_max <= 24 and len(seen) == param_max + 1:
+        return {"options": [seen[i] for i in range(param_max + 1)]}
+    return None
+
+
 def main():
     root = sys.argv[1]
     templates = json.load(open(os.path.join(root, "templates.json")))
+    display_path = os.path.join(root, "display.json")
+    display = json.load(open(display_path)) if os.path.exists(display_path) else {}
     seen_two = observed_two_position(os.path.join(root, "pedal_dump"))
 
     effects = {}
@@ -123,6 +144,10 @@ def main():
         if k in seen_two and e["slots"] != 2:
             raise ValueError("%s: template and backups disagree on positions" % e["name"])
         e["template"] = t["record"]
+        for p in e["params"]:
+            rule = display_rule(p["max"], display.get(k, {}).get(p["name"], {}))
+            if rule:
+                p["display"] = rule
 
     json.dump(effects, sys.stdout, indent=1)
 

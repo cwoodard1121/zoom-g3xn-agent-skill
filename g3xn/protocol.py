@@ -47,7 +47,8 @@ EDIT = 0x64
 EDIT_PARAM = 0x03
 EDIT_READ_BUFFER = 0x13
 EDIT_BUFFER_DUMP = 0x12
-EDIT_SCREEN = 0x02
+EDIT_SCREEN = 0x02        # request: 64 02 <first> <last> 00
+EDIT_SCREEN_REPLY = 0x01  # reply:   64 01 <screen> <param> <kind> 00 <text[10]> ...
 TUNER_ON = 0x0B
 TUNER_OFF = 0x0C
 

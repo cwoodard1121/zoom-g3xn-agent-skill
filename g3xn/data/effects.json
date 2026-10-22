@@ -20,14 +20,20 @@
     "max": 100,
     "default": 50,
     "explanation": "Adjusts the body resonance of acoustic guitars.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Tone",
     "max": 100,
     "default": 100,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
@@ -54,28 +60,43 @@
     "max": 99,
     "default": 19,
     "explanation": "Sets the size of the space.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "REF",
     "max": 10,
     "default": 5,
     "explanation": "Adjusts the amount of reflection from the wall.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
     "max": 100,
     "default": 60,
     "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Tail",
     "max": 1,
     "default": 0,
     "explanation": "When ON, effect sound continues even after effect is turned off. When OFF, effect sound stops right when effect is turned off.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "OFF",
+      "ON"
+     ]
+    }
    }
   ],
   "slots": 1,
@@ -95,7 +116,10 @@
     "max": 200,
     "default": 29,
     "explanation": "Adjusts the delay between input of the original sound and start of the reverb sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Decay",
@@ -116,7 +140,13 @@
     "max": 1,
     "default": 0,
     "explanation": "When ON, effect sound continues even after effect is turned off. The dry sound also continues to have the same tone as when the effect was on. When OFF, effect sound stops right when effect is turned off.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "OFF",
+      "ON"
+     ]
+    }
    }
   ],
   "slots": 1,
@@ -136,28 +166,40 @@
     "max": 100,
     "default": 52,
     "explanation": "Sets the depth of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Rate",
     "max": 100,
     "default": 54,
     "explanation": "Sets modulation speed.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Tone",
     "max": 100,
     "default": 49,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
     "max": 100,
     "default": 82,
     "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -177,21 +219,30 @@
     "max": 4022,
     "default": 359,
     "explanation": "Sets the delay time.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "F.B",
     "max": 100,
     "default": 28,
     "explanation": "Adjusts the feedback amount.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
     "max": 100,
     "default": 40,
     "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Tail",
@@ -218,14 +269,20 @@
     "max": 2014,
     "default": 222,
     "explanation": "Sets the delay time.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "F.B",
     "max": 100,
     "default": 87,
     "explanation": "Adjusts the feedback amount.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
@@ -246,7 +303,10 @@
     "max": 52,
     "default": 26,
     "explanation": "Sets the speed of the sound movement.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": -2
+    }
    },
    {
     "name": "Width",
@@ -260,14 +320,23 @@
     "max": 10,
     "default": 0,
     "explanation": "Adjusts the amount of waveform clipping.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "INPUT",
     "max": 1,
     "default": 0,
     "explanation": "Sets the foot switch function.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "LATCH",
+      "UnLATCH"
+     ]
+    }
    }
   ],
   "slots": 2,
@@ -287,7 +356,10 @@
     "max": 78,
     "default": 5,
     "explanation": "Sets the speed of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Width",
@@ -301,7 +373,10 @@
     "max": 10,
     "default": 0,
     "explanation": "Adjusts the amount of waveform clipping. Higher values emphasize the auto-panning effect more.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
@@ -335,14 +410,20 @@
     "max": 9,
     "default": 7,
     "explanation": "Adjusts the sensitivity of the effect.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "RESO",
     "max": 10,
     "default": 8,
     "explanation": "Sets effect resonance.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
@@ -383,7 +464,10 @@
     "max": 50,
     "default": 50,
     "explanation": "Sets time before effect starts.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "BAL",
@@ -417,21 +501,30 @@
     "max": 100,
     "default": 50,
     "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Hi",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Lo",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -458,14 +551,20 @@
     "max": 100,
     "default": 56,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "MdCut",
     "max": 100,
     "default": 46,
     "explanation": "Adjusts volume of middle frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
@@ -499,7 +598,10 @@
     "max": 100,
     "default": 50,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "BAL",
@@ -533,28 +635,40 @@
     "max": 100,
     "default": 49,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "MID",
     "max": 100,
     "default": 55,
     "explanation": "Adjusts volume of middle frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Treble",
     "max": 100,
     "default": 53,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "PRSNC",
     "max": 100,
     "default": 55,
     "explanation": "Adjusts volume of super-high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Gain1",
@@ -575,14 +689,20 @@
     "max": 100,
     "default": 58,
     "explanation": "Adjusts the volume.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "SOLO",
     "max": 8,
     "default": 2,
     "explanation": "Sets the volume when the control switch is on.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    }
   ],
   "slots": 2,
@@ -602,28 +722,40 @@
     "max": 100,
     "default": 52,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "MID",
     "max": 100,
     "default": 85,
     "explanation": "Adjusts volume of middle frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Treble",
     "max": 100,
     "default": 40,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "PRSNC",
     "max": 100,
     "default": 40,
     "explanation": "Adjusts volume of super-high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Gain1",
@@ -644,14 +776,20 @@
     "max": 100,
     "default": 78,
     "explanation": "Adjusts the volume.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "SOLO",
     "max": 8,
     "default": 2,
     "explanation": "Sets the volume when the control switch is on.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    }
   ],
   "slots": 2,
@@ -678,14 +816,20 @@
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Hi",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
@@ -712,14 +856,20 @@
     "max": 100,
     "default": 50,
     "explanation": "Adjusts the emphasized frequency.",
-    "pedal": true
+    "pedal": true,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Range",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts the frequency range processed by the effect.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Dry",
@@ -753,7 +903,10 @@
     "max": 99,
     "default": 49,
     "explanation": "Adjusts the length of the explosive sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "Tone",
@@ -774,7 +927,13 @@
     "max": 1,
     "default": 1,
     "explanation": "Sets the foot switch function.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "LATCH",
+      "TRGGR"
+     ]
+    }
    }
   ],
   "slots": 1,
@@ -794,14 +953,20 @@
     "max": 200,
     "default": 24,
     "explanation": "Adjusts the delay between input of the original sound and start of the reverb sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Decay",
     "max": 100,
     "default": 50,
     "explanation": "Sets the duration of the reverberations.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
@@ -835,21 +1000,30 @@
     "max": 100,
     "default": 40,
     "explanation": "Sets the depth of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Rate",
     "max": 49,
     "default": 24,
     "explanation": "Sets the speed of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "Tone",
     "max": 10,
     "default": 7,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
@@ -876,14 +1050,20 @@
     "max": 100,
     "default": 50,
     "explanation": "Adjusts the emphasized frequency.",
-    "pedal": true
+    "pedal": true,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Range",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts the frequency range processed by the effect.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Dry",
@@ -917,14 +1097,20 @@
     "max": 200,
     "default": 96,
     "explanation": "Adjusts the delay between input of the original sound and start of the reverb sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Decay",
     "max": 100,
     "default": 49,
     "explanation": "Sets the duration of the reverberations.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
@@ -938,7 +1124,13 @@
     "max": 1,
     "default": 0,
     "explanation": "When ON, effect sound continues even after effect is turned off. The dry sound also continues to have the same tone as when the effect was on. When OFF, effect sound stops right when effect is turned off.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "OFF",
+      "ON"
+     ]
+    }
    }
   ],
   "slots": 1,
@@ -965,14 +1157,20 @@
     "max": 100,
     "default": 23,
     "explanation": "Sets the speed of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Tone",
     "max": 100,
     "default": 100,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
@@ -1013,7 +1211,10 @@
     "max": 10,
     "default": 6,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
@@ -1040,28 +1241,40 @@
     "max": 100,
     "default": 100,
     "explanation": "Sets the depth of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Speed",
     "max": 100,
     "default": 25,
     "explanation": "Sets the speed of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Tone",
     "max": 100,
     "default": 100,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
     "max": 100,
     "default": 100,
     "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -1088,7 +1301,10 @@
     "max": 10,
     "default": 8,
     "explanation": "Sets effect resonance.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Sense",
@@ -1102,7 +1318,10 @@
     "max": 100,
     "default": 100,
     "explanation": "Adjusts the balance between original and effect sounds.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -1122,28 +1341,43 @@
     "max": 4022,
     "default": 559,
     "explanation": "Sets the delay time.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "F.B",
     "max": 100,
     "default": 30,
     "explanation": "Adjusts the feedback amount.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
     "max": 100,
     "default": 70,
     "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Tail",
     "max": 1,
     "default": 0,
     "explanation": "When ON, effect sound continues even after effect is turned off. When OFF, effect sound stops right when effect is turned off.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "OFF",
+      "ON"
+     ]
+    }
    }
   ],
   "slots": 1,
@@ -1163,7 +1397,10 @@
     "max": 50,
     "default": 35,
     "explanation": "Adjusts the detuning in cents, which are fine increments of 1/100-semitone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": -25
+    }
    },
    {
     "name": "PreD",
@@ -1177,7 +1414,10 @@
     "max": 10,
     "default": 8,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
@@ -1204,21 +1444,30 @@
     "max": 100,
     "default": 70,
     "explanation": "Adjusts the gain.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
     "max": 100,
     "default": 100,
     "explanation": "Adjusts the volume.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "DryMx",
     "max": 100,
     "default": 0,
     "explanation": "Adjusts the volume of the unaffected sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Comp",
@@ -1245,21 +1494,30 @@
     "max": 100,
     "default": 61,
     "explanation": "Adjusts the gain.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Tone",
     "max": 100,
     "default": 41,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
     "max": 100,
     "default": 100,
     "explanation": "Adjusts the volume. ",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Comp",
@@ -1286,42 +1544,60 @@
     "max": 2005,
     "default": 500,
     "explanation": "Adjusts the delay time of Delay A.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "F.B A",
     "max": 110,
     "default": 50,
     "explanation": "Adjusts the Delay A feedback amount.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "TimeB",
     "max": 2005,
     "default": 375,
     "explanation": "Adjusts the delay time of Delay B.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "F.B B",
     "max": 110,
     "default": 50,
     "explanation": "Adjusts the Delay B feedback amount.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "DlyMx",
     "max": 100,
     "default": 25,
     "explanation": "Adjust the mix of the Delay A and B effect sounds.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "BAL",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts the balance between original and effect sounds.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Depth",
@@ -1335,7 +1611,10 @@
     "max": 50,
     "default": 25,
     "explanation": "Sets the speed of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 2,
@@ -1362,7 +1641,10 @@
     "max": 77,
     "default": 5,
     "explanation": "Sets the speed of LFO A modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "ResoA",
@@ -1390,7 +1672,10 @@
     "max": 51,
     "default": 46,
     "explanation": "Sets the speed of LFO B modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "RESO B",
@@ -1404,7 +1689,10 @@
     "max": 100,
     "default": 80,
     "explanation": "Adjusts the volume.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 2,
@@ -1431,7 +1719,10 @@
     "max": 100,
     "default": 67,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mode",
@@ -1472,21 +1763,30 @@
     "max": 100,
     "default": 50,
     "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Hi",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Lo",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -1506,35 +1806,50 @@
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "MID",
     "max": 100,
     "default": 70,
     "explanation": "Adjusts volume of middle frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Treble",
     "max": 100,
     "default": 60,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "PRSNC",
     "max": 100,
     "default": 40,
     "explanation": "Adjusts volume of super-high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Gain",
     "max": 100,
     "default": 60,
     "explanation": "Adjusts the gain.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
@@ -1548,14 +1863,20 @@
     "max": 100,
     "default": 0,
     "explanation": "Emphasizes low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "MID CUT",
     "max": 100,
     "default": 0,
     "explanation": "Cuts middle frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 2,
@@ -1575,28 +1896,40 @@
     "max": 29,
     "default": 14,
     "explanation": "Adjusts the duration of the reverb.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "Shape",
     "max": 20,
     "default": 20,
     "explanation": "Adjusts the effect envelope.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": -10
+    }
    },
    {
     "name": "Tone",
     "max": 10,
     "default": 6,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -1616,14 +1949,20 @@
     "max": 100,
     "default": 100,
     "explanation": "Sets the frequency when the control switch is off.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "FREQ2",
     "max": 100,
     "default": 16,
     "explanation": "Sets the frequency when the control switch is on.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "RESO",
@@ -1644,7 +1983,10 @@
     "max": 100,
     "default": 25,
     "explanation": "Sets the speed of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "BAL",
@@ -1665,7 +2007,14 @@
     "max": 2,
     "default": 2,
     "explanation": "Sets the control switch function.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "LATCH",
+      "UnLATCH",
+      "UnLATCH"
+     ]
+    }
    }
   ],
   "slots": 2,
@@ -1692,14 +2041,20 @@
     "max": 20,
     "default": 10,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": -10
+    }
    },
    {
     "name": "Treble",
     "max": 20,
     "default": 8,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": -10
+    }
    },
    {
     "name": "VOL",
@@ -1726,28 +2081,43 @@
     "max": 100,
     "default": 0,
     "explanation": "Adjusts the amount of low-frequency phase correction.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Treble",
     "max": 100,
     "default": 0,
     "explanation": "Adjusts the amount of high-frequency phase correction.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
     "max": 100,
     "default": 80,
     "explanation": "Adjusts the volume.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "ON/OFF",
     "max": 1,
     "default": 0,
     "explanation": "Sets the foot switch function.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "LATCH",
+      "UnLATCH"
+     ]
+    }
    }
   ],
   "slots": 1,
@@ -1774,21 +2144,30 @@
     "max": 100,
     "default": 50,
     "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Hi",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Lo",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -1815,21 +2194,30 @@
     "max": 100,
     "default": 50,
     "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Hi",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Lo",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -1856,21 +2244,30 @@
     "max": 100,
     "default": 50,
     "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Hi",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Lo",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -1897,21 +2294,30 @@
     "max": 100,
     "default": 50,
     "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Hi",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Lo",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -1938,14 +2344,20 @@
     "max": 100,
     "default": 100,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Hi",
     "max": 100,
     "default": 100,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
@@ -1979,28 +2391,40 @@
     "max": 110,
     "default": 30,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 10
+    }
    },
    {
     "name": "MID",
     "max": 110,
     "default": 90,
     "explanation": "Adjusts volume of middle frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 10
+    }
    },
    {
     "name": "Treble",
     "max": 110,
     "default": 40,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 10
+    }
    },
    {
     "name": "PRSNC",
     "max": 110,
     "default": 50,
     "explanation": "Adjusts volume of super-high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 10
+    }
    },
    {
     "name": "Gain",
@@ -2021,7 +2445,10 @@
     "max": 8,
     "default": 2,
     "explanation": "Sets the volume when the control switch is on.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    }
   ],
   "slots": 2,
@@ -2048,21 +2475,30 @@
     "max": 90,
     "default": 33,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 10
+    }
    },
    {
     "name": "Treble",
     "max": 90,
     "default": 55,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 10
+    }
    },
    {
     "name": "Gain",
     "max": 90,
     "default": 50,
     "explanation": "Adjusts the gain.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 10
+    }
    },
    {
     "name": "VOL",
@@ -2076,21 +2512,30 @@
     "max": 90,
     "default": 80,
     "explanation": "Sets the depth of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 10
+    }
    },
    {
     "name": "SPEED",
     "max": 100,
     "default": 40,
     "explanation": "Sets the speed of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 10
+    }
    },
    {
     "name": "TRM VOL",
     "max": 9,
     "default": 0,
     "explanation": "Sets the volume when the tremolo is on.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 2,
@@ -2110,56 +2555,83 @@
     "max": 90,
     "default": 40,
     "explanation": "Adjusts the gain.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 10
+    }
    },
    {
     "name": "Bass",
     "max": 90,
     "default": 60,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 10
+    }
    },
    {
     "name": "MID",
     "max": 90,
     "default": 60,
     "explanation": "Adjusts volume of middle frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 10
+    }
    },
    {
     "name": "Treble",
     "max": 90,
     "default": 60,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 10
+    }
    },
    {
     "name": "Fat",
     "max": 1,
     "default": 1,
     "explanation": "Sets the sound style.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "OFF",
+      "ON"
+     ]
+    }
    },
    {
     "name": "VOL",
     "max": 90,
     "default": 40,
     "explanation": "Adjusts the volume.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 10
+    }
    },
    {
     "name": "TONE",
     "max": 100,
     "default": 50,
     "explanation": "Sets the tone when the control switch is on.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "SOLO",
     "max": 8,
     "default": 2,
     "explanation": "Sets the volume when the control switch is on.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    }
   ],
   "slots": 2,
@@ -2179,21 +2651,30 @@
     "max": 90,
     "default": 38,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 10
+    }
    },
    {
     "name": "MID",
     "max": 90,
     "default": 40,
     "explanation": "Adjusts volume of middle frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 10
+    }
    },
    {
     "name": "Treble",
     "max": 90,
     "default": 35,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 10
+    }
    },
    {
     "name": "BRGHT",
@@ -2221,14 +2702,20 @@
     "max": 90,
     "default": 40,
     "explanation": "Sets the depth of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 10
+    }
    },
    {
     "name": "SPEED",
     "max": 100,
     "default": 40,
     "explanation": "Sets the speed of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 10
+    }
    }
   ],
   "slots": 2,
@@ -2248,28 +2735,43 @@
     "max": 2014,
     "default": 499,
     "explanation": "Sets the delay time.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "F.B",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts the feedback amount.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
     "max": 100,
     "default": 90,
     "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Tail",
     "max": 1,
     "default": 0,
     "explanation": "When ON, effect sound continues even after effect is turned off. When OFF, effect sound stops right when effect is turned off.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "OFF",
+      "ON"
+     ]
+    }
    }
   ],
   "slots": 1,
@@ -2289,7 +2791,10 @@
     "max": 4,
     "default": 0,
     "explanation": "Sets the sound color.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "Decay",
@@ -2303,14 +2808,20 @@
     "max": 100,
     "default": 50,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "BAL",
     "max": 100,
     "default": 60,
     "explanation": "Adjusts the balance between original and effect sounds.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -2337,14 +2848,20 @@
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Treble",
     "max": 100,
     "default": 56,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
@@ -2378,14 +2895,20 @@
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Hi",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
@@ -2550,14 +3073,20 @@
     "max": 99,
     "default": 48,
     "explanation": "Adjusts the delay between input of the original sound and start of the reverb sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "Decay",
     "max": 29,
     "default": 9,
     "explanation": "Sets the duration of the reverberations.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "Mix",
@@ -2571,7 +3100,13 @@
     "max": 1,
     "default": 0,
     "explanation": "When ON, effect sound continues even after effect is turned off. When OFF, effect sound stops right when effect is turned off.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "OFF",
+      "ON"
+     ]
+    }
    }
   ],
   "slots": 1,
@@ -2591,7 +3126,10 @@
     "max": 199,
     "default": 80,
     "explanation": "Adjusts the delay between input of the original sound and start of the reverb sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "Decay",
@@ -2632,35 +3170,50 @@
     "max": 4022,
     "default": 559,
     "explanation": "Sets the delay time.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "F.B",
     "max": 100,
     "default": 30,
     "explanation": "Adjusts the feedback amount.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "HiDMP",
     "max": 10,
     "default": 10,
     "explanation": "Adjusts the treble attenuation of the delay sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Tone",
     "max": 100,
     "default": 100,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
     "max": 100,
     "default": 70,
     "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "P-P",
@@ -2681,7 +3234,13 @@
     "max": 1,
     "default": 0,
     "explanation": "Sets the control switch function.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "LATCH",
+      "UnLATCH"
+     ]
+    }
    }
   ],
   "slots": 2,
@@ -2701,7 +3260,10 @@
     "max": 199,
     "default": 8,
     "explanation": "Adjusts the delay between input of the original sound and start of the reverb sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "Decay",
@@ -2729,14 +3291,20 @@
     "max": 100,
     "default": 58,
     "explanation": "Adjusts the reverb time of the low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "LoDMP",
     "max": 100,
     "default": 97,
     "explanation": "Adjusts low frequency damping in reverb sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "HiDMP",
@@ -2750,7 +3318,13 @@
     "max": 1,
     "default": 0,
     "explanation": "Sets the control switch function.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "LATCH",
+      "UnLATCH"
+     ]
+    }
    }
   ],
   "slots": 2,
@@ -2777,21 +3351,30 @@
     "max": 100,
     "default": 57,
     "explanation": "Adjust the buzzing tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "+1oct",
     "max": 100,
     "default": 36,
     "explanation": "Adjust the volume of one octave up.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
     "max": 100,
     "default": 80,
     "explanation": "Adjusts the volume.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -2818,21 +3401,43 @@
     "max": 11,
     "default": 0,
     "explanation": "Sets the tonic (root) of the scale used for pitch shifting.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "C ",
+      "C#",
+      "D ",
+      "D#",
+      "E ",
+      "F ",
+      "F#",
+      "G ",
+      "G#",
+      "A ",
+      "A#",
+      "B "
+     ]
+    }
    },
    {
     "name": "Tone",
     "max": 10,
     "default": 6,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
     "max": 100,
     "default": 70,
     "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -2859,7 +3464,10 @@
     "max": 100,
     "default": 40,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "MID",
@@ -2880,7 +3488,10 @@
     "max": 100,
     "default": 60,
     "explanation": "Adjusts volume of super-high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Gain",
@@ -2894,14 +3505,20 @@
     "max": 100,
     "default": 60,
     "explanation": "Adjusts the volume.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "SOLO",
     "max": 8,
     "default": 2,
     "explanation": "Sets the volume when the control switch is on.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 2,
@@ -2928,21 +3545,30 @@
     "max": 100,
     "default": 50,
     "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Hi",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Lo",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -2969,21 +3595,30 @@
     "max": 1255,
     "default": 1248,
     "explanation": "Sets the delay time.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 60
+    }
    },
    {
     "name": "F.B",
     "max": 100,
     "default": 46,
     "explanation": "Adjusts the feedback amount.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
     "max": 100,
     "default": 36,
     "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -3017,14 +3652,20 @@
     "max": 100,
     "default": 65,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "PRSNC",
     "max": 100,
     "default": 30,
     "explanation": "Adjusts volume of super-high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Input1",
@@ -3052,7 +3693,10 @@
     "max": 8,
     "default": 2,
     "explanation": "Sets the volume when the control switch is on.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    }
   ],
   "slots": 2,
@@ -3072,21 +3716,30 @@
     "max": 100,
     "default": 4,
     "explanation": "Sets pre-delay time of effect sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Depth",
     "max": 100,
     "default": 61,
     "explanation": "Sets the depth of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Rate",
     "max": 100,
     "default": 41,
     "explanation": "Sets the speed of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "ON/OFF",
@@ -3141,21 +3794,30 @@
     "max": 100,
     "default": 100,
     "explanation": "Sets the depth of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Rate",
     "max": 77,
     "default": 57,
     "explanation": "Sets the speed of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "RESO",
     "max": 10,
     "default": 8,
     "explanation": "Sets effect resonance.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Wave",
@@ -3196,7 +3858,10 @@
     "max": 60,
     "default": 10,
     "explanation": "This is a limiter that suppresses signal peaks above a certain reference level.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 10
+    }
    },
    {
     "name": "Output",
@@ -3223,28 +3888,43 @@
     "max": 4006,
     "default": 3992,
     "explanation": "Sets the loop time.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 10
+    }
    },
    {
     "name": "Duty",
     "max": 75,
     "default": 75,
     "explanation": "Sets the time that the sample-and-hold sound is produced.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 25
+    }
    },
    {
     "name": "BAL",
     "max": 100,
     "default": 100,
     "explanation": "Adjusts the balance between original and effect sounds.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "ON/OFF",
     "max": 1,
     "default": 1,
     "explanation": "Sets the foot switch function.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "LATCH",
+      "UnLATCH"
+     ]
+    }
    }
   ],
   "slots": 1,
@@ -3264,7 +3944,10 @@
     "max": 100,
     "default": 56,
     "explanation": "Sets minimum frequency of low pass filter.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Sense",
@@ -3285,7 +3968,10 @@
     "max": 100,
     "default": 100,
     "explanation": "Adjusts the balance between original and effect sounds.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -3312,21 +3998,30 @@
     "max": 100,
     "default": 50,
     "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Hi",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Lo",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -3367,14 +4062,20 @@
     "max": 101,
     "default": 0,
     "explanation": "Adjusts the gain of channel2.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": -1
+    }
    },
    {
     "name": "Tone2",
     "max": 5,
     "default": 1,
     "explanation": "Adjusts the tone of channel2.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Cut",
@@ -3395,7 +4096,10 @@
     "max": 8,
     "default": 2,
     "explanation": "Sets the volume when the control switch is on.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    }
   ],
   "slots": 2,
@@ -3422,21 +4126,30 @@
     "max": 100,
     "default": 50,
     "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Hi",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Lo",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -3463,21 +4176,30 @@
     "max": 100,
     "default": 50,
     "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Hi",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Lo",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -3497,14 +4219,20 @@
     "max": 2014,
     "default": 499,
     "explanation": "Sets the delay time.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "F.B",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts the feedback amount.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
@@ -3538,28 +4266,40 @@
     "max": 25,
     "default": 0,
     "explanation": "Adjusts the pitch shift amount in semitones. Selecting \"0\" gives a detuning effect.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": -12
+    }
    },
    {
     "name": "Fine",
     "max": 50,
     "default": 25,
     "explanation": "Allows fine adjustment of pitch shift amount in Cent (1/100 semitone) steps.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": -25
+    }
    },
    {
     "name": "Tone",
     "max": 10,
     "default": 6,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "BAL",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts the balance between original and effect sounds.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -3579,7 +4319,10 @@
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "MID",
@@ -3593,21 +4336,30 @@
     "max": 100,
     "default": 60,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "PRSNC",
     "max": 100,
     "default": 40,
     "explanation": "Adjusts volume of super-high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Input1",
     "max": 101,
     "default": 61,
     "explanation": "Adjusts the gain of the input1.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": -1
+    }
    },
    {
     "name": "Input2",
@@ -3628,7 +4380,10 @@
     "max": 8,
     "default": 2,
     "explanation": "Sets the volume when the control switch is on.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    }
   ],
   "slots": 2,
@@ -3655,21 +4410,30 @@
     "max": 100,
     "default": 50,
     "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Hi",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Lo",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -3696,21 +4460,30 @@
     "max": 100,
     "default": 50,
     "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Hi",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Lo",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -3737,21 +4510,30 @@
     "max": 100,
     "default": 50,
     "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Hi",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Lo",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -3792,14 +4574,20 @@
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "PRSNC",
     "max": 100,
     "default": 30,
     "explanation": "Adjusts volume of super-high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Gain",
@@ -3820,7 +4608,10 @@
     "max": 8,
     "default": 2,
     "explanation": "Sets the volume when the control switch is on.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    }
   ],
   "slots": 2,
@@ -3847,14 +4638,20 @@
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Treble",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
@@ -3881,21 +4678,33 @@
     "max": 100,
     "default": 13,
     "explanation": "Sets how smoothly the volume changes. As the parameter value increases, the change becomes smoother.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Speed",
     "max": 100,
     "default": 100,
     "explanation": "Adjust the recovery time from muting.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "INVRT",
     "max": 1,
     "default": 0,
     "explanation": "Sets the foot switch control direction.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "NORMAL",
+      "INVERT"
+     ]
+    }
    },
    {
     "name": "ON/OFF",
@@ -3963,28 +4772,43 @@
     "max": 1,
     "default": 1,
     "explanation": "Sets control signal detection level.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "GTRIN",
+      "EFXIN"
+     ]
+    }
    },
    {
     "name": "Depth",
     "max": 100,
     "default": 100,
     "explanation": "Sets the depth of noise reduction.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "THRSH",
     "max": 100,
     "default": 54,
     "explanation": "Adjusts the effect sensitivity.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Decay",
     "max": 100,
     "default": 0,
     "explanation": "Adjust the envelope release.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -4018,7 +4842,10 @@
     "max": 10,
     "default": 8,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Dry",
@@ -4059,7 +4886,10 @@
     "max": 100,
     "default": 50,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
@@ -4093,21 +4923,30 @@
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Hi",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
     "max": 100,
     "default": 60,
     "explanation": "Adjusts the volume.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -4134,7 +4973,10 @@
     "max": 5,
     "default": 3,
     "explanation": "Sets the tone of the effect type.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "Bass",
@@ -4148,21 +4990,30 @@
     "max": 100,
     "default": 60,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "PRSNC",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of super-high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Gain",
     "max": 100,
     "default": 53,
     "explanation": "Adjusts the gain.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
@@ -4203,21 +5054,30 @@
     "max": 100,
     "default": 50,
     "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Hi",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Lo",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -4237,28 +5097,40 @@
     "max": 100,
     "default": 0,
     "explanation": "Adjusts the delay time and feedback.",
-    "pedal": true
+    "pedal": true,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "T-Min",
     "max": 481,
     "default": 311,
     "explanation": "Adjusts the delay time when the pedal is at minimum position.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 19
+    }
    },
    {
     "name": "T-Max",
     "max": 481,
     "default": 81,
     "explanation": "Adjusts the delay time when the pedal is at maximum position.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 19
+    }
    },
    {
     "name": "Mix",
     "max": 100,
     "default": 80,
     "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -4278,28 +5150,40 @@
     "max": 9,
     "default": 4,
     "explanation": "Adjusts the frequency range processed by the effect.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "Boost",
     "max": 100,
     "default": 30,
     "explanation": "Adjusts the gain.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Tone",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
     "max": 100,
     "default": 80,
     "explanation": "Adjusts the volume.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -4394,7 +5278,10 @@
     "max": 100,
     "default": 60,
     "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Tail",
@@ -4421,28 +5308,40 @@
     "max": 50,
     "default": 2,
     "explanation": "Sets sampling rate.",
-    "pedal": true
+    "pedal": true,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Bit",
     "max": 13,
     "default": 5,
     "explanation": "Sets bit depth.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 4
+    }
    },
    {
     "name": "Tone",
     "max": 10,
     "default": 8,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "BAL",
     "max": 100,
     "default": 90,
     "explanation": "Adjusts the balance between original and effect sounds.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -4462,28 +5361,40 @@
     "max": 100,
     "default": 100,
     "explanation": "Adjusts the delay input level.",
-    "pedal": true
+    "pedal": true,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Time",
     "max": 4022,
     "default": 359,
     "explanation": "Sets the delay time.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "F.B",
     "max": 100,
     "default": 40,
     "explanation": "Adjusts the feedback amount.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
     "max": 100,
     "default": 100,
     "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -4510,14 +5421,20 @@
     "max": 100,
     "default": 74,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "PRSNC",
     "max": 100,
     "default": 48,
     "explanation": "Adjusts volume of super-high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
@@ -4544,14 +5461,20 @@
     "max": 100,
     "default": 50,
     "explanation": "This sets the emphasized frequency.",
-    "pedal": true
+    "pedal": true,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "RESO",
     "max": 20,
     "default": 18,
     "explanation": "Sets effect resonance.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": -10
+    }
    },
    {
     "name": "HiDMP",
@@ -4565,7 +5488,10 @@
     "max": 100,
     "default": 65,
     "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -4585,7 +5511,10 @@
     "max": 100,
     "default": 0,
     "explanation": "Sets the amount of pitch shift.",
-    "pedal": true
+    "pedal": true,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Color",
@@ -4599,7 +5528,10 @@
     "max": 10,
     "default": 10,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mode",
@@ -4626,21 +5558,30 @@
     "max": 49,
     "default": 11,
     "explanation": "Sets the speed of the modulation.",
-    "pedal": true
+    "pedal": true,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "Depth",
     "max": 100,
     "default": 100,
     "explanation": "Sets the depth of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "RESO",
     "max": 100,
     "default": 50,
     "explanation": "Sets effect resonance.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Color",
@@ -4667,7 +5608,10 @@
     "max": 100,
     "default": 0,
     "explanation": "Sets the amount of pitch shift.",
-    "pedal": true
+    "pedal": true,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Color",
@@ -4681,7 +5625,10 @@
     "max": 10,
     "default": 10,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mode",
@@ -4708,14 +5655,20 @@
     "max": 49,
     "default": 11,
     "explanation": "Adjusts the emphasized frequency.",
-    "pedal": true
+    "pedal": true,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "RESO",
     "max": 10,
     "default": 7,
     "explanation": "Sets effect resonance.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Dry",
@@ -4756,14 +5709,20 @@
     "max": 99,
     "default": 48,
     "explanation": "Adjusts the delay between input of the original sound and start of the reverb sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "Decay",
     "max": 29,
     "default": 14,
     "explanation": "Sets the duration of the reverberations.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "Mix",
@@ -4790,14 +5749,23 @@
     "max": 1,
     "default": 0,
     "explanation": "Sets the rotary mode.",
-    "pedal": true
+    "pedal": true,
+    "display": {
+     "options": [
+      "SLOW",
+      "FAST"
+     ]
+    }
    },
    {
     "name": "Drive",
     "max": 100,
     "default": 20,
     "explanation": "Adjusts the amount of amplification from the preamp.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "BAL",
@@ -4831,7 +5799,10 @@
     "max": 50,
     "default": 25,
     "explanation": "Sets the speed of the modulation.",
-    "pedal": true
+    "pedal": true,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Depth",
@@ -4879,7 +5850,10 @@
     "max": 100,
     "default": 0,
     "explanation": "Adjusts the volume when the pedal is at minimum position.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Max",
@@ -4893,7 +5867,13 @@
     "max": 1,
     "default": 0,
     "explanation": "Sets the volume curve.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "A",
+      "B"
+     ]
+    }
    }
   ],
   "slots": 1,
@@ -4913,21 +5893,30 @@
     "max": 2014,
     "default": 2006,
     "explanation": "Sets the delay time.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "F.B",
     "max": 100,
     "default": 24,
     "explanation": "Adjusts the feedback amount.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
     "max": 100,
     "default": 56,
     "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Tail",
@@ -4948,7 +5937,10 @@
     "max": 100,
     "default": 100,
     "explanation": "Sets the depth of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "RATE",
@@ -4962,7 +5954,10 @@
     "max": 100,
     "default": 48,
     "explanation": "Sets effect resonance.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 2,
@@ -4989,21 +5984,30 @@
     "max": 100,
     "default": 100,
     "explanation": "Sets the depth of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Rate",
     "max": 77,
     "default": 11,
     "explanation": "Sets the speed of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "RESO",
     "max": 100,
     "default": 50,
     "explanation": "Sets effect resonance.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -5030,21 +6034,30 @@
     "max": 1999,
     "default": 89,
     "explanation": "Sets the delay time.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "F.B",
     "max": 100,
     "default": 80,
     "explanation": "Adjusts the feedback amount.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
     "max": 100,
     "default": 80,
     "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -5078,14 +6091,20 @@
     "max": 10,
     "default": 7,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "BAL",
     "max": 100,
     "default": 40,
     "explanation": "Adjusts the balance between original and effect sounds.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -5105,7 +6124,10 @@
     "max": 199,
     "default": 8,
     "explanation": "Adjusts the delay between input of the original sound and start of the reverb sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "Decay",
@@ -5146,21 +6168,30 @@
     "max": 4022,
     "default": 559,
     "explanation": "Sets the delay time.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "F.B",
     "max": 100,
     "default": 30,
     "explanation": "Adjusts the feedback amount.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
     "max": 100,
     "default": 70,
     "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Tail",
@@ -5235,14 +6266,20 @@
     "max": 100,
     "default": 48,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Treble",
     "max": 100,
     "default": 52,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
@@ -5276,21 +6313,30 @@
     "max": 100,
     "default": 50,
     "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Hi",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Lo",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -5310,35 +6356,53 @@
     "max": 1,
     "default": 0,
     "explanation": "Sets the tone of the character.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "VNTG",
+      "VNTG"
+     ]
+    }
    },
    {
     "name": "Bass",
     "max": 100,
     "default": 52,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "MID",
     "max": 100,
     "default": 65,
     "explanation": "Adjusts volume of middle frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Treble",
     "max": 100,
     "default": 67,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "PRSNC",
     "max": 100,
     "default": 62,
     "explanation": "Adjusts volume of super-high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Gain",
@@ -5352,7 +6416,10 @@
     "max": 100,
     "default": 62,
     "explanation": "Adjusts the volume.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "SOLO",
@@ -5386,14 +6453,20 @@
     "max": 100,
     "default": 50,
     "explanation": "Adjusts tone of RedCrunch.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "PRSNC",
     "max": 100,
     "default": 52,
     "explanation": "Adjusts presence of RedCrunch.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
@@ -5455,14 +6528,20 @@
     "max": 100,
     "default": 47,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "PRSNC",
     "max": 100,
     "default": 48,
     "explanation": "Adjusts volume of super-high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
@@ -5496,14 +6575,20 @@
     "max": 9,
     "default": 4,
     "explanation": "Adjusts the sensitivity of the effect.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "RESO",
     "max": 10,
     "default": 8,
     "explanation": "Sets effect resonance.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
@@ -5530,28 +6615,43 @@
     "max": 2005,
     "default": 990,
     "explanation": "Sets the delay time.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 10
+    }
    },
    {
     "name": "F.B",
     "max": 100,
     "default": 20,
     "explanation": "Adjusts the feedback amount.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "BAL",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts the balance between original and effect sounds.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Tail",
     "max": 1,
     "default": 0,
     "explanation": "When ON, effect sound continues even after effect is turned off. When OFF, effect sound stops right when effect is turned off.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "OFF",
+      "ON"
+     ]
+    }
    }
   ],
   "slots": 1,
@@ -5571,21 +6671,30 @@
     "max": 49,
     "default": 27,
     "explanation": "Sets the frequency of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "Tone",
     "max": 10,
     "default": 10,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "BAL",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts the balance between original and effect sounds.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
@@ -5619,14 +6728,20 @@
     "max": 77,
     "default": 34,
     "explanation": "Sets the speed of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "BAL",
     "max": 100,
     "default": 90,
     "explanation": "Adjusts the balance between original and effect sounds.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
@@ -5653,14 +6768,20 @@
     "max": 99,
     "default": 4,
     "explanation": "Adjusts the delay between input of the original sound and start of the reverb sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "Decay",
     "max": 29,
     "default": 9,
     "explanation": "Sets the duration of the reverberations.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "Mix",
@@ -5674,7 +6795,13 @@
     "max": 1,
     "default": 0,
     "explanation": "When ON, effect sound continues even after effect is turned off. When OFF, effect sound stops right when effect is turned off.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "OFF",
+      "ON"
+     ]
+    }
    }
   ],
   "slots": 1,
@@ -5694,21 +6821,30 @@
     "max": 6,
     "default": 6,
     "explanation": "Adjusts number of sequence steps.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 2
+    }
    },
    {
     "name": "PTTRN",
     "max": 7,
     "default": 6,
     "explanation": "Sets effect pattern.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "Speed",
     "max": 77,
     "default": 25,
     "explanation": "Sets the speed of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "RESO",
@@ -5735,28 +6871,44 @@
     "max": 300,
     "default": 98,
     "explanation": "Sets the delay time.\nWhen Sync is chosen, the delay time is synchronized to the tempo.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "F.B",
     "max": 100,
     "default": 29,
     "explanation": "Adjusts the feedback amount.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
     "max": 100,
     "default": 40,
     "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "SubDv",
     "max": 2,
     "default": 0,
     "explanation": "Set the note length of the delay sound.\nWhen P-P is chosen, L/R channels output delays in quarter/dotted eighth notes respectively.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "\u0019",
+      "\u0018.",
+      "P-P"
+     ]
+    }
    }
   ],
   "slots": 1,
@@ -5783,14 +6935,20 @@
     "max": 77,
     "default": 24,
     "explanation": "Sets the speed of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "THRSH",
     "max": 50,
     "default": 20,
     "explanation": "Adjusts effect threshold.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
@@ -5817,21 +6975,30 @@
     "max": 49,
     "default": 20,
     "explanation": "Adjusts the attack time.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "Curve",
     "max": 10,
     "default": 10,
     "explanation": "Set the curve of volume change during attack.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Tone",
     "max": 100,
     "default": 100,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
@@ -5858,21 +7025,30 @@
     "max": 49,
     "default": 24,
     "explanation": "Adjusts the attack time.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "Time",
     "max": 1914,
     "default": 489,
     "explanation": "Sets the delay time. ",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "F.B",
     "max": 100,
     "default": 71,
     "explanation": "Adjusts the feedback amount.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
@@ -5906,21 +7082,30 @@
     "max": 562,
     "default": 387,
     "explanation": "Sets the delay time.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 19
+    }
    },
    {
     "name": "F.B",
     "max": 100,
     "default": 47,
     "explanation": "Adjusts the feedback amount.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
     "max": 100,
     "default": 69,
     "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -5954,7 +7139,10 @@
     "max": 100,
     "default": 45,
     "explanation": "Adjusts the feedback amount. ",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
@@ -5968,7 +7156,10 @@
     "max": 100,
     "default": 58,
     "explanation": "Sets the depth of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Speed",
@@ -6009,14 +7200,20 @@
     "max": 99,
     "default": 0,
     "explanation": "Adjusts the delay between input of the original sound and start of the reverb sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "Decay",
     "max": 29,
     "default": 19,
     "explanation": "Sets the duration of the reverberations.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "Mix",
@@ -6030,7 +7227,13 @@
     "max": 1,
     "default": 0,
     "explanation": "When ON, effect sound continues even after effect is turned off. When OFF, effect sound stops right when effect is turned off.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "OFF",
+      "ON"
+     ]
+    }
    }
   ],
   "slots": 1,
@@ -6057,21 +7260,33 @@
     "max": 20,
     "default": 10,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": -10
+    }
    },
    {
     "name": "Treble",
     "max": 20,
     "default": 8,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": -10
+    }
    },
    {
     "name": "ON/OFF",
     "max": 1,
     "default": 1,
     "explanation": "Sets the foot switch function.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "LATCH",
+      "LATCH"
+     ]
+    }
    }
   ],
   "slots": 1,
@@ -6098,21 +7313,30 @@
     "max": 100,
     "default": 60,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
     "max": 100,
     "default": 79,
     "explanation": "Adjusts the volume. ",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "DryMx",
     "max": 100,
     "default": 0,
     "explanation": "Adjusts the volume of the unaffected sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -6132,28 +7356,40 @@
     "max": 100,
     "default": 60,
     "explanation": "Sets the depth of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Rate",
     "max": 78,
     "default": 25,
     "explanation": "Sets the speed of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "RESO",
     "max": 10,
     "default": 8,
     "explanation": "Sets effect resonance.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Shape",
     "max": 10,
     "default": 10,
     "explanation": "Adjusts the effect envelope.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -6173,28 +7409,40 @@
     "max": 100,
     "default": 80,
     "explanation": "Sets the depth of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Rate",
     "max": 49,
     "default": 29,
     "explanation": "Sets the speed of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "Tone",
     "max": 10,
     "default": 7,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
     "max": 100,
     "default": 60,
     "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -6228,7 +7476,10 @@
     "max": 100,
     "default": 50,
     "explanation": "Sets the speed of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "RESO",
@@ -6324,28 +7575,40 @@
     "max": 100,
     "default": 50,
     "explanation": "Sets the depth of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Rate",
     "max": 100,
     "default": 50,
     "explanation": "Sets the speed of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Tone",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
     "max": 100,
     "default": 42,
     "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -6372,14 +7635,20 @@
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Focus",
     "max": 100,
     "default": 67,
     "explanation": "Adjusts volume of middle frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
@@ -6406,7 +7675,10 @@
     "max": 100,
     "default": 50,
     "explanation": "Adjusts the gain.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Hi",
@@ -6420,7 +7692,10 @@
     "max": 100,
     "default": 47,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
@@ -6434,14 +7709,20 @@
     "max": 1005,
     "default": 350,
     "explanation": "Sets the delay time.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 10
+    }
    },
    {
     "name": "F.B",
     "max": 100,
     "default": 20,
     "explanation": "Adjusts the feedback amount.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "MIX",
@@ -6475,28 +7756,43 @@
     "max": 2014,
     "default": 559,
     "explanation": "Sets the delay time.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "F.B",
     "max": 100,
     "default": 64,
     "explanation": "Adjusts the feedback amount.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mix",
     "max": 100,
     "default": 56,
     "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Tail",
     "max": 1,
     "default": 0,
     "explanation": "When ON, effect sound continues even after effect is turned off. When OFF, effect sound stops right when effect is turned off.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "OFF",
+      "ON"
+     ]
+    }
    }
   ],
   "slots": 1,
@@ -6523,7 +7819,10 @@
     "max": 100,
     "default": 100,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Color",
@@ -6557,7 +7856,10 @@
     "max": 50,
     "default": 25,
     "explanation": "Sets the speed of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Depth",
@@ -6598,21 +7900,34 @@
     "max": 2,
     "default": 0,
     "explanation": "Sets the modulation waveform.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "TRI",
+      "TUBE",
+      "SQR"
+     ]
+    }
    },
    {
     "name": "Depth",
     "max": 100,
     "default": 90,
     "explanation": "Sets the depth of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Rate",
     "max": 110,
     "default": 50,
     "explanation": "Sets the speed of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
@@ -6646,7 +7961,10 @@
     "max": 100,
     "default": 50,
     "explanation": "Adjusts tone of TS Drive.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
@@ -6681,7 +7999,10 @@
     "max": 100,
     "default": 50,
     "explanation": "Adjusts high frequencies volume of booster.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "CONNECT",
@@ -6722,7 +8043,10 @@
     "max": 100,
     "default": 57,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
@@ -6756,21 +8080,30 @@
     "max": 100,
     "default": 50,
     "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Hi",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Lo",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -6811,7 +8144,10 @@
     "max": 100,
     "default": 30,
     "explanation": "Adjusts the gain.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
@@ -6825,14 +8161,20 @@
     "max": 100,
     "default": 0,
     "explanation": "Sets the depth of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Speed",
     "max": 110,
     "default": 50,
     "explanation": "Sets the speed of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "SOLO",
@@ -6859,28 +8201,40 @@
     "max": 100,
     "default": 65,
     "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "DryMx",
     "max": 100,
     "default": 47,
     "explanation": "Adjusts the volume of the unaffected sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Bottom",
     "max": 100,
     "default": 75,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "PRSNC",
     "max": 100,
     "default": 70,
     "explanation": "Adjusts volume of super-high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -6900,28 +8254,40 @@
     "max": 100,
     "default": 40,
     "explanation": "Sets the depth of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Rate",
     "max": 78,
     "default": 30,
     "explanation": "Sets the speed of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Tone",
     "max": 10,
     "default": 7,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "BAL",
     "max": 100,
     "default": 72,
     "explanation": "Adjusts the balance between original and effect sounds.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -6941,28 +8307,40 @@
     "max": 50,
     "default": 4,
     "explanation": "Sets pre-delay time of effect sound.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Depth",
     "max": 100,
     "default": 47,
     "explanation": "Sets the depth of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Rate",
     "max": 78,
     "default": 7,
     "explanation": "Sets the speed of the modulation.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "RESO",
     "max": 20,
     "default": 18,
     "explanation": "Sets effect resonance.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": -10
+    }
    }
   ],
   "slots": 1,
@@ -6982,14 +8360,20 @@
     "max": 100,
     "default": 70,
     "explanation": "Adjusts the gain.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Tone",
     "max": 100,
     "default": 80,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Voice",
@@ -7003,7 +8387,10 @@
     "max": 100,
     "default": 70,
     "explanation": "Adjusts the volume. ",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -7023,28 +8410,47 @@
     "max": 100,
     "default": 0,
     "explanation": "Adjusts the emphasized vowel.",
-    "pedal": true
+    "pedal": true,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "PTTRN",
     "max": 2,
     "default": 1,
     "explanation": "Sets effect pattern.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "A",
+      "B",
+      "C"
+     ]
+    }
    },
    {
     "name": "Voice",
     "max": 100,
     "default": 50,
     "explanation": "Adjusts the vowel sounds.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Mode",
     "max": 1,
     "default": 0,
     "explanation": "Sets the sound style.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "STEP",
+      "SOFT"
+     ]
+    }
    }
   ],
   "slots": 1,
@@ -7064,14 +8470,20 @@
     "max": 50,
     "default": 25,
     "explanation": "Adjusts the emphasized frequency.",
-    "pedal": true
+    "pedal": true,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Depth",
     "max": 100,
     "default": 40,
     "explanation": "Sets the depth of the wah.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Dry",
@@ -7105,14 +8517,23 @@
     "max": 1,
     "default": 0,
     "explanation": "Sets direction of warping.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "GO",
+      "BACK"
+     ]
+    }
    },
    {
     "name": "Speed",
     "max": 77,
     "default": 24,
     "explanation": "Sets modulation speed.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 1
+    }
    },
    {
     "name": "RESO",
@@ -7126,7 +8547,10 @@
     "max": 100,
     "default": 80,
     "explanation": "Adjusts the volume.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -7146,7 +8570,10 @@
     "max": 100,
     "default": 50,
     "explanation": "Adjusts volume of low frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "MID",
@@ -7167,7 +8594,10 @@
     "max": 100,
     "default": 40,
     "explanation": "Adjusts volume of super-high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "STRCT",
@@ -7181,7 +8611,10 @@
     "max": 100,
     "default": 60,
     "explanation": "Adjusts the gain.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
@@ -7215,28 +8648,40 @@
     "max": 100,
     "default": 70,
     "explanation": "Adjusts the gain.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Tone",
     "max": 100,
     "default": 60,
     "explanation": "Adjusts the tone.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Voice",
     "max": 100,
     "default": 80,
     "explanation": "Adjusts gain of high frequencies.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "VOL",
     "max": 100,
     "default": 70,
     "explanation": "Adjusts the volume. ",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -7256,28 +8701,43 @@
     "max": 1,
     "default": 1,
     "explanation": "Sets control signal detection level.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "options": [
+      "GTRIN",
+      "EFXIN"
+     ]
+    }
    },
    {
     "name": "Depth",
     "max": 100,
     "default": 100,
     "explanation": "Sets the depth of noise reduction.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "THRSH",
     "max": 100,
     "default": 30,
     "explanation": "Adjusts the effect sensitivity.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    },
    {
     "name": "Decay",
     "max": 100,
     "default": 0,
     "explanation": "Adjust the envelope release.",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -7318,7 +8778,10 @@
     "max": 127,
     "default": 80,
     "explanation": "",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -7359,7 +8822,10 @@
     "max": 127,
     "default": 80,
     "explanation": "",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -7400,7 +8866,10 @@
     "max": 127,
     "default": 80,
     "explanation": "",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 1,
@@ -7469,7 +8938,10 @@
     "max": 127,
     "default": 80,
     "explanation": "",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 2,
@@ -7538,7 +9010,10 @@
     "max": 127,
     "default": 80,
     "explanation": "",
-    "pedal": false
+    "pedal": false,
+    "display": {
+     "offset": 0
+    }
    }
   ],
   "slots": 2,

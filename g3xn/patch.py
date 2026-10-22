@@ -151,8 +151,12 @@ class Patch:
 
     @classmethod
     def load(cls, path):
+        """Read a .zptc file, or a ToneLib .zg3xn export."""
         with open(path, "rb") as f:
-            return cls.decode(f.read())
+            data = f.read()
+        if data[:4] != b"PTCF" and b"PK\x03\x04" in data[:16]:
+            data = _from_tonelib(data)
+        return cls.decode(data)
 
     def save(self, path):
         with open(path, "wb") as f:
@@ -354,3 +358,17 @@ class Patch:
 
     def __repr__(self):
         return "<Patch %r vol %d: %s>" % (self.name, self.volume, " > ".join(c.name for c in self.chain) or "empty")
+
+
+def _from_tonelib(blob):
+    """ToneLib-Zoom .zg3xn: 4-byte device id, then a zip holding ToneLib.data,
+    an XML file whose <data dump="50,54,43,46,..."> attribute is the PTCF image."""
+    import io
+    import re
+    import zipfile
+    with zipfile.ZipFile(io.BytesIO(blob[blob.index(b"PK\x03\x04"):])) as z:
+        text = z.read("ToneLib.data").decode("utf-8", "replace")
+    dump = re.search(r'dump="([^"]+)"', text)
+    if not dump:
+        raise ValueError("no patch data in ToneLib file")
+    return bytes(int(x, 16) for x in dump.group(1).split(","))

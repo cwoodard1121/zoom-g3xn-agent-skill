@@ -18,6 +18,8 @@
     g3xn write tone.json 123          write a file straight into a slot
     g3xn build tone.json out.zptc     convert / validate offline
     g3xn backup [folder]              copy every slot to .zptc files
+    g3xn gig plan|load gig.json       load a setlist into slots (plan shows it first)
+    g3xn gig export 80 122 gig.json   save a run of slots as a gig
     g3xn tuner [seconds]              live tuner readout
 
 Add --json to any command for machine-readable output.
@@ -67,6 +69,9 @@ def main(argv=None):
     s.add_argument("file")
     s.add_argument("out", nargs="?")
     sub.add_parser("backup").add_argument("folder", nargs="?")
+    s = sub.add_parser("gig")
+    s.add_argument("action", choices=["plan", "load", "export"])
+    s.add_argument("args", nargs="+", help="plan|load GIG.json  /  export FIRST LAST OUT.json")
     sub.add_parser("tuner").add_argument("seconds", nargs="?", type=float, default=10)
 
     a = ap.parse_args(argv)
@@ -197,6 +202,24 @@ def cmd_backup(a):
     return {"backup": os.path.abspath(folder)}
 
 
+def cmd_gig(a):
+    from . import gig as gigs
+    with Pedal(a.scratch) as pedal:
+        if a.action == "export":
+            first, last, out = int(a.args[0]), int(a.args[1]), a.args[2]
+            data = gigs.export(pedal, first, last)
+            with open(out, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=1)
+            return [{"slot": e["slot"], "name": e["song"]} for e in data["patches"]]
+        gig = gigs.load(a.args[0])
+        if a.action == "plan":
+            return gigs.public(gigs.plan(pedal, gig))
+        steps, folder = gigs.write(pedal, gig)
+        if not a.json:
+            print("backed up to", folder)
+        return gigs.public(steps)
+
+
 def cmd_tuner(a):
     with Pedal(a.scratch) as pedal:
         pedal.tuner(True)
@@ -267,6 +290,9 @@ def render(data):
 
 
 def _row(x):
+    if "order" in x:
+        return "%2d. slot %3d  %-10s  %-22s %s" % (x["order"], x["slot"], x["patch"], x["song"][:22],
+                                                  "(replaces %s!)" % x["replaces"] if x["overwrites_real_patch"] else "")
     if "slot" in x:
         return "%3d  %s" % (x["slot"], x["name"])
     return "%-11s %-10s %d pos  %5.1f%%  %s" % (x["name"], x["group"], x["positions"], x["dsp_percent"],
