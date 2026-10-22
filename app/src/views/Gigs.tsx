@@ -259,7 +259,7 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
                   <td>{s.order}</td>
                   <td>{s.song}</td>
                   <td>{s.slot}</td>
-                  <td>{s.overwrites_real_patch ? s.replaces : "empty slot"}</td>
+                  <td>{s.replaces === "Empty" ? "empty slot" : s.replaces_own ? `${s.replaces} (this gig's own)` : s.replaces}</td>
                 </tr>
               ))}
             </tbody>

@@ -107,6 +107,7 @@ export interface PlanStep {
   slot: number;
   patch: string;
   replaces: string;
+  replaces_own: boolean; // the slot holds what this gig put there last time
   overwrites_real_patch: boolean;
 }
 

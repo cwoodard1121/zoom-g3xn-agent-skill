@@ -41,7 +41,8 @@ class DaemonTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         mine = Patch.from_dict({"name": "MINE", "chain": [{"effect": "TS Drive"}]})
-        cls.url, cls.stop = start_daemon(VirtualPedal({1: mine}, current=1))
+        cls.vp = VirtualPedal({1: mine}, current=1)
+        cls.url, cls.stop = start_daemon(cls.vp)
         cls.port = int(cls.url.rsplit(":", 1)[1])
 
     @classmethod
@@ -140,6 +141,41 @@ class DaemonTest(unittest.TestCase):
         self.call("DELETE", "/api/setlists/%s" % gid)
         self.assertIsNone(self.call("GET", "/api/setlists")["active"])
         self.assertEqual(self.error("GET", "/api/setlists/%s" % gid)[0], 400)
+
+    def test_gig_check_lock_restore(self):
+        clean = {"name": "CLEAN", "chain": [{"effect": "FD TWNR"}]}
+        gig = {"name": "Saturday", "start_slot": 130, "patches": [{"song": "Drive", "tone": TONE},
+                                                                 {"song": "Clean", "tone": clean}]}
+        gid = self.call("PUT", "/api/setlists/new", gig)["id"]
+        self.call("POST", "/api/setlists/%s/load" % gid)
+        self.assertNotIn('"data"', json.dumps(self.call("GET", "/api/setlists/%s" % gid)))   # no patch blobs
+        plan = self.call("POST", "/api/setlists/%s/plan" % gid)["plan"]
+        self.assertEqual([(s["replaces_own"], s["overwrites_real_patch"]) for s in plan], [(True, False)] * 2)
+        self.assertEqual(self.call("POST", "/api/setlists/%s/check" % gid)["changed"], [])
+
+        self.call("POST", "/api/patches/130/select")
+        self.vp.turn_knob(0, 0, 90)                                  # turned on the pedal: autosaved
+        changed = self.call("POST", "/api/setlists/%s/check" % gid)["changed"]
+        self.assertEqual([(c["slot"], c["change"]) for c in changed], [(130, "TS Drive Gain 40 → 90")])
+
+        self.call("POST", "/api/setlists/%s/lock" % gid)
+        try:
+            self.assertEqual(self.call("GET", "/api/setlists")["locked"], gid)
+            code, msg = self.error("POST", "/api/patches/131/save", {"replace": True})
+            self.assertEqual(code, 409)
+            self.assertIn("locked", msg)
+            self.assertEqual(self.error("PUT", "/api/patches/130", {"tone": TONE, "replace": True})[0], 409)
+            self.assertEqual(self.error("POST", "/api/setlists/%s/load" % gid)[0], 409)
+            self.assertEqual(self.error("POST", "/api/gigs/load", gig)[0], 409)
+            restored = self.call("POST", "/api/setlists/%s/restore" % gid)        # works while locked
+            self.assertEqual([s["slot"] for s in restored["restored"]], [130])
+            self.assertEqual(self.vp.current, 130)                                # still on the song
+            self.assertEqual(self.call("POST", "/api/setlists/%s/check" % gid)["changed"], [])
+            self.assertEqual(self.call("GET", "/api/patches/130")["chain"][0]["knobs"]["Gain"], 40)
+        finally:
+            self.call("POST", "/api/setlists/%s/lock" % gid, {"on": False})
+        self.assertIsNone(self.call("GET", "/api/setlists")["locked"])
+        self.call("DELETE", "/api/setlists/%s" % gid)
 
     def test_effects_and_errors(self):
         self.assertTrue(self.call("GET", "/api/effects?query=fuzz")["effects"])

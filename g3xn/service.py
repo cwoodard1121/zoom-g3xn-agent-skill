@@ -193,10 +193,27 @@ def plan_gig(pedal, gig):
     return {"plan": gigs.public(gigs.plan(pedal, gig)), "confirmed": False}
 
 
-def load_gig(pedal, gig):
-    """Back up every slot, then write the gig."""
+def load_gig(pedal, gig, snapshot=False):
+    """Back up every slot, then write the gig. snapshot: also return "loaded", what went into
+    each slot, for check_gig and restore_gig."""
     steps, folder = gigs.write(pedal, gig, _backup_folder(pedal))
-    return {"written": gigs.public(steps), "backup": folder, "confirmed": True}
+    result = {"written": gigs.public(steps), "backup": folder, "confirmed": True}
+    if snapshot:
+        result["loaded"] = gigs.snapshot(steps)
+    return result
+
+
+def check_gig(pedal, loaded):
+    """Songs whose slot changed since the gig was loaded (say a knob was turned on the pedal,
+    which autosaves). `loaded` is load_gig's snapshot."""
+    return {"changed": gigs.public(gigs.differences(pedal, loaded))}
+
+
+def restore_gig(pedal, loaded):
+    """Put back every song that changed since the gig was loaded; the changed versions are backed up first."""
+    folder = _backup_folder(pedal)
+    restored = gigs.restore(pedal, loaded, folder)
+    return {"restored": gigs.public(restored), "backup": folder if restored else None}
 
 
 def export_gig(pedal, first_slot, last_slot, name="Exported gig"):

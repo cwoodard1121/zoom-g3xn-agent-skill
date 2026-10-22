@@ -15,14 +15,19 @@ Each entry is a tone (tone JSON), a copy of a slot already on the pedal
 it; otherwise entries fill consecutive slots from start_slot. Entries may
 also carry "notes", "tempo" and "key" for the stage view.
 
-GigLibrary keeps gigs as JSON files (the app's saved setlists).
+GigLibrary keeps gigs as JSON files (the app's saved setlists). A gig that
+has been loaded keeps a snapshot of exactly what went into each slot, so
+`differences` can tell what changed since (a knob turned with autosave on)
+and `restore` can put it back.
 """
+import base64
 import datetime
 import json
 import os
 import re
 import uuid
 
+from .history import describe
 from .patch import Patch
 
 
@@ -36,6 +41,7 @@ def load(path):
 def plan(pedal, gig):
     """Work out what goes where, without writing. Returns a list of steps."""
     steps, slot, used = [], gig.get("start_slot", 1), set()
+    ours = {s["slot"]: s["patch"] for s in (gig.get("loaded") or {}).get("slots", [])}   # put there by this gig
     for i, entry in enumerate(gig["patches"], 1):
         target = entry.get("slot", slot)
         if target in used:
@@ -48,8 +54,9 @@ def plan(pedal, gig):
         if problems:
             raise ValueError("entry %d (%s): %s" % (i, patch.name, "; ".join(problems)))
         current = pedal.read(target).name
+        own = ours.get(target) == current
         steps.append({"order": i, "song": entry.get("song") or patch.name, "slot": target, "patch": patch.name,
-                      "replaces": current, "overwrites_real_patch": current != "Empty",
+                      "replaces": current, "replaces_own": own, "overwrites_real_patch": current != "Empty" and not own,
                       "_patch": patch})
         slot = target + 1
     return steps
@@ -67,6 +74,58 @@ def write(pedal, gig, backup_dir=None):
         pedal.write(s["slot"], s["_patch"])
     pedal.select(steps[0]["slot"])
     return steps, backup_dir
+
+
+def snapshot(steps):
+    """What `write` put in each slot, kept with the gig so changes can be found and undone later."""
+    return [{"song": s["song"], "slot": s["slot"], "patch": s["patch"],
+             "data": base64.b64encode(s["_patch"].encode()).decode("ascii")} for s in steps]
+
+
+def differences(pedal, loaded):
+    """The songs whose slot no longer holds what the gig loaded there (`loaded` from `snapshot`).
+    Each has "change", e.g. "Hall Mix 40 → 55" (from what was loaded to what's there now)."""
+    out = []
+    for s in loaded:
+        if "data" not in s:                       # loaded before snapshots were kept
+            continue
+        want, now = Patch.decode(base64.b64decode(s["data"])), pedal.read(s["slot"])
+        if _plain(now) != _plain(want):
+            change = describe(_plain(want), _plain(now))[0]
+            if change.startswith("Loaded "):      # a different tone altogether
+                change = "Replaced by %s" % now.name
+            out.append({"song": s["song"], "slot": s["slot"], "patch": s["patch"], "now": now.name,
+                        "change": change, "_patch": want, "_now": now})
+    return out
+
+
+def restore(pedal, loaded, backup_dir):
+    """Put back every song whose slot changed since the gig was loaded. The changed versions
+    are saved to backup_dir first. Ends on the slot it started on (if that slot is put back,
+    the pedal hops to the scratch slot for a moment). Returns the songs put back."""
+    changed = differences(pedal, loaded)
+    if not changed:
+        return changed
+    os.makedirs(backup_dir, exist_ok=True)
+    for c in changed:
+        c["_now"].save(os.path.join(backup_dir, "%03d_%s.zptc" % (c["slot"], _file_name(c["now"]))))
+    here = pedal.current()
+    if here in {c["slot"] for c in changed}:
+        pedal.select(pedal.scratch)               # a write to the slot the pedal is on is lost
+    for c in changed:
+        pedal.write(c["slot"], c["_patch"])
+    if pedal.current() != here:
+        pedal.select(here)
+    return changed
+
+
+def _plain(patch):
+    return {"name": patch.name, "volume": patch.volume,
+            "chain": [{"effect": c.name, "on": c.enabled, "knobs": c.knobs()} for c in patch.chain]}
+
+
+def _file_name(name):
+    return "".join(c if c.isalnum() or c in " -_" else "_" for c in name).strip() or "blank"
 
 
 def export(pedal, first, last, name="Exported gig"):
@@ -97,7 +156,7 @@ class GigLibrary:
                 except (OSError, ValueError):
                     continue
                 out.append({"id": g["id"], "name": g.get("name", ""), "songs": len(g.get("patches", [])),
-                            "start_slot": g.get("start_slot"), "loaded": g.get("loaded")})
+                            "start_slot": g.get("start_slot"), "loaded": shown(g)["loaded"]})
         return sorted(out, key=lambda g: g["name"].lower())
 
     def get(self, gig_id):
@@ -126,6 +185,14 @@ class GigLibrary:
         if not re.fullmatch(r"[a-z0-9-]+", gig_id or ""):
             raise ValueError("bad gig id %r" % gig_id)
         return os.path.join(self.folder, gig_id + ".json")
+
+
+def shown(gig):
+    """A saved gig without the patch data in its snapshot (for showing, not restoring)."""
+    loaded = gig.get("loaded")
+    if loaded:
+        loaded = dict(loaded, slots=[{k: v for k, v in s.items() if k != "data"} for s in loaded["slots"]])
+    return dict(gig, loaded=loaded)
 
 
 def public(steps):

@@ -40,7 +40,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from . import service
-from .gig import GigLibrary
+from .gig import GigLibrary, shown as shown_gig
 from .history import History
 from .pedal import Pedal, PedalError
 
@@ -293,6 +293,10 @@ class TunerRequest(BaseModel):
     on: bool = True
 
 
+class LockRequest(BaseModel):
+    on: bool = True
+
+
 class TunerReadRequest(BaseModel):
     seconds: float = 8.0
 
@@ -323,7 +327,8 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
                   description="Control a Zoom G3n / G3Xn: patches, live tone editing, gigs and the tuner.")
     app.state.worker = worker
     loaded = [g for g in gigs.list() if g.get("loaded")]
-    state = {"active_gig": max(loaded, key=lambda g: g["loaded"]["time"])["id"] if loaded else None}
+    state = {"active_gig": max(loaded, key=lambda g: g["loaded"]["time"])["id"] if loaded else None,
+             "locked_gig": None}
 
     async def run(label, fn, touches=()):
         return await asyncio.wrap_future(worker.submit(label, fn, touches))
@@ -395,6 +400,7 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
     @app.put("/api/patches/{slot}", tags=["patches"])
     async def write_patch(slot: int, req: WriteRequest):
         """Write a tone into a slot. A slot holding a patch needs replace=true."""
+        refuse_if_locked([slot])
         return await run("writing patch %d" % slot, lambda p: service.write_tone(p, req.tone, slot, req.replace),
                          touches=[slot])
 
@@ -406,6 +412,7 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
     @app.post("/api/patches/{slot}/save", tags=["patches"])
     async def save_to_slot(slot: int, req: SaveRequest = SaveRequest()):
         """Keep the auditioned tone: store it in `slot` and switch to it. A slot holding a patch needs replace=true."""
+        refuse_if_locked([slot])
         return await run("saving to patch %d" % slot, lambda p: service.save_to_slot(p, slot, req.name, req.replace),
                          touches=lambda r: [worker.pedal.scratch, slot])
 
@@ -507,6 +514,7 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
     @app.post("/api/gigs/load", tags=["gigs"])
     async def load_gig(gig: dict = Body(...)):
         """Back up every slot, then write the gig to the pedal."""
+        refuse_if_locked()
         return await run("loading a gig", lambda p: service.load_gig(p, gig),
                          touches=lambda r: [s["slot"] for s in r["written"]])
 
@@ -520,12 +528,13 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
 
     @app.get("/api/setlists", tags=["gigs"])
     async def list_setlists():
-        """Saved gigs, by name. `active` is the one last loaded to the pedal (the stage view follows it)."""
-        return {"gigs": gigs.list(), "active": state.get("active_gig")}
+        """Saved gigs, by name. `active` is the one last loaded to the pedal (the stage view follows it);
+        `locked` is the one locked for the show, if any."""
+        return {k: v for k, v in gigs_event().items() if k != "type"}
 
     @app.get("/api/setlists/{gig_id}", tags=["gigs"])
     async def get_setlist(gig_id: str):
-        return _gig_or_404(gig_id)
+        return shown_gig(_gig_or_404(gig_id))
 
     @app.put("/api/setlists/{gig_id}", tags=["gigs"])
     async def save_setlist(gig_id: str, gig: dict = Body(...)):
@@ -537,16 +546,17 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
             except OSError:
                 pass
         saved = gigs.save(gig)
-        hub.emit({"type": "gigs", "gigs": gigs.list(), "active": state.get("active_gig")})
-        return saved
+        hub.emit(gigs_event())
+        return shown_gig(saved)
 
     @app.delete("/api/setlists/{gig_id}", tags=["gigs"])
     async def delete_setlist(gig_id: str):
         _gig_or_404(gig_id)
         gigs.delete(gig_id)
-        if state.get("active_gig") == gig_id:
-            state["active_gig"] = None
-        hub.emit({"type": "gigs", "gigs": gigs.list(), "active": state.get("active_gig")})
+        for key in ("active_gig", "locked_gig"):
+            if state.get(key) == gig_id:
+                state[key] = None
+        hub.emit(gigs_event())
         return {"deleted": gig_id}
 
     @app.post("/api/setlists/{gig_id}/plan", tags=["gigs"])
@@ -558,15 +568,69 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
     @app.post("/api/setlists/{gig_id}/load", tags=["gigs"])
     async def load_setlist(gig_id: str):
         """Back up every slot, write the gig, and make it the one the stage view follows."""
+        refuse_if_locked()
         gig = _gig_or_404(gig_id)
-        result = await run("loading %s" % gig.get("name", "the gig"), lambda p: service.load_gig(p, gig),
+        result = await run("loading %s" % gig.get("name", "the gig"), lambda p: service.load_gig(p, gig, snapshot=True),
                            touches=lambda r: [s["slot"] for s in r["written"]])
-        gig["loaded"] = {"time": time.time(), "backup": result["backup"],
-                         "slots": [{"song": s["song"], "slot": s["slot"], "patch": s["patch"]} for s in result["written"]]}
+        gig["loaded"] = {"time": time.time(), "backup": result["backup"], "slots": result.pop("loaded")}
         gigs.save(gig)
         state["active_gig"] = gig_id
-        hub.emit({"type": "gigs", "gigs": gigs.list(), "active": gig_id})
+        hub.emit(gigs_event())
         return result
+
+    @app.post("/api/setlists/{gig_id}/check", tags=["gigs"])
+    async def check_setlist(gig_id: str):
+        """Which songs changed on the pedal since the gig was loaded (a knob turned on the pedal
+        autosaves into the slot). Each has "change", e.g. "Hall Mix 40 → 55". Writes nothing."""
+        gig = _gig_or_404(gig_id)
+        loaded = loaded_slots(gig)
+        return await run("checking %s" % gig.get("name", "the gig"), lambda p: service.check_gig(p, loaded))
+
+    @app.post("/api/setlists/{gig_id}/restore", tags=["gigs"])
+    async def restore_setlist(gig_id: str):
+        """The panic button: put back every song that changed since the gig was loaded (the changed
+        versions are backed up first). Works while the gig is locked; the pedal stays on its patch."""
+        gig = _gig_or_404(gig_id)
+        loaded = loaded_slots(gig)
+        return await run("putting %s back" % gig.get("name", "the gig"), lambda p: service.restore_gig(p, loaded),
+                         touches=lambda r: [s["slot"] for s in r["restored"]])
+
+    @app.post("/api/setlists/{gig_id}/lock", tags=["gigs"])
+    async def lock_setlist(gig_id: str, req: LockRequest = LockRequest()):
+        """Lock a loaded gig for the show (on=false unlocks). While it's locked nothing going through
+        the daemon (the app, Claude, the CLI) can write to its slots or load a gig; switching
+        patches, auditions on the scratch slot and the tuner still work. It can't stop the pedal's
+        own autosave when a knob is turned on the pedal: /restore puts that back. Unlocks when the
+        daemon restarts."""
+        gig = _gig_or_404(gig_id)
+        if req.on:
+            loaded_slots(gig)
+            state["locked_gig"] = gig_id
+        elif state["locked_gig"] == gig_id:
+            state["locked_gig"] = None
+        hub.emit(gigs_event())
+        return {"locked": state["locked_gig"]}
+
+    def gigs_event():
+        return {"type": "gigs", "gigs": gigs.list(), "active": state["active_gig"], "locked": state["locked_gig"]}
+
+    def refuse_if_locked(slots=None):
+        """While a gig is locked, refuse writes to its slots (slots=None: refuse any gig load)."""
+        if not state["locked_gig"]:
+            return
+        gig = gigs.get(state["locked_gig"])
+        name = gig.get("name", "the gig")
+        if slots is None:
+            raise PedalError("%s is locked for the show. Unlock it before loading a gig." % name)
+        for s in gig["loaded"]["slots"]:
+            if s["slot"] in slots:
+                raise PedalError("slot %d holds %s (%s) in %s, which is locked for the show. Unlock the gig "
+                                 "first, or pick another slot." % (s["slot"], s["patch"], s["song"], name))
+
+    def loaded_slots(gig):
+        if not gig.get("loaded"):
+            raise ValueError("%s hasn't been loaded to the pedal yet" % gig.get("name", "that gig"))
+        return gig["loaded"]["slots"]
 
     def _gig_or_404(gig_id):
         try:
@@ -607,7 +671,7 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
                 await ws.send_json({"type": "patches", "patches": [{"slot": n, "name": name}
                                                                    for n, name in sorted(worker.names.items())]})
             await ws.send_json(dict(history.summary(), type="history"))
-            await ws.send_json({"type": "gigs", "gigs": gigs.list(), "active": state.get("active_gig")})
+            await ws.send_json(gigs_event())
             while True:
                 await ws.send_json(await q.get())
 
