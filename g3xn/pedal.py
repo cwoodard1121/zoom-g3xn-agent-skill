@@ -246,8 +246,14 @@ class Pedal:
             self._live(P.TARGET_NAME, i, ord(ch))
         self._remember_scratch(name[:10].rstrip())
 
-    def _live(self, target, param, value):
-        if self.current() != self.scratch:
+    def stomp(self, position, on):
+        """Turn the effect at chain position `position` on or off in whatever patch is playing,
+        the way the pedal's own footswitches do (with autosave on, the slot keeps it). This is
+        for a player's footswitch; everything that shapes tones works on the scratch slot."""
+        self._live(position, P.PARAM_ON_OFF, int(bool(on)), any_slot=True)
+
+    def _live(self, target, param, value, any_slot=False):
+        if not any_slot and self.current() != self.scratch:
             raise PedalError("live edits only run on the scratch slot (%d); audition a patch first" % self.scratch)
         self._send(P.msg(P.EDIT, P.EDIT_PARAM, 0, target, param, P.u35(value)))
         if target == P.TARGET_SETTINGS:

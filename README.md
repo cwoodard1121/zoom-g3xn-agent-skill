@@ -210,7 +210,7 @@ Patch format notes live at the top of [`g3xn/patch.py`](g3xn/patch.py).
 ## Roadmap
 
 - ~~**Agent plugin**~~: done (see *Use it with Claude*)
-- **Desktop app**: started (tone editor with A/B, history and macros, patch library, gigs and stage view, tuner). Gig tools and the phone remote (`g3xn-daemon --remote`, pair with a code) are in the daemon, with screens to come. Next: MIDI footswitches, built-in Claude chat. Plan: [`docs/APP_PLAN.md`](docs/APP_PLAN.md)
+- **Desktop app**: started (tone editor with A/B, history and macros, patch library, gigs and stage view, tuner). Gig tools, the phone remote (`g3xn-daemon --remote`, pair with a code) and MIDI footswitches (any MIDI controller: learn a switch, then it steps through the set or turns effects on and off) are in the daemon, with screens to come. Next: built-in Claude chat. Plan: [`docs/APP_PLAN.md`](docs/APP_PLAN.md)
 
 ## Credits
 

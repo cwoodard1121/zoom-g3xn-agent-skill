@@ -1,5 +1,6 @@
 """The daemon end to end: a real HTTP server on a virtual pedal."""
 import json
+import threading
 import time
 import unittest
 import urllib.error
@@ -10,6 +11,8 @@ try:
     from g3xn.daemon import free_port, start_in_thread
 except ImportError:                       # the app extra isn't installed
     start_in_thread = None
+
+import mido
 
 from g3xn import Patch, Pedal
 from g3xn.sim import VirtualPedal
@@ -252,6 +255,113 @@ class RemoteTest(unittest.TestCase):
         request(local + "/api/remote", "POST", {"on": False})
         with self.assertRaises(urllib.error.URLError):
             urllib.request.urlopen(phone + "/api/status", timeout=3)
+
+
+class FakeController:
+    """A MIDI foot controller that a test presses (no real MIDI port is opened)."""
+
+    def __init__(self, name, callback):
+        self.name, self.callback, self.closed = name, callback, False
+
+    def press(self, kind, **fields):
+        self.callback(mido.Message(kind, **fields))
+
+    def close(self):
+        self.closed = True
+
+
+@unittest.skipIf(start_in_thread is None, "pip install g3xn[app] to test the daemon")
+class FootswitchTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        from g3xn.footswitch import Footswitches
+        cls.plugged_in, cls.opened = ["ZOOM G Series", "Foot Controller"], {}
+
+        def open_input(name, callback):
+            cls.opened[name] = FakeController(name, callback)
+            return cls.opened[name]
+        cls.fs = Footswitches(list_inputs=lambda: list(cls.plugged_in), open_input=open_input)
+        cls.vp = VirtualPedal()
+        cls.url, cls.stop = start_daemon(cls.vp, footswitches=cls.fs)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.stop()
+
+    def call(self, method, path, body=None):
+        status, reply, _ = request(self.url + path, method, body)
+        self.assertLess(status, 300, reply)
+        return reply
+
+    def wait_for(self, test, what):
+        deadline = time.time() + 5
+        while time.time() < deadline:
+            if test():
+                return
+            time.sleep(0.02)
+        self.fail("timed out waiting for " + what)
+
+    def test_footswitches(self):
+        info = self.call("GET", "/api/midi")
+        self.assertEqual((info["available"], info["listening"]), (["Foot Controller"], []))   # not the G3Xn
+        self.assertEqual(self.call("PUT", "/api/midi/inputs", {"inputs": ["Foot Controller"]})["listening"],
+                         ["Foot Controller"])
+        foot = self.opened["Foot Controller"]
+
+        learned = {}
+        learning = threading.Thread(target=lambda: learned.update(
+            self.call("POST", "/api/midi/learn", {"action": {"do": "next_song"}})))
+        learning.start()
+        self.wait_for(lambda: self.fs._learning, "learn mode")
+        foot.press("control_change", control=80, value=127)
+        learning.join()
+        self.assertEqual((learned["message"], learned["when"]),
+                         ({"type": "control_change", "channel": 0, "control": 80}, "press"))
+
+        songs = [{"song": n, "tone": dict(TONE, name=n.upper())} for n in ("One", "Two", "Three")]
+        gid = self.call("PUT", "/api/setlists/new", {"name": "Feet", "start_slot": 110, "patches": songs})["id"]
+        self.call("POST", "/api/setlists/%s/load" % gid)
+        self.assertEqual(self.vp.current, 110)
+        for expected in (111, 112, 112):                     # stops at the last song
+            foot.press("control_change", control=80, value=127)
+            foot.press("control_change", control=80, value=0)    # the release does nothing
+            self.wait_for(lambda: self.vp.current == expected, "slot %d" % expected)
+            time.sleep(0.1)
+
+        self.call("POST", "/api/midi/bindings", {"message": {"type": "note", "note": 60}, "action": {"do": "previous_song"}})
+        foot.press("note_on", note=60, velocity=90)
+        self.wait_for(lambda: self.vp.current == 111, "previous song")
+
+        self.call("POST", "/api/midi/bindings", {"message": {"type": "program_change", "program": 5},
+                                                 "action": {"do": "effect", "effect": 3}})
+        foot.press("program_change", program=5)
+        self.wait_for(lambda: not self.call("GET", "/api/live")["chain"][2]["on"], "the delay off")
+
+        self.call("POST", "/api/midi/bindings", {"message": {"type": "control_change", "control": 81},
+                                                 "action": {"do": "talk"}, "when": "any"})
+        with ws_connect("ws://127.0.0.1:%d/api/events" % int(self.url.rsplit(":", 1)[1])) as ws:
+            foot.press("control_change", control=81, value=127)
+            foot.press("control_change", control=81, value=0)
+            talk = []
+            while len(talk) < 2:
+                ev = json.loads(ws.recv(timeout=5))
+                if ev["type"] == "footswitch" and ev.get("action", {}).get("do") == "talk":
+                    talk.append(ev["pressed"])
+        self.assertEqual(talk, [True, False])
+
+        status, reply, _ = request(self.url + "/api/midi/bindings", "POST",
+                                   {"message": {"type": "note", "note": 61}, "action": {"do": "fly"}})
+        self.assertEqual(status, 400)
+        self.call("DELETE", "/api/midi/bindings/%s" % learned["id"])
+        foot.press("control_change", control=80, value=127)
+        time.sleep(0.3)
+        self.assertEqual(self.vp.current, 111)                   # unbound: nothing happens
+        self.assertTrue(self.call("GET", "/api/midi")["recent"])
+
+        self.plugged_in.remove("Foot Controller")                # unplugged
+        self.fs.sync()
+        self.assertTrue(foot.closed)
+        self.assertEqual(self.call("GET", "/api/midi")["listening"], [])
 
 
 if __name__ == "__main__":

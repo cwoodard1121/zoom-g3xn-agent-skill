@@ -42,6 +42,7 @@ from pydantic import BaseModel
 from . import service
 from . import gig as gig_files
 from .gig import GigLibrary, shown as shown_gig
+from .footswitch import Footswitches
 from .history import History
 from .remote import COOKIE, Remote
 from .remote import DEFAULT_PORT as REMOTE_PORT
@@ -52,6 +53,7 @@ DISCOVERY_FILE = os.path.join(os.path.expanduser("~"), ".g3xn", "daemon.json")
 HISTORY_FILE = os.path.join(os.path.expanduser("~"), ".g3xn", "history.json")
 GIGS_FOLDER = gig_files.FOLDER
 REMOTE_FILE = os.path.join(os.path.expanduser("~"), ".g3xn", "remote.json")
+MIDI_FILE = os.path.join(os.path.expanduser("~"), ".g3xn", "midi.json")
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 UI_DIR = os.path.join(REPO, "app", "dist")          # the built web UI (npm run build in app/)
 RETRY_SECONDS = 2.0
@@ -315,18 +317,38 @@ class PairRequest(BaseModel):
     name: str = ""
 
 
+class MidiInputsRequest(BaseModel):
+    inputs: list[str]
+
+
+class LearnRequest(BaseModel):
+    action: dict              # {"do": "next_song"}, {"do": "effect", "effect": 2}, ...
+    when: str | None = None   # press (default), release or any (default for talk)
+    seconds: float = 20.0
+
+
+class BindingRequest(BaseModel):
+    input: str = "*"
+    message: dict             # {"type": "control_change", "channel": 0, "control": 80}, note, program_change
+    action: dict
+    when: str = "press"
+
+
 class TunerReadRequest(BaseModel):
     seconds: float = 8.0
 
 
 def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, gigs_folder=None,
-               remote=None, remote_on=False):
+               remote=None, remote_on=False, footswitches=None):
     """announce: write ~/.g3xn/daemon.json so g3xn-mcp finds this daemon.
     history_file: where the time machine keeps its versions (None = memory only).
     gigs_folder: where saved gigs live (None = a temporary folder).
     remote: the phone remote (a remote.Remote; default: one that forgets phones on exit);
-    remote_on: start it listening on the network straight away."""
+    remote_on: start it listening on the network straight away.
+    footswitches: MIDI controllers driving the pedal (a footswitch.Footswitches; default: one that
+    forgets its bindings on exit)."""
     remote = remote or Remote()
+    footswitches = footswitches or Footswitches()
     if remote.port == port:
         raise ValueError("the phone remote needs a port of its own (both are %d)" % port)
     hub = EventHub()
@@ -338,6 +360,7 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
     async def lifespan(app):
         hub.loop = asyncio.get_running_loop()
         worker.start()
+        footswitches.start(on_footswitch, hub.emit)
         if announce:
             _write_discovery(port)
         if remote_on:
@@ -350,6 +373,7 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
             if announce:
                 _remove_discovery()
             await asyncio.to_thread(remote.stop)
+            await asyncio.to_thread(footswitches.stop)
             await asyncio.to_thread(worker.stop)
 
     app = FastAPI(title="g3xn", version="0.1.0", lifespan=lifespan,
@@ -735,6 +759,95 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
     def remote_event():
         return dict(remote.info(with_code=False), type="remote")      # phones get events too: no code
 
+    # --- MIDI footswitches ---
+
+    @app.get("/api/midi", tags=["footswitches"])
+    async def midi_info():
+        """MIDI controllers on this computer (not the G3Xn), the ones listened to, the bindings,
+        and the last few messages that came in (to see what a switch sends)."""
+        return footswitches.info()
+
+    @app.put("/api/midi/inputs", tags=["footswitches"])
+    async def midi_inputs(req: MidiInputsRequest):
+        """Listen to these MIDI inputs (names from /api/midi "available"). Kept for next time;
+        a controller that's unplugged is picked up again when it's plugged back in."""
+        await asyncio.to_thread(footswitches.choose_inputs, req.inputs)
+        return footswitches.info()
+
+    @app.post("/api/midi/learn", tags=["footswitches"])
+    async def midi_learn(req: LearnRequest):
+        """Bind the next switch pressed to an action. Waits up to `seconds` for the press.
+        Actions: next_song, previous_song, patch_up, patch_down, select (slot), tuner,
+        effect (effect: chain number, on/off), talk (press and release go to the app)."""
+        if not 1 <= req.seconds <= 60:
+            raise ValueError("wait 1 to 60 seconds")
+        return await asyncio.to_thread(footswitches.learn, req.action, req.when, req.seconds)
+
+    @app.post("/api/midi/bindings", tags=["footswitches"])
+    async def midi_bind(req: BindingRequest):
+        """Bind a MIDI message to an action without pressing anything."""
+        return footswitches.add(req.input, req.message, req.action, req.when)
+
+    @app.delete("/api/midi/bindings/{binding_id}", tags=["footswitches"])
+    async def midi_unbind(binding_id: str):
+        footswitches.remove(binding_id)
+        return footswitches.info()
+
+    def on_footswitch(binding, pressed):
+        """A bound switch was pressed (on the MIDI driver's thread): tell the app, and do it."""
+        action = binding["action"]
+        hub.emit({"type": "footswitch", "action": action, "pressed": pressed})
+        if action["do"] == "talk":
+            return
+        job = worker.submit(action["do"].replace("_", " "), lambda p: footswitch_job(p, action))
+        job.add_done_callback(footswitch_done)
+
+    def footswitch_job(p, action):
+        do = action["do"]
+        if do == "tuner":
+            worker.tuner_on = not worker.tuner_on
+            p.tuner(worker.tuner_on)
+            return {}
+        if do == "effect":
+            chain = p.edit_buffer().chain
+            if not 1 <= action["effect"] <= len(chain):
+                raise ValueError("this patch has %d effects; there's no effect %d" % (len(chain), action["effect"]))
+            fx = chain[action["effect"] - 1]
+            p.stomp(fx.position, not fx.enabled)
+            return {"live": service.live_view(p)}
+        here = p.current()
+        if do == "select":
+            target = action["slot"]
+        elif do in ("next_song", "previous_song") and gig_slots():
+            songs = gig_slots()
+            step = 1 if do == "next_song" else -1
+            target = songs[min(len(songs) - 1, max(0, songs.index(here) + step))] if here in songs else songs[0]
+        else:
+            target = next_slot(p, here, 1 if do in ("next_song", "patch_up") else -1)
+        if target != here:
+            service.select_patch(p, target)
+        return {}
+
+    def footswitch_done(job):
+        if job.exception():
+            hub.emit({"type": "footswitch", "error": str(job.exception())})
+        elif job.result().get("live"):
+            hub.emit({"type": "live", "tone": job.result()["live"]})
+
+    def gig_slots():
+        """The slots of the gig on the pedal, in order ([] if none)."""
+        try:
+            return [s["slot"] for s in gigs.get(state["active_gig"])["loaded"]["slots"]] if state["active_gig"] else []
+        except (OSError, KeyError, TypeError):
+            return []
+
+    def next_slot(p, slot, step):
+        """The slot before or after, round the end, past the scratch slot."""
+        while True:
+            slot = (slot - 1 + step) % p.patch_count + 1
+            if slot != p.scratch:
+                return slot
+
     # --- tuner ---
 
     @app.post("/api/tuner", tags=["tuner"])
@@ -789,10 +902,10 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
 
 
 def start_in_thread(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, gigs_folder=None,
-                    remote=None):
+                    remote=None, footswitches=None):
     """Run the daemon on a background thread (for the desktop window and tests).
     Returns (url, stop) once it is serving."""
-    app = create_app(make_pedal, port, announce, history_file, gigs_folder, remote)
+    app = create_app(make_pedal, port, announce, history_file, gigs_folder, remote, footswitches=footswitches)
     server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning"))
     thread = threading.Thread(target=server.run, name="g3xn-daemon", daemon=True)
     thread.start()
@@ -865,7 +978,8 @@ def main(argv=None):
     real = args.sim is None
     app = create_app(pedal_factory(args), args.port, announce=real, history_file=HISTORY_FILE if real else None,
                      gigs_folder=GIGS_FOLDER if real else None,
-                     remote=Remote(REMOTE_FILE if real else None, port=args.remote_port), remote_on=args.remote)
+                     remote=Remote(REMOTE_FILE if real else None, port=args.remote_port), remote_on=args.remote,
+                     footswitches=Footswitches(MIDI_FILE if real else None))
     print("g3xn daemon on http://127.0.0.1:%d (API docs at /docs)%s" % (args.port, "" if os.path.isdir(UI_DIR) else
           "; build the app with: cd app && npm install && npm run build"))
     uvicorn.run(app, host="127.0.0.1", port=args.port, log_level="warning")
