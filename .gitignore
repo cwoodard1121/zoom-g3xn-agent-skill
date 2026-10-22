@@ -13,3 +13,4 @@ build/
 
 # web UI
 node_modules/
+app/tsconfig.tsbuildinfo
