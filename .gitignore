@@ -1,0 +1,12 @@
+# Zoom's effect binaries and raw pedal backups stay local (copyrighted / personal)
+data/pedal_files/
+data/pedal_dump/
+backups/
+
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+dist/
+build/

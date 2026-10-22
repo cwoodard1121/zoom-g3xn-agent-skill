@@ -1,0 +1,7316 @@
+{
+ "0x030000c0": {
+  "id": "0x030000c0",
+  "name": "Aco.Sim",
+  "group": "DRIVE",
+  "file": "ACOSIM.ZD2",
+  "version": "1.30",
+  "dsp": 31.99,
+  "description": "This effect changes the tone of an electric guitar to make it sound like an acoustic guitar.",
+  "params": [
+   {
+    "name": "Top",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the unique string tone of acoustic guitars.",
+    "pedal": false
+   },
+   {
+    "name": "Body",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the body resonance of acoustic guitars.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 100,
+    "default": 100,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x09000010": {
+  "id": "0x09000010",
+  "name": "Air",
+  "group": "REVERB",
+  "file": "AIR.ZD2",
+  "version": "1.50",
+  "dsp": 16.0,
+  "description": "This effect reproduces the ambience of a room, to create spatial depth.",
+  "params": [
+   {
+    "name": "Size",
+    "max": 99,
+    "default": 19,
+    "explanation": "Sets the size of the space.",
+    "pedal": false
+   },
+   {
+    "name": "REF",
+    "max": 10,
+    "default": 5,
+    "explanation": "Adjusts the amount of reflection from the wall.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 60,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   },
+   {
+    "name": "Tail",
+    "max": 1,
+    "default": 0,
+    "explanation": "When ON, effect sound continues even after effect is turned off. When OFF, effect sound stops right when effect is turned off.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x090000b0": {
+  "id": "0x090000b0",
+  "name": "Ambience",
+  "group": "REVERB",
+  "file": "AMBIENCE.ZD2",
+  "version": "1.20",
+  "dsp": 72.59,
+  "description": "This effect adds a natural ambience (air) to the sound.",
+  "params": [
+   {
+    "name": "PreD",
+    "max": 200,
+    "default": 29,
+    "explanation": "Adjusts the delay between input of the original sound and start of the reverb sound.",
+    "pedal": false
+   },
+   {
+    "name": "Decay",
+    "max": 100,
+    "default": 70,
+    "explanation": "Sets the duration of the reverberations.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   },
+   {
+    "name": "Tail",
+    "max": 1,
+    "default": 0,
+    "explanation": "When ON, effect sound continues even after effect is turned off. The dry sound also continues to have the same tone as when the effect was on. When OFF, effect sound stops right when effect is turned off.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x06000150": {
+  "id": "0x06000150",
+  "name": "AnalogCho",
+  "group": "MODULATION",
+  "file": "ANA234CH.ZD2",
+  "version": "1.40",
+  "dsp": 23.79,
+  "description": "This effect simulates an analog chorus.",
+  "params": [
+   {
+    "name": "Depth",
+    "max": 100,
+    "default": 52,
+    "explanation": "Sets the depth of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Rate",
+    "max": 100,
+    "default": 54,
+    "explanation": "Sets modulation speed.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 100,
+    "default": 49,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 82,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x08000020": {
+  "id": "0x08000020",
+  "name": "AnalogDly",
+  "group": "DELAY",
+  "file": "ANALOGDL.ZD2",
+  "version": "1.30",
+  "dsp": 13.74,
+  "description": "This analog delay simulation has a long delay with a maximum length of 4000 mS.",
+  "params": [
+   {
+    "name": "Time",
+    "max": 4022,
+    "default": 359,
+    "explanation": "Sets the delay time.",
+    "pedal": false
+   },
+   {
+    "name": "F.B",
+    "max": 100,
+    "default": 28,
+    "explanation": "Adjusts the feedback amount.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 40,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   },
+   {
+    "name": "Tail",
+    "max": 1,
+    "default": 0,
+    "explanation": "When ON, effect sound continues even after effect is turned off. When OFF, effect sound stops right when effect is turned off.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x080000d0": {
+  "id": "0x080000d0",
+  "name": "A-Pan DLY",
+  "group": "DELAY",
+  "file": "APANDLY.ZD2",
+  "version": "1.20",
+  "dsp": 23.58,
+  "description": "This combines auto pan and delay to create the effect of the stereo image moving cyclically.",
+  "params": [
+   {
+    "name": "Time",
+    "max": 2014,
+    "default": 222,
+    "explanation": "Sets the delay time.",
+    "pedal": false
+   },
+   {
+    "name": "F.B",
+    "max": 100,
+    "default": 87,
+    "explanation": "Adjusts the feedback amount.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 53,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   },
+   {
+    "name": "Link",
+    "max": 1,
+    "default": 1,
+    "explanation": "Sets the order that the auto pan and delay are connected.",
+    "pedal": false
+   },
+   {
+    "name": "Cycle",
+    "max": 52,
+    "default": 26,
+    "explanation": "Sets the speed of the sound movement.",
+    "pedal": false
+   },
+   {
+    "name": "Width",
+    "max": 50,
+    "default": 50,
+    "explanation": "Sets the width of the sound movement.",
+    "pedal": false
+   },
+   {
+    "name": "Clip",
+    "max": 10,
+    "default": 0,
+    "explanation": "Adjusts the amount of waveform clipping.",
+    "pedal": false
+   },
+   {
+    "name": "INPUT",
+    "max": 1,
+    "default": 0,
+    "explanation": "Sets the foot switch function.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": false
+ },
+ "0x07000020": {
+  "id": "0x07000020",
+  "name": "AutoPan",
+  "group": "SFX",
+  "file": "AUTOPAN.ZD2",
+  "version": "1.40",
+  "dsp": 10.25,
+  "description": "This effect moves the sound image cyclically left and right.",
+  "params": [
+   {
+    "name": "Rate",
+    "max": 78,
+    "default": 5,
+    "explanation": "Sets the speed of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Width",
+    "max": 50,
+    "default": 50,
+    "explanation": "Sets the width of the panning.",
+    "pedal": false
+   },
+   {
+    "name": "Clip",
+    "max": 10,
+    "default": 0,
+    "explanation": "Adjusts the amount of waveform clipping. Higher values emphasize the auto-panning effect more.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x02000010": {
+  "id": "0x02000010",
+  "name": "AutoWah",
+  "group": "FILTER",
+  "file": "AUTOWAH.ZD2",
+  "version": "1.40",
+  "dsp": 17.64,
+  "description": "This effect varies wah in accordance with picking intensity.",
+  "params": [
+   {
+    "name": "Mode",
+    "max": 1,
+    "default": 1,
+    "explanation": "Sets direction of movement of the filter.",
+    "pedal": false
+   },
+   {
+    "name": "Sense",
+    "max": 9,
+    "default": 7,
+    "explanation": "Adjusts the sensitivity of the effect.",
+    "pedal": false
+   },
+   {
+    "name": "RESO",
+    "max": 10,
+    "default": 8,
+    "explanation": "Sets effect resonance.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x06000140": {
+  "id": "0x06000140",
+  "name": "BendCho",
+  "group": "MODULATION",
+  "file": "BENDCHO.ZD2",
+  "version": "1.40",
+  "dsp": 21.74,
+  "description": "This effect provides pitch bending that uses the input signal as trigger and processes each note separately.",
+  "params": [
+   {
+    "name": "Mode",
+    "max": 1,
+    "default": 0,
+    "explanation": "Sets direction of pitch bend.",
+    "pedal": false
+   },
+   {
+    "name": "Depth",
+    "max": 100,
+    "default": 40,
+    "explanation": "Sets the depth of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Time",
+    "max": 50,
+    "default": 50,
+    "explanation": "Sets time before effect starts.",
+    "pedal": false
+   },
+   {
+    "name": "BAL",
+    "max": 100,
+    "default": 100,
+    "explanation": "Adjusts the balance between original and effect sounds.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x05000050": {
+  "id": "0x05000050",
+  "name": "BGN4x12",
+  "group": "CABINET",
+  "file": "BGN4X12.ZD2",
+  "version": "1.30",
+  "dsp": 22.1,
+  "description": "This models the sound of the Bogner Ecstasy cabinet with four 12\" Celestion speakers.",
+  "params": [
+   {
+    "name": "MIC",
+    "max": 1,
+    "default": 0,
+    "explanation": "MIC=OFF: This tone is optimized for using amp modeling with a guitar amp.\nMIC=ON: This tone is optimized for using amp modeling with headphones or monitor speakers.",
+    "pedal": false
+   },
+   {
+    "name": "D57:D421",
+    "max": 100,
+    "default": 50,
+    "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
+    "pedal": false
+   },
+   {
+    "name": "Hi",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Lo",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x030000e0": {
+  "id": "0x030000e0",
+  "name": "HG THRTTL",
+  "group": "DRIVE",
+  "file": "BGTHRTTL.ZD2",
+  "version": "1.30",
+  "dsp": 66.85,
+  "description": "This models the sound of the Mesa Boogie THROTTLE BOX(GAIN SWITCH:HI / BOOST:ON).",
+  "params": [
+   {
+    "name": "Gain",
+    "max": 100,
+    "default": 78,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 100,
+    "default": 56,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "MdCut",
+    "max": 100,
+    "default": 46,
+    "explanation": "Adjusts volume of middle frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 54,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x030000f0": {
+  "id": "0x030000f0",
+  "name": "BG GRID",
+  "group": "DRIVE",
+  "file": "BG_GRID.ZD2",
+  "version": "1.30",
+  "dsp": 41.01,
+  "description": "This models a Mesa Boogie GRID SLAMMER.\r\nAn added parameter allows you to adjust the balance of original sound and overdrive.",
+  "params": [
+   {
+    "name": "Gain",
+    "max": 100,
+    "default": 68,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "BAL",
+    "max": 100,
+    "default": 100,
+    "explanation": "Adjusts the balance between original and effect sounds.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 74,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x04000040": {
+  "id": "0x04000040",
+  "name": "BG MK1",
+  "group": "AMP",
+  "file": "BG_MK1.ZD2",
+  "version": "1.10",
+  "dsp": 85.31,
+  "description": "This models the sound of the Mesa Boogie Mark I combo amp.",
+  "params": [
+   {
+    "name": "Bass",
+    "max": 100,
+    "default": 49,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "MID",
+    "max": 100,
+    "default": 55,
+    "explanation": "Adjusts volume of middle frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Treble",
+    "max": 100,
+    "default": 53,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "PRSNC",
+    "max": 100,
+    "default": 55,
+    "explanation": "Adjusts volume of super-high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Gain1",
+    "max": 100,
+    "default": 72,
+    "explanation": "Adjusts the gain of the first stage.",
+    "pedal": false
+   },
+   {
+    "name": "Gain2",
+    "max": 100,
+    "default": 70,
+    "explanation": "Adjusts the gain of the second stage.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 58,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   },
+   {
+    "name": "SOLO",
+    "max": 8,
+    "default": 2,
+    "explanation": "Sets the volume when the control switch is on.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": false
+ },
+ "0x04000042": {
+  "id": "0x04000042",
+  "name": "BG MK3",
+  "group": "AMP",
+  "file": "BG_MK3.ZD2",
+  "version": "1.20",
+  "dsp": 85.31,
+  "description": "This models the sound of the Mesa Boogie Mark III combo amp.",
+  "params": [
+   {
+    "name": "Bass",
+    "max": 100,
+    "default": 52,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "MID",
+    "max": 100,
+    "default": 85,
+    "explanation": "Adjusts volume of middle frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Treble",
+    "max": 100,
+    "default": 40,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "PRSNC",
+    "max": 100,
+    "default": 40,
+    "explanation": "Adjusts volume of super-high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Gain1",
+    "max": 100,
+    "default": 75,
+    "explanation": "Adjusts the gain of the first stage.",
+    "pedal": false
+   },
+   {
+    "name": "Gain2",
+    "max": 100,
+    "default": 75,
+    "explanation": "Adjusts the gain of the second stage.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 78,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   },
+   {
+    "name": "SOLO",
+    "max": 8,
+    "default": 2,
+    "explanation": "Sets the volume when the control switch is on.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": true
+ },
+ "0x01800010": {
+  "id": "0x01800010",
+  "name": "BlackOpt",
+  "group": "DYNAMICS",
+  "file": "BLACKOPT.ZD2",
+  "version": "1.40",
+  "dsp": 35.68,
+  "description": "This is a simulation of the Demeter COMP-1 Compulator.\r\nAdded parameters allow you to adjust the tone.",
+  "params": [
+   {
+    "name": "Comp",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the depth of the compression.",
+    "pedal": false
+   },
+   {
+    "name": "Lo",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Hi",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 76,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x0b000020": {
+  "id": "0x0b000020",
+  "name": "BlackWah",
+  "group": "PEDAL",
+  "file": "BLCK_WAH.ZD2",
+  "version": "1.50",
+  "dsp": 18.87,
+  "description": "This pedal wah effect simulates the Cry Baby.",
+  "params": [
+   {
+    "name": "FREQ",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the emphasized frequency.",
+    "pedal": true
+   },
+   {
+    "name": "Range",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the frequency range processed by the effect.",
+    "pedal": false
+   },
+   {
+    "name": "Dry",
+    "max": 100,
+    "default": 0,
+    "explanation": "Adjusts the volume of the unaffected sound.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x07000010": {
+  "id": "0x07000010",
+  "name": "Bomber",
+  "group": "SFX",
+  "file": "BOMBER.ZD2",
+  "version": "1.70",
+  "dsp": 21.12,
+  "description": "This effect generates explosive sounds.",
+  "params": [
+   {
+    "name": "Decay",
+    "max": 99,
+    "default": 49,
+    "explanation": "Adjusts the length of the explosive sound.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 10,
+    "default": 4,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 30,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   },
+   {
+    "name": "ON/OFF",
+    "max": 1,
+    "default": 1,
+    "explanation": "Sets the foot switch function.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x090000d0": {
+  "id": "0x090000d0",
+  "name": "Chamber",
+  "group": "REVERB",
+  "file": "CHAMBER.ZD2",
+  "version": "1.40",
+  "dsp": 56.6,
+  "description": "This effect simulates the reverberations of a chamber-sized room.",
+  "params": [
+   {
+    "name": "PreD",
+    "max": 200,
+    "default": 24,
+    "explanation": "Adjusts the delay between input of the original sound and start of the reverb sound.",
+    "pedal": false
+   },
+   {
+    "name": "Decay",
+    "max": 100,
+    "default": 50,
+    "explanation": "Sets the duration of the reverberations.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 48,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   },
+   {
+    "name": "Tail",
+    "max": 1,
+    "default": 1,
+    "explanation": "When ON, effect sound continues even after effect is turned off. When OFF, effect sound stops right when effect is turned off.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x06000020": {
+  "id": "0x06000020",
+  "name": "Chorus",
+  "group": "MODULATION",
+  "file": "CHORUS.ZD2",
+  "version": "1.50",
+  "dsp": 16.92,
+  "description": "This effect mixes a shifted pitch with the original sound to add movement and thickness.",
+  "params": [
+   {
+    "name": "Depth",
+    "max": 100,
+    "default": 40,
+    "explanation": "Sets the depth of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Rate",
+    "max": 49,
+    "default": 24,
+    "explanation": "Sets the speed of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 10,
+    "default": 7,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x0b000030": {
+  "id": "0x0b000030",
+  "name": "ChromeWah",
+  "group": "PEDAL",
+  "file": "CHRM_WAH.ZD2",
+  "version": "1.50",
+  "dsp": 17.43,
+  "description": "This simulates a British wah pedal with a chrome finish.",
+  "params": [
+   {
+    "name": "FREQ",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the emphasized frequency.",
+    "pedal": true
+   },
+   {
+    "name": "Range",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the frequency range processed by the effect.",
+    "pedal": false
+   },
+   {
+    "name": "Dry",
+    "max": 100,
+    "default": 0,
+    "explanation": "Adjusts the volume of the unaffected sound.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x090000a0": {
+  "id": "0x090000a0",
+  "name": "Church",
+  "group": "REVERB",
+  "file": "CHURCH.ZD2",
+  "version": "1.40",
+  "dsp": 73.82,
+  "description": "This effect simulates the reverberations of a church.",
+  "params": [
+   {
+    "name": "PreD",
+    "max": 200,
+    "default": 96,
+    "explanation": "Adjusts the delay between input of the original sound and start of the reverb sound.",
+    "pedal": false
+   },
+   {
+    "name": "Decay",
+    "max": 100,
+    "default": 49,
+    "explanation": "Sets the duration of the reverberations.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 46,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   },
+   {
+    "name": "Tail",
+    "max": 1,
+    "default": 0,
+    "explanation": "When ON, effect sound continues even after effect is turned off. The dry sound also continues to have the same tone as when the effect was on. When OFF, effect sound stops right when effect is turned off.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x06000100": {
+  "id": "0x06000100",
+  "name": "CloneCho",
+  "group": "MODULATION",
+  "file": "CLONECHO.ZD2",
+  "version": "1.40",
+  "dsp": 25.63,
+  "description": "This analog chorus sound models the Electro-Harmonix SmallClone.",
+  "params": [
+   {
+    "name": "Depth",
+    "max": 1,
+    "default": 1,
+    "explanation": "Sets the depth of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Rate",
+    "max": 100,
+    "default": 23,
+    "explanation": "Sets the speed of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 100,
+    "default": 100,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 100,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x01000010": {
+  "id": "0x01000010",
+  "name": "Comp",
+  "group": "DYNAMICS",
+  "file": "COMP.ZD2",
+  "version": "1.40",
+  "dsp": 13.94,
+  "description": "This compressor in the style of the MXR Dyna Comp.",
+  "params": [
+   {
+    "name": "Sense",
+    "max": 10,
+    "default": 6,
+    "explanation": "Adjusts the sensitivity of the effect.",
+    "pedal": false
+   },
+   {
+    "name": "ATTCK",
+    "max": 1,
+    "default": 0,
+    "explanation": "Sets compressor attack speed to Fast or Slow.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 10,
+    "default": 6,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x06000130": {
+  "id": "0x06000130",
+  "name": "CoronaTri",
+  "group": "MODULATION",
+  "file": "CRN_TRI.ZD2",
+  "version": "1.30",
+  "dsp": 48.81,
+  "description": "This is a model of tc electronic's CORONA Tri-Chorus.",
+  "params": [
+   {
+    "name": "Depth",
+    "max": 100,
+    "default": 100,
+    "explanation": "Sets the depth of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Speed",
+    "max": 100,
+    "default": 25,
+    "explanation": "Sets the speed of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 100,
+    "default": 100,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 100,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x02000030": {
+  "id": "0x02000030",
+  "name": "Cry",
+  "group": "FILTER",
+  "file": "CRY.ZD2",
+  "version": "1.40",
+  "dsp": 14.76,
+  "description": "This effect varies the sound like a talking modulator.",
+  "params": [
+   {
+    "name": "Range",
+    "max": 9,
+    "default": 6,
+    "explanation": "Adjusts the frequency range processed by the effect.",
+    "pedal": false
+   },
+   {
+    "name": "RESO",
+    "max": 10,
+    "default": 8,
+    "explanation": "Sets effect resonance.",
+    "pedal": false
+   },
+   {
+    "name": "Sense",
+    "max": 19,
+    "default": 16,
+    "explanation": "Adjusts the sensitivity of the effect.",
+    "pedal": false
+   },
+   {
+    "name": "BAL",
+    "max": 100,
+    "default": 100,
+    "explanation": "Adjusts the balance between original and effect sounds.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x08000010": {
+  "id": "0x08000010",
+  "name": "Delay",
+  "group": "DELAY",
+  "file": "DELAY.ZD2",
+  "version": "1.30",
+  "dsp": 13.74,
+  "description": "This long delay has a maximum length of 4000 mS.",
+  "params": [
+   {
+    "name": "Time",
+    "max": 4022,
+    "default": 559,
+    "explanation": "Sets the delay time.",
+    "pedal": false
+   },
+   {
+    "name": "F.B",
+    "max": 100,
+    "default": 30,
+    "explanation": "Adjusts the feedback amount.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 70,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   },
+   {
+    "name": "Tail",
+    "max": 1,
+    "default": 0,
+    "explanation": "When ON, effect sound continues even after effect is turned off. When OFF, effect sound stops right when effect is turned off.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x060000a0": {
+  "id": "0x060000a0",
+  "name": "Detune",
+  "group": "MODULATION",
+  "file": "DETUNE.ZD2",
+  "version": "1.40",
+  "dsp": 14.76,
+  "description": "By mixing an effect sound that is slightly pitch-shifted with the original sound, this effect type has a chorus effect without much sense of modulation.",
+  "params": [
+   {
+    "name": "Cent",
+    "max": 50,
+    "default": 35,
+    "explanation": "Adjusts the detuning in cents, which are fine increments of 1/100-semitone.",
+    "pedal": false
+   },
+   {
+    "name": "PreD",
+    "max": 50,
+    "default": 0,
+    "explanation": "Sets the pre-delay time of the effect sound.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 10,
+    "default": 8,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 52,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x03000160": {
+  "id": "0x03000160",
+  "name": "DIST Plus",
+  "group": "DRIVE",
+  "file": "DISTPLUS.ZD2",
+  "version": "1.20",
+  "dsp": 31.79,
+  "description": "This models the sound of a MXR DISTORTION+.",
+  "params": [
+   {
+    "name": "Gain",
+    "max": 100,
+    "default": 70,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 100,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   },
+   {
+    "name": "DryMx",
+    "max": 100,
+    "default": 0,
+    "explanation": "Adjusts the volume of the unaffected sound.",
+    "pedal": false
+   },
+   {
+    "name": "Comp",
+    "max": 2,
+    "default": 0,
+    "explanation": "Sets the clipping type of DIST Plus.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x03000120": {
+  "id": "0x03000120",
+  "name": "DIST 1",
+  "group": "DRIVE",
+  "file": "DIST_1.ZD2",
+  "version": "1.30",
+  "dsp": 36.3,
+  "description": "This models the sound of a BOSS DS-1 DISTORTION.",
+  "params": [
+   {
+    "name": "Gain",
+    "max": 100,
+    "default": 61,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 100,
+    "default": 41,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 100,
+    "explanation": "Adjusts the volume. ",
+    "pedal": false
+   },
+   {
+    "name": "Comp",
+    "max": 1,
+    "default": 0,
+    "explanation": "Sets the clipping type of DIST 1.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x080000a0": {
+  "id": "0x080000a0",
+  "name": "Dual DLY",
+  "group": "DELAY",
+  "file": "DUALDIGD.ZD2",
+  "version": "1.20",
+  "dsp": 41.42,
+  "description": "This effect combines 2 delays and is based on the Eventide TimeFactor DigitalDelay.",
+  "params": [
+   {
+    "name": "TimeA",
+    "max": 2005,
+    "default": 500,
+    "explanation": "Adjusts the delay time of Delay A.",
+    "pedal": false
+   },
+   {
+    "name": "F.B A",
+    "max": 110,
+    "default": 50,
+    "explanation": "Adjusts the Delay A feedback amount.",
+    "pedal": false
+   },
+   {
+    "name": "TimeB",
+    "max": 2005,
+    "default": 375,
+    "explanation": "Adjusts the delay time of Delay B.",
+    "pedal": false
+   },
+   {
+    "name": "F.B B",
+    "max": 110,
+    "default": 50,
+    "explanation": "Adjusts the Delay B feedback amount.",
+    "pedal": false
+   },
+   {
+    "name": "DlyMx",
+    "max": 100,
+    "default": 25,
+    "explanation": "Adjust the mix of the Delay A and B effect sounds.",
+    "pedal": false
+   },
+   {
+    "name": "BAL",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the balance between original and effect sounds.",
+    "pedal": false
+   },
+   {
+    "name": "Depth",
+    "max": 101,
+    "default": 30,
+    "explanation": "Sets the depth of the modulation. Also sets the output to mono (M0.M50) or stereo (S0.S50).",
+    "pedal": false
+   },
+   {
+    "name": "Speed",
+    "max": 50,
+    "default": 25,
+    "explanation": "Sets the speed of the modulation.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": false
+ },
+ "0x06000170": {
+  "id": "0x06000170",
+  "name": "Duo Phase",
+  "group": "MODULATION",
+  "file": "DUO_PHA.ZD2",
+  "version": "1.10",
+  "dsp": 24.61,
+  "description": "This effect combines two phasers.",
+  "params": [
+   {
+    "name": "DPT A",
+    "max": 99,
+    "default": 62,
+    "explanation": "Sets the depth of LFO A modulation.",
+    "pedal": false
+   },
+   {
+    "name": "RateA",
+    "max": 77,
+    "default": 5,
+    "explanation": "Sets the speed of LFO A modulation.",
+    "pedal": false
+   },
+   {
+    "name": "ResoA",
+    "max": 10,
+    "default": 6,
+    "explanation": "Sets the resonance of LFO A modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Link",
+    "max": 2,
+    "default": 0,
+    "explanation": "Sets how 2 phasers are connected.",
+    "pedal": false
+   },
+   {
+    "name": "DPT B",
+    "max": 99,
+    "default": 36,
+    "explanation": "Sets the depth of LFO B modulation.",
+    "pedal": false
+   },
+   {
+    "name": "RATE B",
+    "max": 51,
+    "default": 46,
+    "explanation": "Sets the speed of LFO B modulation.",
+    "pedal": false
+   },
+   {
+    "name": "RESO B",
+    "max": 10,
+    "default": 0,
+    "explanation": "Sets the resonance of LFO B modulation.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": false
+ },
+ "0x03000060": {
+  "id": "0x03000060",
+  "name": "DYN Drive",
+  "group": "DRIVE",
+  "file": "DYNDRIVE.ZD2",
+  "version": "1.30",
+  "dsp": 52.29,
+  "description": "This effect easily achieves the warm drive tone of a tube amp.",
+  "params": [
+   {
+    "name": "Gain",
+    "max": 100,
+    "default": 78,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 100,
+    "default": 67,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "Mode",
+    "max": 1,
+    "default": 1,
+    "explanation": "Sets the sound style.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 46,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x05000090": {
+  "id": "0x05000090",
+  "name": "DZ4x12F",
+  "group": "CABINET",
+  "file": "DZ4X12F.ZD2",
+  "version": "1.30",
+  "dsp": 22.76,
+  "description": "This models the sound of a Diezel 412F cabinet with four 12\" Celestion Vintage 30 speakers.",
+  "params": [
+   {
+    "name": "MIC",
+    "max": 1,
+    "default": 0,
+    "explanation": "MIC=OFF: This tone is optimized for using amp modeling with a guitar amp.\nMIC=ON: This tone is optimized for using amp modeling with headphones or monitor speakers.",
+    "pedal": false
+   },
+   {
+    "name": "D57:D421",
+    "max": 100,
+    "default": 50,
+    "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
+    "pedal": false
+   },
+   {
+    "name": "Hi",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Lo",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x04000090": {
+  "id": "0x04000090",
+  "name": "DZ DRV",
+  "group": "AMP",
+  "file": "DZ_DRV.ZD2",
+  "version": "1.10",
+  "dsp": 65.62,
+  "description": "This models the sound of the Diezel Herbert Channel2.",
+  "params": [
+   {
+    "name": "Bass",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "MID",
+    "max": 100,
+    "default": 70,
+    "explanation": "Adjusts volume of middle frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Treble",
+    "max": 100,
+    "default": 60,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "PRSNC",
+    "max": 100,
+    "default": 40,
+    "explanation": "Adjusts volume of super-high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Gain",
+    "max": 100,
+    "default": 60,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   },
+   {
+    "name": "Deep",
+    "max": 100,
+    "default": 0,
+    "explanation": "Emphasizes low frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "MID CUT",
+    "max": 100,
+    "default": 0,
+    "explanation": "Cuts middle frequencies.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": false
+ },
+ "0x09000080": {
+  "id": "0x09000080",
+  "name": "EarlyRef",
+  "group": "REVERB",
+  "file": "EARLYREF.ZD2",
+  "version": "1.40",
+  "dsp": 25.02,
+  "description": "This effect reproduces only the early reflections of reverb.",
+  "params": [
+   {
+    "name": "Decay",
+    "max": 29,
+    "default": 14,
+    "explanation": "Adjusts the duration of the reverb.",
+    "pedal": false
+   },
+   {
+    "name": "Shape",
+    "max": 20,
+    "default": 20,
+    "explanation": "Adjusts the effect envelope.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 10,
+    "default": 6,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x02000080": {
+  "id": "0x02000080",
+  "name": "EG FLTR",
+  "group": "FILTER",
+  "file": "EGFILTER.ZD2",
+  "version": "1.30",
+  "dsp": 28.5,
+  "description": "This filter effect is controlled using the control switch.",
+  "params": [
+   {
+    "name": "FREQ1",
+    "max": 100,
+    "default": 100,
+    "explanation": "Sets the frequency when the control switch is off.",
+    "pedal": false
+   },
+   {
+    "name": "FREQ2",
+    "max": 100,
+    "default": 16,
+    "explanation": "Sets the frequency when the control switch is on.",
+    "pedal": false
+   },
+   {
+    "name": "RESO",
+    "max": 100,
+    "default": 35,
+    "explanation": "Sets effect resonance.",
+    "pedal": false
+   },
+   {
+    "name": "Type",
+    "max": 5,
+    "default": 4,
+    "explanation": "Sets filter type.",
+    "pedal": false
+   },
+   {
+    "name": "Speed",
+    "max": 100,
+    "default": 25,
+    "explanation": "Sets the speed of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "BAL",
+    "max": 100,
+    "default": 100,
+    "explanation": "Adjusts the balance between original and effect sounds.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 72,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   },
+   {
+    "name": "CNTRL",
+    "max": 2,
+    "default": 2,
+    "explanation": "Sets the control switch function.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": false
+ },
+ "0x03000020": {
+  "id": "0x03000020",
+  "name": "EP Stomp",
+  "group": "DRIVE",
+  "file": "EP_STOMP.ZD2",
+  "version": "1.40",
+  "dsp": 32.4,
+  "description": "This models the Maestro Echoplex preamp.",
+  "params": [
+   {
+    "name": "Gain",
+    "max": 100,
+    "default": 35,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "Bass",
+    "max": 20,
+    "default": 10,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Treble",
+    "max": 20,
+    "default": 8,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 62,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x020000b0": {
+  "id": "0x020000b0",
+  "name": "Exciter",
+  "group": "FILTER",
+  "file": "EXCITER.ZD2",
+  "version": "1.50",
+  "dsp": 21.74,
+  "description": "This exciter enables flexible control.",
+  "params": [
+   {
+    "name": "Bass",
+    "max": 100,
+    "default": 0,
+    "explanation": "Adjusts the amount of low-frequency phase correction.",
+    "pedal": false
+   },
+   {
+    "name": "Treble",
+    "max": 100,
+    "default": 0,
+    "explanation": "Adjusts the amount of high-frequency phase correction.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   },
+   {
+    "name": "ON/OFF",
+    "max": 1,
+    "default": 0,
+    "explanation": "Sets the foot switch function.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x05000020": {
+  "id": "0x05000020",
+  "name": "FD2x12",
+  "group": "CABINET",
+  "file": "FD2X12.ZD2",
+  "version": "1.30",
+  "dsp": 22.1,
+  "description": "This models the sound of the Fender '65 Twin Reverb cabinet with two 12\" Jensen speakers.",
+  "params": [
+   {
+    "name": "MIC",
+    "max": 1,
+    "default": 0,
+    "explanation": "MIC=OFF: This tone is optimized for using amp modeling with a guitar amp.\nMIC=ON: This tone is optimized for using amp modeling with headphones or monitor speakers.",
+    "pedal": false
+   },
+   {
+    "name": "D57:D421",
+    "max": 100,
+    "default": 50,
+    "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
+    "pedal": false
+   },
+   {
+    "name": "Hi",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Lo",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x05000027": {
+  "id": "0x05000027",
+  "name": "FD-B4x10",
+  "group": "CABINET",
+  "file": "FDB4X10.ZD2",
+  "version": "1.40",
+  "dsp": 22.1,
+  "description": "This models the sound of the Fender '59 Bassman cabinet with four 10\" Jensen speakers.",
+  "params": [
+   {
+    "name": "MIC",
+    "max": 1,
+    "default": 0,
+    "explanation": "MIC=OFF: This tone is optimized for using amp modeling with a guitar amp.\nMIC=ON: This tone is optimized for using amp modeling with headphones or monitor speakers.",
+    "pedal": false
+   },
+   {
+    "name": "D57:D421",
+    "max": 100,
+    "default": 50,
+    "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
+    "pedal": false
+   },
+   {
+    "name": "Hi",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Lo",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x0500002a": {
+  "id": "0x0500002a",
+  "name": "FD-DX1x12",
+  "group": "CABINET",
+  "file": "FDDX1X12.ZD2",
+  "version": "1.40",
+  "dsp": 22.1,
+  "description": "This models the sound of a Fender '65 Deluxe Reverb cabinet with one 12\" Jensen C-12K Speaker.",
+  "params": [
+   {
+    "name": "MIC",
+    "max": 1,
+    "default": 0,
+    "explanation": "MIC=OFF: This tone is optimized for using amp modeling with a guitar amp.\nMIC=ON: This tone is optimized for using amp modeling with headphones or monitor speakers.",
+    "pedal": false
+   },
+   {
+    "name": "D57:D421",
+    "max": 100,
+    "default": 50,
+    "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
+    "pedal": false
+   },
+   {
+    "name": "Hi",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Lo",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x0500002b": {
+  "id": "0x0500002b",
+  "name": "FD MA2x12",
+  "group": "CABINET",
+  "file": "FDMA2X12.ZD2",
+  "version": "1.30",
+  "dsp": 22.76,
+  "description": "This models the sound of a Fender ToneMaster2x12 cabinet with two 12\" Celestion G12-80 speakers.",
+  "params": [
+   {
+    "name": "MIC",
+    "max": 1,
+    "default": 0,
+    "explanation": "MIC=OFF: This tone is optimized for using amp modeling with a guitar amp.\nMIC=ON: This tone is optimized for using amp modeling with headphones or monitor speakers.",
+    "pedal": false
+   },
+   {
+    "name": "D57:D421",
+    "max": 100,
+    "default": 50,
+    "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
+    "pedal": false
+   },
+   {
+    "name": "Hi",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Lo",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x09000060": {
+  "id": "0x09000060",
+  "name": "FD Spring",
+  "group": "REVERB",
+  "file": "FDSPRING.ZD2",
+  "version": "1.40",
+  "dsp": 61.93,
+  "description": "This simulates the spring reverb of the '65 Fender Twin Reverb.",
+  "params": [
+   {
+    "name": "Color",
+    "max": 1,
+    "default": 0,
+    "explanation": "Sets the tone of the effect type.",
+    "pedal": false
+   },
+   {
+    "name": "Lo",
+    "max": 100,
+    "default": 100,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Hi",
+    "max": 100,
+    "default": 100,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x04000027": {
+  "id": "0x04000027",
+  "name": "FD B-MAN",
+  "group": "AMP",
+  "file": "FD_BMAN.ZD2",
+  "version": "1.10",
+  "dsp": 74.85,
+  "description": "This models the sound of the Fender '59 Bassman.",
+  "params": [
+   {
+    "name": "Input",
+    "max": 1,
+    "default": 1,
+    "explanation": "Selects the input channel.",
+    "pedal": false
+   },
+   {
+    "name": "Bass",
+    "max": 110,
+    "default": 30,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "MID",
+    "max": 110,
+    "default": 90,
+    "explanation": "Adjusts volume of middle frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Treble",
+    "max": 110,
+    "default": 40,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "PRSNC",
+    "max": 110,
+    "default": 50,
+    "explanation": "Adjusts volume of super-high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Gain",
+    "max": 110,
+    "default": 30,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 110,
+    "default": 50,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   },
+   {
+    "name": "SOLO",
+    "max": 8,
+    "default": 2,
+    "explanation": "Sets the volume when the control switch is on.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": false
+ },
+ "0x0400002a": {
+  "id": "0x0400002a",
+  "name": "FD DLXR",
+  "group": "AMP",
+  "file": "FD_DLXR.ZD2",
+  "version": "1.10",
+  "dsp": 74.64,
+  "description": "This models the sound of the Fender '65 Deluxe Reverb.",
+  "params": [
+   {
+    "name": "Input",
+    "max": 1,
+    "default": 0,
+    "explanation": "Selects the input channel.",
+    "pedal": false
+   },
+   {
+    "name": "Bass",
+    "max": 90,
+    "default": 33,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Treble",
+    "max": 90,
+    "default": 55,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Gain",
+    "max": 90,
+    "default": 50,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 90,
+    "default": 90,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   },
+   {
+    "name": "DEPTH",
+    "max": 90,
+    "default": 80,
+    "explanation": "Sets the depth of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "SPEED",
+    "max": 100,
+    "default": 40,
+    "explanation": "Sets the speed of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "TRM VOL",
+    "max": 9,
+    "default": 0,
+    "explanation": "Sets the volume when the tremolo is on.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": false
+ },
+ "0x0400002b": {
+  "id": "0x0400002b",
+  "name": "FD MASTER",
+  "group": "AMP",
+  "file": "FD_MSTR.ZD2",
+  "version": "1.10",
+  "dsp": 72.8,
+  "description": "This models the sound of the Fender ToneMaster B channel.",
+  "params": [
+   {
+    "name": "Gain",
+    "max": 90,
+    "default": 40,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "Bass",
+    "max": 90,
+    "default": 60,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "MID",
+    "max": 90,
+    "default": 60,
+    "explanation": "Adjusts volume of middle frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Treble",
+    "max": 90,
+    "default": 60,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Fat",
+    "max": 1,
+    "default": 1,
+    "explanation": "Sets the sound style.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 90,
+    "default": 40,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   },
+   {
+    "name": "TONE",
+    "max": 100,
+    "default": 50,
+    "explanation": "Sets the tone when the control switch is on.",
+    "pedal": false
+   },
+   {
+    "name": "SOLO",
+    "max": 8,
+    "default": 2,
+    "explanation": "Sets the volume when the control switch is on.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": true
+ },
+ "0x04000020": {
+  "id": "0x04000020",
+  "name": "FD TWNR",
+  "group": "AMP",
+  "file": "FD_TWINR.ZD2",
+  "version": "1.20",
+  "dsp": 76.18,
+  "description": "This models the sound of the Fender '65 Twin Reverb.",
+  "params": [
+   {
+    "name": "Bass",
+    "max": 90,
+    "default": 38,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "MID",
+    "max": 90,
+    "default": 40,
+    "explanation": "Adjusts volume of middle frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Treble",
+    "max": 90,
+    "default": 35,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "BRGHT",
+    "max": 1,
+    "default": 0,
+    "explanation": "Sets the high frequency response. The effect is noticeable at lower gain settings.",
+    "pedal": false
+   },
+   {
+    "name": "Gain",
+    "max": 90,
+    "default": 30,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 90,
+    "default": 70,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   },
+   {
+    "name": "DEPTH",
+    "max": 90,
+    "default": 40,
+    "explanation": "Sets the depth of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "SPEED",
+    "max": 100,
+    "default": 40,
+    "explanation": "Sets the speed of the modulation.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": true
+ },
+ "0x08000090": {
+  "id": "0x08000090",
+  "name": "FilterDly",
+  "group": "DELAY",
+  "file": "FLTRDLY.ZD2",
+  "version": "1.40",
+  "dsp": 20.92,
+  "description": "This effect filters a delayed sound.",
+  "params": [
+   {
+    "name": "Time",
+    "max": 2014,
+    "default": 499,
+    "explanation": "Sets the delay time.",
+    "pedal": false
+   },
+   {
+    "name": "F.B",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the feedback amount.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 90,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   },
+   {
+    "name": "Tail",
+    "max": 1,
+    "default": 0,
+    "explanation": "When ON, effect sound continues even after effect is turned off. When OFF, effect sound stops right when effect is turned off.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x090000e0": {
+  "id": "0x090000e0",
+  "name": "GateRev",
+  "group": "REVERB",
+  "file": "GATE_REV.ZD2",
+  "version": "1.40",
+  "dsp": 50.24,
+  "description": "This unique reverb is good for percussive playing.",
+  "params": [
+   {
+    "name": "Color",
+    "max": 4,
+    "default": 0,
+    "explanation": "Sets the sound color.",
+    "pedal": false
+   },
+   {
+    "name": "Decay",
+    "max": 100,
+    "default": 55,
+    "explanation": "Sets the duration of the reverberations.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "BAL",
+    "max": 100,
+    "default": 60,
+    "explanation": "Adjusts the balance between original and effect sounds.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x03000040": {
+  "id": "0x03000040",
+  "name": "GoldDrive",
+  "group": "DRIVE",
+  "file": "GOLD_DRV.ZD2",
+  "version": "1.30",
+  "dsp": 52.5,
+  "description": "This effect models a famous gold overdrive boutique pedal.",
+  "params": [
+   {
+    "name": "Gain",
+    "max": 100,
+    "default": 69,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "Bass",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Treble",
+    "max": 100,
+    "default": 56,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 43,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x01000060": {
+  "id": "0x01000060",
+  "name": "GrayComp",
+  "group": "DYNAMICS",
+  "file": "GRAYCOMP.ZD2",
+  "version": "1.40",
+  "dsp": 50.45,
+  "description": "This models a ROSS Compressor. \r\nAdded parameters allow you to adjust the tone.",
+  "params": [
+   {
+    "name": "SUSTN",
+    "max": 100,
+    "default": 63,
+    "explanation": "Adjusts the sustain.",
+    "pedal": false
+   },
+   {
+    "name": "Lo",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Hi",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 88,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x02000050": {
+  "id": "0x02000050",
+  "name": "Gt GEQ",
+  "group": "FILTER",
+  "file": "GT_GEQ.ZD2",
+  "version": "1.20",
+  "dsp": 13.33,
+  "description": "This mono graphic equalizer has 6 bands that suit guitar frequencies.",
+  "params": [
+   {
+    "name": "160",
+    "max": 48,
+    "default": 24,
+    "explanation": "Boosts or cuts the low (160 Hz) frequency band.",
+    "pedal": false
+   },
+   {
+    "name": "400",
+    "max": 48,
+    "default": 24,
+    "explanation": "Boosts or cuts the low (400 Hz) frequency band.",
+    "pedal": false
+   },
+   {
+    "name": "800",
+    "max": 48,
+    "default": 24,
+    "explanation": "Boosts or cuts the low (800 Hz) frequency band.",
+    "pedal": false
+   },
+   {
+    "name": "3.2k",
+    "max": 48,
+    "default": 24,
+    "explanation": "Boosts or cuts the low (3.2 kHz) frequency band.",
+    "pedal": false
+   },
+   {
+    "name": "6.4k",
+    "max": 48,
+    "default": 24,
+    "explanation": "Boosts or cuts the low (6.4 kHz) frequency band.",
+    "pedal": false
+   },
+   {
+    "name": "12k",
+    "max": 48,
+    "default": 24,
+    "explanation": "Boosts or cuts the low (12 kHz) frequency band.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   },
+   {
+    "name": "CH SEL",
+    "max": 48,
+    "default": 24,
+    "explanation": "Sets the control switch function.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": true
+ },
+ "0x02000053": {
+  "id": "0x02000053",
+  "name": "Gt GEQ 7",
+  "group": "FILTER",
+  "file": "GT_GEQ_7.ZD2",
+  "version": "1.20",
+  "dsp": 13.33,
+  "description": "This mono graphic equalizer has 7 bands that suit guitar frequencies.",
+  "params": [
+   {
+    "name": "100",
+    "max": 48,
+    "default": 24,
+    "explanation": "Boosts or cuts the low (100 Hz) frequency band.",
+    "pedal": false
+   },
+   {
+    "name": "200",
+    "max": 48,
+    "default": 24,
+    "explanation": "Boosts or cuts the low (200 Hz) frequency band.",
+    "pedal": false
+   },
+   {
+    "name": "400",
+    "max": 48,
+    "default": 24,
+    "explanation": "Boosts or cuts the low (400 Hz) frequency band.",
+    "pedal": false
+   },
+   {
+    "name": "800",
+    "max": 48,
+    "default": 24,
+    "explanation": "Boosts or cuts the low (800 Hz) frequency band.",
+    "pedal": false
+   },
+   {
+    "name": "1.6k",
+    "max": 48,
+    "default": 24,
+    "explanation": "Boosts or cuts the low (1.6 kHz) frequency band.",
+    "pedal": false
+   },
+   {
+    "name": "3.2k",
+    "max": 48,
+    "default": 24,
+    "explanation": "Boosts or cuts the low (3.2 kHz) frequency band.",
+    "pedal": false
+   },
+   {
+    "name": "6.4k",
+    "max": 48,
+    "default": 24,
+    "explanation": "Boosts or cuts the low (6.4 kHz) frequency band.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": true
+ },
+ "0x09000030": {
+  "id": "0x09000030",
+  "name": "Hall",
+  "group": "REVERB",
+  "file": "HALL.ZD2",
+  "version": "1.50",
+  "dsp": 27.07,
+  "description": "This reverb effect simulates the acoustics of a concert hall.",
+  "params": [
+   {
+    "name": "PreD",
+    "max": 99,
+    "default": 48,
+    "explanation": "Adjusts the delay between input of the original sound and start of the reverb sound.",
+    "pedal": false
+   },
+   {
+    "name": "Decay",
+    "max": 29,
+    "default": 9,
+    "explanation": "Sets the duration of the reverberations.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 46,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   },
+   {
+    "name": "Tail",
+    "max": 1,
+    "default": 0,
+    "explanation": "When ON, effect sound continues even after effect is turned off. When OFF, effect sound stops right when effect is turned off.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x09000040": {
+  "id": "0x09000040",
+  "name": "HD Hall",
+  "group": "REVERB",
+  "file": "HD_HALL.ZD2",
+  "version": "1.50",
+  "dsp": 64.8,
+  "description": "This is a dense hall reverb.",
+  "params": [
+   {
+    "name": "PreD",
+    "max": 199,
+    "default": 80,
+    "explanation": "Adjusts the delay between input of the original sound and start of the reverb sound.",
+    "pedal": false
+   },
+   {
+    "name": "Decay",
+    "max": 100,
+    "default": 45,
+    "explanation": "Sets the duration of the reverberations.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 62,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   },
+   {
+    "name": "Tail",
+    "max": 1,
+    "default": 0,
+    "explanation": "When ON, effect sound continues even after effect is turned off. When OFF, effect sound stops right when effect is turned off.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x08000060": {
+  "id": "0x08000060",
+  "name": "Hold DLY",
+  "group": "DELAY",
+  "file": "HOLDDLY.ZD2",
+  "version": "1.30",
+  "dsp": 14.56,
+  "description": "This hold delay effect is controlled using the control switch.",
+  "params": [
+   {
+    "name": "Time",
+    "max": 4022,
+    "default": 559,
+    "explanation": "Sets the delay time.",
+    "pedal": false
+   },
+   {
+    "name": "F.B",
+    "max": 100,
+    "default": 30,
+    "explanation": "Adjusts the feedback amount.",
+    "pedal": false
+   },
+   {
+    "name": "HiDMP",
+    "max": 10,
+    "default": 10,
+    "explanation": "Adjusts the treble attenuation of the delay sound.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 100,
+    "default": 100,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 70,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   },
+   {
+    "name": "P-P",
+    "max": 1,
+    "default": 0,
+    "explanation": "Sets delay output to mono or Ping Pong.",
+    "pedal": false
+   },
+   {
+    "name": "Tail",
+    "max": 1,
+    "default": 0,
+    "explanation": "When ON, effect sound continues even after effect is turned off. When OFF, effect sound stops right when effect is turned off.",
+    "pedal": false
+   },
+   {
+    "name": "Hold",
+    "max": 1,
+    "default": 0,
+    "explanation": "Sets the control switch function.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": true
+ },
+ "0x090000f0": {
+  "id": "0x090000f0",
+  "name": "HoldVerb",
+  "group": "REVERB",
+  "file": "HOLDVERB.ZD2",
+  "version": "1.10",
+  "dsp": 54.14,
+  "description": "This hold reverb effect is controlled using the control switch.",
+  "params": [
+   {
+    "name": "PreD",
+    "max": 199,
+    "default": 8,
+    "explanation": "Adjusts the delay between input of the original sound and start of the reverb sound.",
+    "pedal": false
+   },
+   {
+    "name": "Decay",
+    "max": 100,
+    "default": 52,
+    "explanation": "Sets the duration of the reverberations. ",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 44,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   },
+   {
+    "name": "Tail",
+    "max": 1,
+    "default": 0,
+    "explanation": "When ON, effect sound continues even after effect is turned off. When OFF, effect sound stops right when effect is turned off.",
+    "pedal": false
+   },
+   {
+    "name": "Color",
+    "max": 100,
+    "default": 58,
+    "explanation": "Adjusts the reverb time of the low frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "LoDMP",
+    "max": 100,
+    "default": 97,
+    "explanation": "Adjusts low frequency damping in reverb sound.",
+    "pedal": false
+   },
+   {
+    "name": "HiDMP",
+    "max": 100,
+    "default": 95,
+    "explanation": "Adjusts high frequency damping in reverb sound.",
+    "pedal": false
+   },
+   {
+    "name": "Hold",
+    "max": 1,
+    "default": 0,
+    "explanation": "Sets the control switch function.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": false
+ },
+ "0x07000050": {
+  "id": "0x07000050",
+  "name": "HotSpice",
+  "group": "SFX",
+  "file": "HOTSPICE.ZD2",
+  "version": "1.30",
+  "dsp": 45.11,
+  "description": "This effect simulates a sitar tone.",
+  "params": [
+   {
+    "name": "Bend",
+    "max": 100,
+    "default": 11,
+    "explanation": "Adjust the depth of the pitch bend.",
+    "pedal": false
+   },
+   {
+    "name": "Buzz",
+    "max": 100,
+    "default": 57,
+    "explanation": "Adjust the buzzing tone.",
+    "pedal": false
+   },
+   {
+    "name": "+1oct",
+    "max": 100,
+    "default": 36,
+    "explanation": "Adjust the volume of one octave up.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x060000d0": {
+  "id": "0x060000d0",
+  "name": "HPS",
+  "group": "MODULATION",
+  "file": "HPS.ZD2",
+  "version": "1.50",
+  "dsp": 16.61,
+  "description": "This intelligent pitch shifter outputs the effect sound with the pitch shifted according to scale and key settings.",
+  "params": [
+   {
+    "name": "Scale",
+    "max": 9,
+    "default": 6,
+    "explanation": "Sets the pitch of the pitch-shifted sound added to the original sound.",
+    "pedal": false
+   },
+   {
+    "name": "Key",
+    "max": 11,
+    "default": 0,
+    "explanation": "Sets the tonic (root) of the scale used for pitch shifting.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 10,
+    "default": 6,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 70,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x04000060": {
+  "id": "0x04000060",
+  "name": "HW 100",
+  "group": "AMP",
+  "file": "HW100.ZD2",
+  "version": "1.20",
+  "dsp": 71.16,
+  "description": "This models the sound of the Hiwatt Custom 100.",
+  "params": [
+   {
+    "name": "Input",
+    "max": 1,
+    "default": 1,
+    "explanation": "Selects the input channel.",
+    "pedal": false
+   },
+   {
+    "name": "Bass",
+    "max": 100,
+    "default": 40,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "MID",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts volume of middle frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Treble",
+    "max": 100,
+    "default": 60,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "PRSNC",
+    "max": 100,
+    "default": 60,
+    "explanation": "Adjusts volume of super-high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Gain",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 60,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   },
+   {
+    "name": "SOLO",
+    "max": 8,
+    "default": 2,
+    "explanation": "Sets the volume when the control switch is on.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": false
+ },
+ "0x05000060": {
+  "id": "0x05000060",
+  "name": "HW4x12",
+  "group": "CABINET",
+  "file": "HW4X12.ZD2",
+  "version": "1.30",
+  "dsp": 22.1,
+  "description": "This models the sound of a Hiwatt SE-4123 cabinet with four 12\" Fane speakers.",
+  "params": [
+   {
+    "name": "MIC",
+    "max": 1,
+    "default": 0,
+    "explanation": "MIC=OFF: This tone is optimized for using amp modeling with a guitar amp.\nMIC=ON: This tone is optimized for using amp modeling with headphones or monitor speakers.",
+    "pedal": false
+   },
+   {
+    "name": "D57:D421",
+    "max": 100,
+    "default": 50,
+    "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
+    "pedal": false
+   },
+   {
+    "name": "Hi",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Lo",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x08000100": {
+  "id": "0x08000100",
+  "name": "ICE Delay",
+  "group": "DELAY",
+  "file": "ICE_DLY.ZD2",
+  "version": "1.10",
+  "dsp": 65.21,
+  "description": "This effect combines pitch shifting and delay.",
+  "params": [
+   {
+    "name": "INTVL",
+    "max": 30,
+    "default": 28,
+    "explanation": "Sets the pitch modulation amount for the audio slices.",
+    "pedal": false
+   },
+   {
+    "name": "Time",
+    "max": 1255,
+    "default": 1248,
+    "explanation": "Sets the delay time.",
+    "pedal": false
+   },
+   {
+    "name": "F.B",
+    "max": 100,
+    "default": 46,
+    "explanation": "Adjusts the feedback amount.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 36,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x0400001a": {
+  "id": "0x0400001a",
+  "name": "MS 45os",
+  "group": "AMP",
+  "file": "JTM45OS.ZD2",
+  "version": "1.00",
+  "dsp": 77.92,
+  "description": "This models the sound of the Marshall JTM 45 Offset.",
+  "params": [
+   {
+    "name": "Bass",
+    "max": 100,
+    "default": 30,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "MID",
+    "max": 100,
+    "default": 70,
+    "explanation": "Adjusts volume of middle frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Treble",
+    "max": 100,
+    "default": 65,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "PRSNC",
+    "max": 100,
+    "default": 30,
+    "explanation": "Adjusts volume of super-high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Input1",
+    "max": 101,
+    "default": 61,
+    "explanation": "Adjusts the gain of the input1.",
+    "pedal": false
+   },
+   {
+    "name": "Input2",
+    "max": 101,
+    "default": 0,
+    "explanation": "Adjusts the gain of the input2.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   },
+   {
+    "name": "SOLO",
+    "max": 8,
+    "default": 2,
+    "explanation": "Sets the volume when the control switch is on.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": true
+ },
+ "0x060000e0": {
+  "id": "0x060000e0",
+  "name": "Kick FLNG",
+  "group": "MODULATION",
+  "file": "KICKFLNG.ZD2",
+  "version": "1.30",
+  "dsp": 17.43,
+  "description": "This flanger is controlled using the control switch.",
+  "params": [
+   {
+    "name": "PreD",
+    "max": 100,
+    "default": 4,
+    "explanation": "Sets pre-delay time of effect sound.",
+    "pedal": false
+   },
+   {
+    "name": "Depth",
+    "max": 100,
+    "default": 61,
+    "explanation": "Sets the depth of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Rate",
+    "max": 100,
+    "default": 41,
+    "explanation": "Sets the speed of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "ON/OFF",
+    "max": 100,
+    "default": 73,
+    "explanation": "Sets the foot switch function.",
+    "pedal": false
+   },
+   {
+    "name": "RESO",
+    "max": 100,
+    "default": 63,
+    "explanation": "Sets effect resonance.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   },
+   {
+    "name": "RST-F",
+    "max": 1,
+    "default": 0,
+    "explanation": "Adjusts the LFO reset frequency.",
+    "pedal": false
+   },
+   {
+    "name": "LFO",
+    "max": 1,
+    "default": 0,
+    "explanation": "Sets the function when the control switch is on.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": true
+ },
+ "0x020000d0": {
+  "id": "0x020000d0",
+  "name": "LFO FLTR",
+  "group": "FILTER",
+  "file": "LFO_FLTR.ZD2",
+  "version": "1.40",
+  "dsp": 21.53,
+  "description": "This filter effect changes tone characteristics cyclically.",
+  "params": [
+   {
+    "name": "Depth",
+    "max": 100,
+    "default": 100,
+    "explanation": "Sets the depth of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Rate",
+    "max": 77,
+    "default": 57,
+    "explanation": "Sets the speed of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "RESO",
+    "max": 10,
+    "default": 8,
+    "explanation": "Sets effect resonance.",
+    "pedal": false
+   },
+   {
+    "name": "Wave",
+    "max": 3,
+    "default": 0,
+    "explanation": "Sets the modulation waveform.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x01800020": {
+  "id": "0x01800020",
+  "name": "LMT-76",
+  "group": "DYNAMICS",
+  "file": "LMT1176.ZD2",
+  "version": "1.50",
+  "dsp": 33.63,
+  "description": "This is a simulation of the UREI 1176LN.",
+  "params": [
+   {
+    "name": "Input",
+    "max": 80,
+    "default": 40,
+    "explanation": "Adjusts the input level.",
+    "pedal": false
+   },
+   {
+    "name": "Ratio",
+    "max": 3,
+    "default": 0,
+    "explanation": "Adjusts the compression ratio.",
+    "pedal": false
+   },
+   {
+    "name": "REL",
+    "max": 60,
+    "default": 10,
+    "explanation": "This is a limiter that suppresses signal peaks above a certain reference level.",
+    "pedal": false
+   },
+   {
+    "name": "Output",
+    "max": 80,
+    "default": 38,
+    "explanation": "Adjusts the output level.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x07000040": {
+  "id": "0x07000040",
+  "name": "LoopRoll",
+  "group": "SFX",
+  "file": "LOOPROLL.ZD2",
+  "version": "1.20",
+  "dsp": 13.64,
+  "description": "This effect allows you use the footswitch to sample and hold what you play.",
+  "params": [
+   {
+    "name": "Time",
+    "max": 4006,
+    "default": 3992,
+    "explanation": "Sets the loop time.",
+    "pedal": false
+   },
+   {
+    "name": "Duty",
+    "max": 75,
+    "default": 75,
+    "explanation": "Sets the time that the sample-and-hold sound is produced.",
+    "pedal": false
+   },
+   {
+    "name": "BAL",
+    "max": 100,
+    "default": 100,
+    "explanation": "Adjusts the balance between original and effect sounds.",
+    "pedal": false
+   },
+   {
+    "name": "ON/OFF",
+    "max": 1,
+    "default": 1,
+    "explanation": "Sets the foot switch function.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x020000a0": {
+  "id": "0x020000a0",
+  "name": "LowPassFL",
+  "group": "FILTER",
+  "file": "LOWPASSF.ZD2",
+  "version": "1.40",
+  "dsp": 20.3,
+  "description": "This effect varies the low pass filter frequency according to picking intensity.",
+  "params": [
+   {
+    "name": "FREQ",
+    "max": 100,
+    "default": 56,
+    "explanation": "Sets minimum frequency of low pass filter.",
+    "pedal": false
+   },
+   {
+    "name": "Sense",
+    "max": 201,
+    "default": 50,
+    "explanation": "Adjusts the sensitivity of the effect.",
+    "pedal": false
+   },
+   {
+    "name": "RESO",
+    "max": 21,
+    "default": 3,
+    "explanation": "Sets effect resonance.",
+    "pedal": false
+   },
+   {
+    "name": "BAL",
+    "max": 100,
+    "default": 100,
+    "explanation": "Adjusts the balance between original and effect sounds.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x050000a0": {
+  "id": "0x050000a0",
+  "name": "MA2x12",
+  "group": "CABINET",
+  "file": "MA2X12.ZD2",
+  "version": "1.30",
+  "dsp": 22.76,
+  "description": "This models the sound of a Matchless DC-30 cabinet with 12\" Customized Celestion G12H30 and 12\" Celestion G12M Greenback speakers.",
+  "params": [
+   {
+    "name": "MIC",
+    "max": 1,
+    "default": 0,
+    "explanation": "MIC=OFF: This tone is optimized for using amp modeling with a guitar amp.\nMIC=ON: This tone is optimized for using amp modeling with headphones or monitor speakers.",
+    "pedal": false
+   },
+   {
+    "name": "D57:D421",
+    "max": 100,
+    "default": 50,
+    "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
+    "pedal": false
+   },
+   {
+    "name": "Hi",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Lo",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x040000a0": {
+  "id": "0x040000a0",
+  "name": "MATCH30",
+  "group": "AMP",
+  "file": "MATCH_30.ZD2",
+  "version": "1.10",
+  "dsp": 87.15,
+  "description": "This models the sound of the Matchless DC-30.",
+  "params": [
+   {
+    "name": "Gain1",
+    "max": 101,
+    "default": 36,
+    "explanation": "Adjusts the gain of channel1.",
+    "pedal": false
+   },
+   {
+    "name": "Bass1",
+    "max": 100,
+    "default": 47,
+    "explanation": "Adjusts volume of low frequencies in the channel1.",
+    "pedal": false
+   },
+   {
+    "name": "TRBL1",
+    "max": 100,
+    "default": 49,
+    "explanation": "Adjusts volume of high frequencies in the channel1.",
+    "pedal": false
+   },
+   {
+    "name": "Gain2",
+    "max": 101,
+    "default": 0,
+    "explanation": "Adjusts the gain of channel2.",
+    "pedal": false
+   },
+   {
+    "name": "Tone2",
+    "max": 5,
+    "default": 1,
+    "explanation": "Adjusts the tone of channel2.",
+    "pedal": false
+   },
+   {
+    "name": "Cut",
+    "max": 100,
+    "default": 0,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 101,
+    "default": 34,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   },
+   {
+    "name": "SOLO",
+    "max": 8,
+    "default": 2,
+    "explanation": "Sets the volume when the control switch is on.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": false
+ },
+ "0x05000040": {
+  "id": "0x05000040",
+  "name": "MK1 1x12",
+  "group": "CABINET",
+  "file": "MK1_1X12.ZD2",
+  "version": "1.30",
+  "dsp": 22.1,
+  "description": "This models the sound of a Mesa Boogie Mark I cabinet with one 12\" ALTEC 417-8H speaker.",
+  "params": [
+   {
+    "name": "MIC",
+    "max": 1,
+    "default": 0,
+    "explanation": "MIC=OFF: This tone is optimized for using amp modeling with a guitar amp.\nMIC=ON: This tone is optimized for using amp modeling with headphones or monitor speakers.",
+    "pedal": false
+   },
+   {
+    "name": "D57:D421",
+    "max": 100,
+    "default": 50,
+    "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
+    "pedal": false
+   },
+   {
+    "name": "Hi",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Lo",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x05000042": {
+  "id": "0x05000042",
+  "name": "MK3 1x12",
+  "group": "CABINET",
+  "file": "MK3_1X12.ZD2",
+  "version": "1.30",
+  "dsp": 22.1,
+  "description": "This models the sound of a Mesa Boogie Mark III cabinet with one 12\" Celestion Black Shadow Speaker.",
+  "params": [
+   {
+    "name": "MIC",
+    "max": 1,
+    "default": 0,
+    "explanation": "MIC=OFF: This tone is optimized for using amp modeling with a guitar amp.\nMIC=ON: This tone is optimized for using amp modeling with headphones or monitor speakers.",
+    "pedal": false
+   },
+   {
+    "name": "D57:D421",
+    "max": 100,
+    "default": 50,
+    "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
+    "pedal": false
+   },
+   {
+    "name": "Hi",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Lo",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x08000050": {
+  "id": "0x08000050",
+  "name": "ModDelay",
+  "group": "DELAY",
+  "file": "MODDELAY.ZD2",
+  "version": "1.40",
+  "dsp": 19.07,
+  "description": "This delay effect allows the use of modulation.",
+  "params": [
+   {
+    "name": "Time",
+    "max": 2014,
+    "default": 499,
+    "explanation": "Sets the delay time.",
+    "pedal": false
+   },
+   {
+    "name": "F.B",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the feedback amount.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 62,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   },
+   {
+    "name": "Tail",
+    "max": 1,
+    "default": 0,
+    "explanation": "When ON, effect sound continues even after effect is turned off. When OFF, effect sound stops right when effect is turned off.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x060000c0": {
+  "id": "0x060000c0",
+  "name": "MonoPitch",
+  "group": "MODULATION",
+  "file": "MONOPITC.ZD2",
+  "version": "1.40",
+  "dsp": 17.02,
+  "description": "This is a pitch shifter with little sound variance for monophonic (single note) playing.",
+  "params": [
+   {
+    "name": "Shift",
+    "max": 25,
+    "default": 0,
+    "explanation": "Adjusts the pitch shift amount in semitones. Selecting \"0\" gives a detuning effect.",
+    "pedal": false
+   },
+   {
+    "name": "Fine",
+    "max": 50,
+    "default": 25,
+    "explanation": "Allows fine adjustment of pitch shift amount in Cent (1/100 semitone) steps.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 10,
+    "default": 6,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "BAL",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the balance between original and effect sounds.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x04000018": {
+  "id": "0x04000018",
+  "name": "MS 1959",
+  "group": "AMP",
+  "file": "MS1959.ZD2",
+  "version": "1.10",
+  "dsp": 77.92,
+  "description": "This models the sound of the Marshall 1959 SUPER LEAD 100.",
+  "params": [
+   {
+    "name": "Bass",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "MID",
+    "max": 100,
+    "default": 70,
+    "explanation": "Adjusts volume of middle frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Treble",
+    "max": 100,
+    "default": 60,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "PRSNC",
+    "max": 100,
+    "default": 40,
+    "explanation": "Adjusts volume of super-high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Input1",
+    "max": 101,
+    "default": 61,
+    "explanation": "Adjusts the gain of the input1.",
+    "pedal": false
+   },
+   {
+    "name": "Input2",
+    "max": 101,
+    "default": 0,
+    "explanation": "Adjusts the gain of the input2.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   },
+   {
+    "name": "SOLO",
+    "max": 8,
+    "default": 2,
+    "explanation": "Sets the volume when the control switch is on.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": true
+ },
+ "0x05000010": {
+  "id": "0x05000010",
+  "name": "MS4x12",
+  "group": "CABINET",
+  "file": "MS4X12.ZD2",
+  "version": "1.30",
+  "dsp": 22.1,
+  "description": "This models the sound of a Marshall 1960 A-type cabinet with four 12\" Celestion speakers.",
+  "params": [
+   {
+    "name": "MIC",
+    "max": 1,
+    "default": 0,
+    "explanation": "MIC=OFF: This tone is optimized for using amp modeling with a guitar amp.\nMIC=ON: This tone is optimized for using amp modeling with headphones or monitor speakers.",
+    "pedal": false
+   },
+   {
+    "name": "D57:D421",
+    "max": 100,
+    "default": 50,
+    "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
+    "pedal": false
+   },
+   {
+    "name": "Hi",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Lo",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x0500001a": {
+  "id": "0x0500001a",
+  "name": "MS4x12AL",
+  "group": "CABINET",
+  "file": "MS4X12AL.ZD2",
+  "version": "1.20",
+  "dsp": 22.56,
+  "description": "This models the sound of a Marshall JTM45 offset half stack cabinet with four 12\" Celestion G12 Alnico speakers.",
+  "params": [
+   {
+    "name": "MIC",
+    "max": 1,
+    "default": 0,
+    "explanation": "MIC=OFF: This tone is optimized for using amp modeling with a guitar amp.\nMIC=ON: This tone is optimized for using amp modeling with headphones or monitor speakers.",
+    "pedal": false
+   },
+   {
+    "name": "D57:D421",
+    "max": 100,
+    "default": 50,
+    "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
+    "pedal": false
+   },
+   {
+    "name": "Hi",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Lo",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x05000018": {
+  "id": "0x05000018",
+  "name": "MS4x12GB",
+  "group": "CABINET",
+  "file": "MS4X12GB.ZD2",
+  "version": "1.30",
+  "dsp": 22.56,
+  "description": "This models the sound of a Marshall 1960 B-type cabinet with four 12\" Celestion G12M GreenBack speakers.",
+  "params": [
+   {
+    "name": "MIC",
+    "max": 1,
+    "default": 0,
+    "explanation": "MIC=OFF: This tone is optimized for using amp modeling with a guitar amp.\nMIC=ON: This tone is optimized for using amp modeling with headphones or monitor speakers.",
+    "pedal": false
+   },
+   {
+    "name": "D57:D421",
+    "max": 100,
+    "default": 50,
+    "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
+    "pedal": false
+   },
+   {
+    "name": "Hi",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Lo",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x04000010": {
+  "id": "0x04000010",
+  "name": "MS 800",
+  "group": "AMP",
+  "file": "MS800.ZD2",
+  "version": "1.20",
+  "dsp": 75.87,
+  "description": "This models the sound of the Marshall JCM800 2203.",
+  "params": [
+   {
+    "name": "Input",
+    "max": 1,
+    "default": 1,
+    "explanation": "Adjusts the input gain.",
+    "pedal": false
+   },
+   {
+    "name": "Bass",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "MID",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of middle frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Treble",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "PRSNC",
+    "max": 100,
+    "default": 30,
+    "explanation": "Adjusts volume of super-high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Gain",
+    "max": 100,
+    "default": 70,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 70,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   },
+   {
+    "name": "SOLO",
+    "max": 8,
+    "default": 2,
+    "explanation": "Sets the volume when the control switch is on.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": true
+ },
+ "0x03000080": {
+  "id": "0x03000080",
+  "name": "MetalWRLD",
+  "group": "DRIVE",
+  "file": "MTLWRLD.ZD2",
+  "version": "1.30",
+  "dsp": 31.99,
+  "description": "Simulation of the BOSS Metal Zone, which is characterized by long sustain and a powerful lower midrange.",
+  "params": [
+   {
+    "name": "Gain",
+    "max": 100,
+    "default": 60,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "Bass",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Treble",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x01000050": {
+  "id": "0x01000050",
+  "name": "MuteSW",
+  "group": "DYNAMICS",
+  "file": "MUTESW.ZD2",
+  "version": "1.40",
+  "dsp": 17.84,
+  "description": "This effect allows you to mute the volume using the foot switch.",
+  "params": [
+   {
+    "name": "Edge",
+    "max": 100,
+    "default": 13,
+    "explanation": "Sets how smoothly the volume changes. As the parameter value increases, the change becomes smoother.",
+    "pedal": false
+   },
+   {
+    "name": "Speed",
+    "max": 100,
+    "default": 100,
+    "explanation": "Adjust the recovery time from muting.",
+    "pedal": false
+   },
+   {
+    "name": "INVRT",
+    "max": 1,
+    "default": 0,
+    "explanation": "Sets the foot switch control direction.",
+    "pedal": false
+   },
+   {
+    "name": "ON/OFF",
+    "max": 2,
+    "default": 1,
+    "explanation": "Sets the foot switch function.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x030000d0": {
+  "id": "0x030000d0",
+  "name": "NYC Muff",
+  "group": "DRIVE",
+  "file": "NYC_MUFF.ZD2",
+  "version": "1.40",
+  "dsp": 34.86,
+  "description": "This models an Electro-Harmonix Big Muff Pi. \r\nAn added parameter allows you to adjust the balance of original sound and distortion.",
+  "params": [
+   {
+    "name": "SUSTN",
+    "max": 100,
+    "default": 70,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 100,
+    "default": 55,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "BAL",
+    "max": 100,
+    "default": 100,
+    "explanation": "Adjusts the balance between original and effect sounds.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 58,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x01000070": {
+  "id": "0x01000070",
+  "name": "NoiseGate",
+  "group": "DYNAMICS",
+  "file": "N_GATE.ZD2",
+  "version": "1.40",
+  "dsp": 17.02,
+  "description": "This is a noise gate that cuts the sound during playing pauses.",
+  "params": [
+   {
+    "name": "DETCT",
+    "max": 1,
+    "default": 1,
+    "explanation": "Sets control signal detection level.",
+    "pedal": false
+   },
+   {
+    "name": "Depth",
+    "max": 100,
+    "default": 100,
+    "explanation": "Sets the depth of noise reduction.",
+    "pedal": false
+   },
+   {
+    "name": "THRSH",
+    "max": 100,
+    "default": 54,
+    "explanation": "Adjusts the effect sensitivity.",
+    "pedal": false
+   },
+   {
+    "name": "Decay",
+    "max": 100,
+    "default": 0,
+    "explanation": "Adjust the envelope release.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x06000080": {
+  "id": "0x06000080",
+  "name": "Octave",
+  "group": "MODULATION",
+  "file": "OCTAVE.ZD2",
+  "version": "1.40",
+  "dsp": 16.82,
+  "description": "This effect adds sound one octave and two octaves below the original sound.",
+  "params": [
+   {
+    "name": "OCT1",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the level of the sound one octave below the effect sound.",
+    "pedal": false
+   },
+   {
+    "name": "OCT2",
+    "max": 100,
+    "default": 15,
+    "explanation": "Adjusts the level of the sound two octaves below the effect sound.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 10,
+    "default": 8,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "Dry",
+    "max": 100,
+    "default": 100,
+    "explanation": "Adjusts the volume of the unaffected sound.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x030000a0": {
+  "id": "0x030000a0",
+  "name": "OctFuzz",
+  "group": "DRIVE",
+  "file": "OCTFUZZ.ZD2",
+  "version": "1.30",
+  "dsp": 76.9,
+  "description": "This fuzz effect adds an octave above.",
+  "params": [
+   {
+    "name": "Boost",
+    "max": 100,
+    "default": 65,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "Color",
+    "max": 1,
+    "default": 1,
+    "explanation": "Sets the sound color.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 68,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x01000080": {
+  "id": "0x01000080",
+  "name": "OptComp",
+  "group": "DYNAMICS",
+  "file": "OPTCOMP.ZD2",
+  "version": "1.50",
+  "dsp": 31.79,
+  "description": "This is an optical compressor.",
+  "params": [
+   {
+    "name": "Drive",
+    "max": 10,
+    "default": 7,
+    "explanation": "Adjusts the depth of the compression.",
+    "pedal": false
+   },
+   {
+    "name": "Lo",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Hi",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 60,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x04000080": {
+  "id": "0x04000080",
+  "name": "ORG120",
+  "group": "AMP",
+  "file": "ORG_120.ZD2",
+  "version": "1.10",
+  "dsp": 84.08,
+  "description": "This models the sound of the Orange Graphic120.",
+  "params": [
+   {
+    "name": "Input",
+    "max": 1,
+    "default": 1,
+    "explanation": "Selects the input channel.",
+    "pedal": false
+   },
+   {
+    "name": "Color",
+    "max": 5,
+    "default": 3,
+    "explanation": "Sets the tone of the effect type.",
+    "pedal": false
+   },
+   {
+    "name": "Bass",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Treble",
+    "max": 100,
+    "default": 60,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "PRSNC",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of super-high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Gain",
+    "max": 100,
+    "default": 53,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 100,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   },
+   {
+    "name": "SOLO",
+    "max": 8,
+    "default": 2,
+    "explanation": "Sets the volume when the control switch is on.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": false
+ },
+ "0x05000080": {
+  "id": "0x05000080",
+  "name": "ORG4x12",
+  "group": "CABINET",
+  "file": "ORG_4X12.ZD2",
+  "version": "1.30",
+  "dsp": 22.56,
+  "description": "This models the sound of an Orange PPC412 cabinet with four 12\" Celestion Vintage 30 speakers.",
+  "params": [
+   {
+    "name": "MIC",
+    "max": 1,
+    "default": 0,
+    "explanation": "MIC=OFF: This tone is optimized for using amp modeling with a guitar amp.\nMIC=ON: This tone is optimized for using amp modeling with headphones or monitor speakers.",
+    "pedal": false
+   },
+   {
+    "name": "D57:D421",
+    "max": 100,
+    "default": 50,
+    "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
+    "pedal": false
+   },
+   {
+    "name": "Hi",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Lo",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x0b0000c0": {
+  "id": "0x0b0000c0",
+  "name": "OSC Echo",
+  "group": "PEDAL",
+  "file": "OSC_ECHO.ZD2",
+  "version": "1.20",
+  "dsp": 43.06,
+  "description": "The expression pedal controls the delay oscillation of this effect.",
+  "params": [
+   {
+    "name": "OSC",
+    "max": 100,
+    "default": 0,
+    "explanation": "Adjusts the delay time and feedback.",
+    "pedal": true
+   },
+   {
+    "name": "T-Min",
+    "max": 481,
+    "default": 311,
+    "explanation": "Adjusts the delay time when the pedal is at minimum position.",
+    "pedal": false
+   },
+   {
+    "name": "T-Max",
+    "max": 481,
+    "default": 81,
+    "explanation": "Adjusts the delay time when the pedal is at maximum position.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x03000150": {
+  "id": "0x03000150",
+  "name": "OutputBST",
+  "group": "DRIVE",
+  "file": "OUT_BST.ZD2",
+  "version": "1.20",
+  "dsp": 13.33,
+  "description": "We improved the ZOOM G5n OUTPUT BOOSTER as an effect.",
+  "params": [
+   {
+    "name": "Range",
+    "max": 9,
+    "default": 4,
+    "explanation": "Adjusts the frequency range processed by the effect.",
+    "pedal": false
+   },
+   {
+    "name": "Boost",
+    "max": 100,
+    "default": 30,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x0bfffff0": {
+  "id": "0x0bfffff0",
+  "name": "Output VP",
+  "group": "PEDAL",
+  "file": "OUT_VP.ZD2",
+  "version": "1.40",
+  "dsp": 8.2,
+  "description": "This controls the product output level. This volume will be kept even when the patch is changed.",
+  "params": [
+   {
+    "name": "-",
+    "max": 3545437139,
+    "default": 320017235,
+    "explanation": "-",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x02000070": {
+  "id": "0x02000070",
+  "name": "ParaEQ",
+  "group": "FILTER",
+  "file": "PARAEQ.ZD2",
+  "version": "1.40",
+  "dsp": 12.71,
+  "description": "This is a 1-band parametric equalizer.",
+  "params": [
+   {
+    "name": "FREQ",
+    "max": 30,
+    "default": 8,
+    "explanation": "Sets the frequency of the equalizer.",
+    "pedal": false
+   },
+   {
+    "name": "Q",
+    "max": 67,
+    "default": 1,
+    "explanation": "Adjusts equalizer Q.",
+    "pedal": false
+   },
+   {
+    "name": "Gain",
+    "max": 48,
+    "default": 24,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x090000c0": {
+  "id": "0x090000c0",
+  "name": "ParticleR",
+  "group": "REVERB",
+  "file": "PARTICLE.ZD2",
+  "version": "1.30",
+  "dsp": 94.33,
+  "description": "This is a unique complex reverb.",
+  "params": [
+   {
+    "name": "Mode",
+    "max": 2,
+    "default": 0,
+    "explanation": "Sets how the reverb sound changes.",
+    "pedal": false
+   },
+   {
+    "name": "Decay",
+    "max": 100,
+    "default": 75,
+    "explanation": "Sets the duration of the reverberations.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 60,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   },
+   {
+    "name": "Tail",
+    "max": 1,
+    "default": 1,
+    "explanation": "When ON, effect sound continues even after effect is turned off. When OFF, effect sound stops right when effect is turned off.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x0b0000f0": {
+  "id": "0x0b0000f0",
+  "name": "P-BitCRSH",
+  "group": "PEDAL",
+  "file": "PDL_BITC.ZD2",
+  "version": "1.40",
+  "dsp": 13.02,
+  "description": "This effect creates a lo-fi sound.",
+  "params": [
+   {
+    "name": "SMPL",
+    "max": 50,
+    "default": 2,
+    "explanation": "Sets sampling rate.",
+    "pedal": true
+   },
+   {
+    "name": "Bit",
+    "max": 13,
+    "default": 5,
+    "explanation": "Sets bit depth.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 10,
+    "default": 8,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "BAL",
+    "max": 100,
+    "default": 90,
+    "explanation": "Adjusts the balance between original and effect sounds.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x0b0000a0": {
+  "id": "0x0b0000a0",
+  "name": "PDL Delay",
+  "group": "PEDAL",
+  "file": "PDL_DLY.ZD2",
+  "version": "1.20",
+  "dsp": 14.15,
+  "description": "The expression pedal controls the delay input level of this effect.",
+  "params": [
+   {
+    "name": "InLvl",
+    "max": 100,
+    "default": 100,
+    "explanation": "Adjusts the delay input level.",
+    "pedal": true
+   },
+   {
+    "name": "Time",
+    "max": 4022,
+    "default": 359,
+    "explanation": "Sets the delay time.",
+    "pedal": false
+   },
+   {
+    "name": "F.B",
+    "max": 100,
+    "default": 40,
+    "explanation": "Adjusts the feedback amount.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 100,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x0b000080": {
+  "id": "0x0b000080",
+  "name": "PDL Drive",
+  "group": "PEDAL",
+  "file": "PDL_DRV.ZD2",
+  "version": "1.40",
+  "dsp": 44.09,
+  "description": "The expression pedal controls the gain of this drive effect.",
+  "params": [
+   {
+    "name": "Gain",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the gain.",
+    "pedal": true
+   },
+   {
+    "name": "Tone",
+    "max": 100,
+    "default": 74,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "PRSNC",
+    "max": 100,
+    "default": 48,
+    "explanation": "Adjusts volume of super-high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 61,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x0b000100": {
+  "id": "0x0b000100",
+  "name": "PDL FLNGR",
+  "group": "PEDAL",
+  "file": "PDL_FLNG.ZD2",
+  "version": "1.40",
+  "dsp": 15.17,
+  "description": "The expression pedal controls the emphasized frequency of this flanger.",
+  "params": [
+   {
+    "name": "FREQ",
+    "max": 100,
+    "default": 50,
+    "explanation": "This sets the emphasized frequency.",
+    "pedal": true
+   },
+   {
+    "name": "RESO",
+    "max": 20,
+    "default": 18,
+    "explanation": "Sets effect resonance.",
+    "pedal": false
+   },
+   {
+    "name": "HiDMP",
+    "max": 10,
+    "default": 8,
+    "explanation": "Adjusts the treble attenuation of the effect sound.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 65,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x0b000060": {
+  "id": "0x0b000060",
+  "name": "PDL MnPit",
+  "group": "PEDAL",
+  "file": "PDL_MNPT.ZD2",
+  "version": "1.40",
+  "dsp": 18.05,
+  "description": "This is a pitch shifter specially for monophonic sound (single-note playing), which allows the pitch to be shifted in real time with the expression pedal.",
+  "params": [
+   {
+    "name": "Bend",
+    "max": 100,
+    "default": 0,
+    "explanation": "Sets the amount of pitch shift.",
+    "pedal": true
+   },
+   {
+    "name": "Color",
+    "max": 8,
+    "default": 0,
+    "explanation": "Sets the type of pitch change control with the expression pedal.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 10,
+    "default": 10,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "Mode",
+    "max": 1,
+    "default": 0,
+    "explanation": "Sets the sound style.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x0b000090": {
+  "id": "0x0b000090",
+  "name": "PDL PHSR",
+  "group": "PEDAL",
+  "file": "PDL_PHA.ZD2",
+  "version": "1.40",
+  "dsp": 15.17,
+  "description": "The expression pedal controls the modulation frequency of this phaser.",
+  "params": [
+   {
+    "name": "Rate",
+    "max": 49,
+    "default": 11,
+    "explanation": "Sets the speed of the modulation.",
+    "pedal": true
+   },
+   {
+    "name": "Depth",
+    "max": 100,
+    "default": 100,
+    "explanation": "Sets the depth of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "RESO",
+    "max": 100,
+    "default": 50,
+    "explanation": "Sets effect resonance.",
+    "pedal": false
+   },
+   {
+    "name": "Color",
+    "max": 3,
+    "default": 3,
+    "explanation": "Sets the tone of the effect type.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x0b000050": {
+  "id": "0x0b000050",
+  "name": "PDL Pitch",
+  "group": "PEDAL",
+  "file": "PDL_PIT.ZD2",
+  "version": "1.40",
+  "dsp": 17.23,
+  "description": "Use an expression pedal to change the pitch in real time with this effect.",
+  "params": [
+   {
+    "name": "Bend",
+    "max": 100,
+    "default": 0,
+    "explanation": "Sets the amount of pitch shift.",
+    "pedal": true
+   },
+   {
+    "name": "Color",
+    "max": 8,
+    "default": 0,
+    "explanation": "Sets the type of pitch change control with the expression pedal.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 10,
+    "default": 10,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "Mode",
+    "max": 1,
+    "default": 0,
+    "explanation": "Sets the sound style.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x0b800020": {
+  "id": "0x0b800020",
+  "name": "PDL Reso",
+  "group": "PEDAL",
+  "file": "PDL_RESO.ZD2",
+  "version": "1.60",
+  "dsp": 14.35,
+  "description": "Pedal wah with a strong character.",
+  "params": [
+   {
+    "name": "FREQ",
+    "max": 49,
+    "default": 11,
+    "explanation": "Adjusts the emphasized frequency.",
+    "pedal": true
+   },
+   {
+    "name": "RESO",
+    "max": 10,
+    "default": 7,
+    "explanation": "Sets effect resonance.",
+    "pedal": false
+   },
+   {
+    "name": "Dry",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the volume of the unaffected sound.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 92,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x0b0000b0": {
+  "id": "0x0b0000b0",
+  "name": "PDL Rev",
+  "group": "PEDAL",
+  "file": "PDL_REV.ZD2",
+  "version": "1.40",
+  "dsp": 27.27,
+  "description": "The expression pedal controls the reverb input level of this effect.",
+  "params": [
+   {
+    "name": "InLvl",
+    "max": 100,
+    "default": 100,
+    "explanation": "Adjusts the reverb input level.",
+    "pedal": true
+   },
+   {
+    "name": "PreD",
+    "max": 99,
+    "default": 48,
+    "explanation": "Adjusts the delay between input of the original sound and start of the reverb sound.",
+    "pedal": false
+   },
+   {
+    "name": "Decay",
+    "max": 29,
+    "default": 14,
+    "explanation": "Sets the duration of the reverberations.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x0b0000e0": {
+  "id": "0x0b0000e0",
+  "name": "PDL Roto",
+  "group": "PEDAL",
+  "file": "PDL_ROT.ZD2",
+  "version": "1.20",
+  "dsp": 31.58,
+  "description": "Simulates a rotary speaker.",
+  "params": [
+   {
+    "name": "Mode",
+    "max": 1,
+    "default": 0,
+    "explanation": "Sets the rotary mode.",
+    "pedal": true
+   },
+   {
+    "name": "Drive",
+    "max": 100,
+    "default": 20,
+    "explanation": "Adjusts the amount of amplification from the preamp.",
+    "pedal": false
+   },
+   {
+    "name": "BAL",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the balance between the horn (high frequencies) and the drum (low frequencies).",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x0b000070": {
+  "id": "0x0b000070",
+  "name": "PDL Vibe",
+  "group": "PEDAL",
+  "file": "PDL_VIBE.ZD2",
+  "version": "1.40",
+  "dsp": 24.61,
+  "description": "This vibe sound features unique undulations.",
+  "params": [
+   {
+    "name": "Speed",
+    "max": 50,
+    "default": 25,
+    "explanation": "Sets the speed of the modulation.",
+    "pedal": true
+   },
+   {
+    "name": "Depth",
+    "max": 100,
+    "default": 60,
+    "explanation": "Sets the depth of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Mode",
+    "max": 1,
+    "default": 1,
+    "explanation": "Sets effect to vibrato or chorus.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x0b000010": {
+  "id": "0x0b000010",
+  "name": "PDL Vol",
+  "group": "PEDAL",
+  "file": "PDL_VOL.ZD2",
+  "version": "1.50",
+  "dsp": 9.13,
+  "description": "The volume curve of the volume pedal can be set.",
+  "params": [
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 100,
+    "explanation": "Adjusts the volume.",
+    "pedal": true
+   },
+   {
+    "name": "Min",
+    "max": 100,
+    "default": 0,
+    "explanation": "Adjusts the volume when the pedal is at minimum position.",
+    "pedal": false
+   },
+   {
+    "name": "Max",
+    "max": 100,
+    "default": 100,
+    "explanation": "Adjusts the volume when the pedal is at maximum position.",
+    "pedal": false
+   },
+   {
+    "name": "Curve",
+    "max": 1,
+    "default": 0,
+    "explanation": "Sets the volume curve.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x080000e0": {
+  "id": "0x080000e0",
+  "name": "PhaseDly",
+  "group": "DELAY",
+  "file": "PHASEDLY.ZD2",
+  "version": "1.20",
+  "dsp": 27.27,
+  "description": "This effect applies a phaser to a delayed sound.",
+  "params": [
+   {
+    "name": "Time",
+    "max": 2014,
+    "default": 2006,
+    "explanation": "Sets the delay time.",
+    "pedal": false
+   },
+   {
+    "name": "F.B",
+    "max": 100,
+    "default": 24,
+    "explanation": "Adjusts the feedback amount.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 56,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   },
+   {
+    "name": "Tail",
+    "max": 1,
+    "default": 1,
+    "explanation": "When ON, effect sound continues even after effect is turned off. When OFF, effect sound stops right when effect is turned off.",
+    "pedal": false
+   },
+   {
+    "name": "COLOR",
+    "max": 3,
+    "default": 2,
+    "explanation": "Sets the tone of the effect type.",
+    "pedal": false
+   },
+   {
+    "name": "DEPTH",
+    "max": 100,
+    "default": 100,
+    "explanation": "Sets the depth of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "RATE",
+    "max": 77,
+    "default": 59,
+    "explanation": "Sets the speed of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "RESO",
+    "max": 100,
+    "default": 48,
+    "explanation": "Sets effect resonance.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": false
+ },
+ "0x06000040": {
+  "id": "0x06000040",
+  "name": "Phaser",
+  "group": "MODULATION",
+  "file": "PHASER.ZD2",
+  "version": "1.50",
+  "dsp": 18.66,
+  "description": "This effect adds a phasing variation to the sound.",
+  "params": [
+   {
+    "name": "Color",
+    "max": 3,
+    "default": 3,
+    "explanation": "Sets the tone of the effect type.",
+    "pedal": false
+   },
+   {
+    "name": "Depth",
+    "max": 100,
+    "default": 100,
+    "explanation": "Sets the depth of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Rate",
+    "max": 77,
+    "default": 11,
+    "explanation": "Sets the speed of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "RESO",
+    "max": 100,
+    "default": 50,
+    "explanation": "Sets effect resonance.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x080000b0": {
+  "id": "0x080000b0",
+  "name": "Pitch DLY",
+  "group": "DELAY",
+  "file": "PITCHDLY.ZD2",
+  "version": "1.20",
+  "dsp": 21.53,
+  "description": "This effect applies pitch shift to a delayed sound.",
+  "params": [
+   {
+    "name": "Pitch",
+    "max": 30,
+    "default": 21,
+    "explanation": "Sets volume of pitch shift applied to delayed sound.",
+    "pedal": false
+   },
+   {
+    "name": "Time",
+    "max": 1999,
+    "default": 89,
+    "explanation": "Sets the delay time.",
+    "pedal": false
+   },
+   {
+    "name": "F.B",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the feedback amount.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x060000b0": {
+  "id": "0x060000b0",
+  "name": "PitchSHFT",
+  "group": "MODULATION",
+  "file": "PITCHSHF.ZD2",
+  "version": "1.50",
+  "dsp": 17.23,
+  "description": "This effect shifts the pitch up or down.",
+  "params": [
+   {
+    "name": "Shift",
+    "max": 25,
+    "default": 19,
+    "explanation": "Adjusts the pitch shift amount in semitones. Selecting \"0\" gives a detuning effect.",
+    "pedal": false
+   },
+   {
+    "name": "Fine",
+    "max": 50,
+    "default": 25,
+    "explanation": "Allows fine adjustment of pitch shift amount in Cent (1/100 semitone) steps.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 10,
+    "default": 7,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "BAL",
+    "max": 100,
+    "default": 40,
+    "explanation": "Adjusts the balance between original and effect sounds.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x09000070": {
+  "id": "0x09000070",
+  "name": "Plate",
+  "group": "REVERB",
+  "file": "PLATEREV.ZD2",
+  "version": "1.50",
+  "dsp": 51.27,
+  "description": "This simulates a plate reverb.",
+  "params": [
+   {
+    "name": "PreD",
+    "max": 199,
+    "default": 8,
+    "explanation": "Adjusts the delay between input of the original sound and start of the reverb sound.",
+    "pedal": false
+   },
+   {
+    "name": "Decay",
+    "max": 100,
+    "default": 52,
+    "explanation": "Sets the duration of the reverberations.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 44,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   },
+   {
+    "name": "Tail",
+    "max": 1,
+    "default": 0,
+    "explanation": "When ON, effect sound continues even after effect is turned off. When OFF, effect sound stops right when effect is turned off.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x08000080": {
+  "id": "0x08000080",
+  "name": "P-P Delay",
+  "group": "DELAY",
+  "file": "P_P_DLY.ZD2",
+  "version": "1.20",
+  "dsp": 14.25,
+  "description": "This delay outputs the delay sound alternately left and right.",
+  "params": [
+   {
+    "name": "Time",
+    "max": 4022,
+    "default": 559,
+    "explanation": "Sets the delay time.",
+    "pedal": false
+   },
+   {
+    "name": "F.B",
+    "max": 100,
+    "default": 30,
+    "explanation": "Adjusts the feedback amount.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 70,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   },
+   {
+    "name": "Tail",
+    "max": 1,
+    "default": 0,
+    "explanation": "When ON, effect sound continues even after effect is turned off. When OFF, effect sound stops right when effect is turned off.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x01000020": {
+  "id": "0x01000020",
+  "name": "RackComp",
+  "group": "DYNAMICS",
+  "file": "RACKCOMP.ZD2",
+  "version": "1.40",
+  "dsp": 18.25,
+  "description": "This compressor allows more detailed adjustment than Comp.",
+  "params": [
+   {
+    "name": "THRSH",
+    "max": 50,
+    "default": 40,
+    "explanation": "Sets the level that activates the compressor.",
+    "pedal": false
+   },
+   {
+    "name": "Ratio",
+    "max": 9,
+    "default": 5,
+    "explanation": "Adjusts the compression ratio.",
+    "pedal": false
+   },
+   {
+    "name": "ATTCK",
+    "max": 9,
+    "default": 6,
+    "explanation": "Sets compressor attack speed.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x03000030": {
+  "id": "0x03000030",
+  "name": "RC Boost",
+  "group": "DRIVE",
+  "file": "RCBOOST.ZD2",
+  "version": "1.50",
+  "dsp": 37.73,
+  "description": "This booster covers sounds ranging from clean boosts to light drives.",
+  "params": [
+   {
+    "name": "Gain",
+    "max": 100,
+    "default": 58,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "Bass",
+    "max": 100,
+    "default": 48,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Treble",
+    "max": 100,
+    "default": 52,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 48,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x05000070": {
+  "id": "0x05000070",
+  "name": "RCT4x12",
+  "group": "CABINET",
+  "file": "RCT4X12.ZD2",
+  "version": "1.30",
+  "dsp": 22.56,
+  "description": "This models the sound of a Mesa Boogie Recto Standard Slant Cabinet ARMOR with four 12\" Celestion Vintage 30 speakers.",
+  "params": [
+   {
+    "name": "MIC",
+    "max": 1,
+    "default": 0,
+    "explanation": "MIC=OFF: This tone is optimized for using amp modeling with a guitar amp.\nMIC=ON: This tone is optimized for using amp modeling with headphones or monitor speakers.",
+    "pedal": false
+   },
+   {
+    "name": "D57:D421",
+    "max": 100,
+    "default": 50,
+    "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
+    "pedal": false
+   },
+   {
+    "name": "Hi",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Lo",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x04000070": {
+  "id": "0x04000070",
+  "name": "Recti ORG",
+  "group": "AMP",
+  "file": "RCT_ORG.ZD2",
+  "version": "1.20",
+  "dsp": 72.8,
+  "description": "This models the sound of the Mesa Boogie Dual Rectifier Orange Channel.",
+  "params": [
+   {
+    "name": "Mode",
+    "max": 1,
+    "default": 0,
+    "explanation": "Sets the tone of the character.",
+    "pedal": false
+   },
+   {
+    "name": "Bass",
+    "max": 100,
+    "default": 52,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "MID",
+    "max": 100,
+    "default": 65,
+    "explanation": "Adjusts volume of middle frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Treble",
+    "max": 100,
+    "default": 67,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "PRSNC",
+    "max": 100,
+    "default": 62,
+    "explanation": "Adjusts volume of super-high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Gain",
+    "max": 100,
+    "default": 70,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 62,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   },
+   {
+    "name": "SOLO",
+    "max": 8,
+    "default": 2,
+    "explanation": "Sets the volume when the control switch is on.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": true
+ },
+ "0x03000110": {
+  "id": "0x03000110",
+  "name": "RedCR+BST",
+  "group": "DRIVE",
+  "file": "REDCRBST.ZD2",
+  "version": "1.20",
+  "dsp": 29.94,
+  "description": "This effect combines RedCrunch and Booster.",
+  "params": [
+   {
+    "name": "Gain",
+    "max": 100,
+    "default": 68,
+    "explanation": "Adjusts gain of RedCrunch.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts tone of RedCrunch.",
+    "pedal": false
+   },
+   {
+    "name": "PRSNC",
+    "max": 100,
+    "default": 52,
+    "explanation": "Adjusts presence of RedCrunch.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 61,
+    "explanation": "Adjusts volume of RedCrunch.",
+    "pedal": false
+   },
+   {
+    "name": "Comp",
+    "max": 2,
+    "default": 1,
+    "explanation": "Sets the clipping type of RedCrunch.",
+    "pedal": false
+   },
+   {
+    "name": "LO/HI",
+    "max": 1,
+    "default": 1,
+    "explanation": "Sets the gain range.",
+    "pedal": false
+   },
+   {
+    "name": "BOOST",
+    "max": 100,
+    "default": 42,
+    "explanation": "Adjusts gain of Booster.",
+    "pedal": false
+   },
+   {
+    "name": "CONNECT",
+    "max": 1,
+    "default": 1,
+    "explanation": "Set the connection order of RedCrunch and Booster.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": false
+ },
+ "0x03000070": {
+  "id": "0x03000070",
+  "name": "RedCrunch",
+  "group": "DRIVE",
+  "file": "REDCRUNC.ZD2",
+  "version": "1.30",
+  "dsp": 43.88,
+  "description": "Use this effect for the famous \"brown sound.\"",
+  "params": [
+   {
+    "name": "Gain",
+    "max": 100,
+    "default": 68,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 100,
+    "default": 47,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "PRSNC",
+    "max": 100,
+    "default": 48,
+    "explanation": "Adjusts volume of super-high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 61,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x02000020": {
+  "id": "0x02000020",
+  "name": "Resonance",
+  "group": "FILTER",
+  "file": "RESONANC.ZD2",
+  "version": "1.40",
+  "dsp": 19.89,
+  "description": "This effect varies the resonance filter frequency according to picking intensity.",
+  "params": [
+   {
+    "name": "Mode",
+    "max": 1,
+    "default": 1,
+    "explanation": "Sets direction of movement of the filter.",
+    "pedal": false
+   },
+   {
+    "name": "Sense",
+    "max": 9,
+    "default": 4,
+    "explanation": "Adjusts the sensitivity of the effect.",
+    "pedal": false
+   },
+   {
+    "name": "RESO",
+    "max": 10,
+    "default": 8,
+    "explanation": "Sets effect resonance.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x08000040": {
+  "id": "0x08000040",
+  "name": "ReverseDL",
+  "group": "DELAY",
+  "file": "REVERSED.ZD2",
+  "version": "1.30",
+  "dsp": 14.56,
+  "description": "This reverse delay is a long delay with a maximum length of 2000 mS.",
+  "params": [
+   {
+    "name": "Time",
+    "max": 2005,
+    "default": 990,
+    "explanation": "Sets the delay time.",
+    "pedal": false
+   },
+   {
+    "name": "F.B",
+    "max": 100,
+    "default": 20,
+    "explanation": "Adjusts the feedback amount.",
+    "pedal": false
+   },
+   {
+    "name": "BAL",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the balance between original and effect sounds.",
+    "pedal": false
+   },
+   {
+    "name": "Tail",
+    "max": 1,
+    "default": 0,
+    "explanation": "When ON, effect sound continues even after effect is turned off. When OFF, effect sound stops right when effect is turned off.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x06000090": {
+  "id": "0x06000090",
+  "name": "RingMod",
+  "group": "MODULATION",
+  "file": "RINGMOD.ZD2",
+  "version": "1.40",
+  "dsp": 11.89,
+  "description": "This effect produces a metallic ringing sound. Adjusting the \"Freq\" parameter results in a drastic change of sound character.",
+  "params": [
+   {
+    "name": "FREQ",
+    "max": 49,
+    "default": 27,
+    "explanation": "Sets the frequency of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 10,
+    "default": 10,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "BAL",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the balance between original and effect sounds.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 88,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x02000090": {
+  "id": "0x02000090",
+  "name": "RndmFLTR",
+  "group": "FILTER",
+  "file": "RNDMFLTR.ZD2",
+  "version": "1.40",
+  "dsp": 20.51,
+  "description": "This filter effect changes character randomly.",
+  "params": [
+   {
+    "name": "Type",
+    "max": 2,
+    "default": 2,
+    "explanation": "Sets filter type.",
+    "pedal": false
+   },
+   {
+    "name": "Speed",
+    "max": 77,
+    "default": 34,
+    "explanation": "Sets the speed of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "BAL",
+    "max": 100,
+    "default": 90,
+    "explanation": "Adjusts the balance between original and effect sounds.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x09000020": {
+  "id": "0x09000020",
+  "name": "Room",
+  "group": "REVERB",
+  "file": "ROOM.ZD2",
+  "version": "1.50",
+  "dsp": 24.61,
+  "description": "This reverb effect simulates the acoustics of a room.",
+  "params": [
+   {
+    "name": "PreD",
+    "max": 99,
+    "default": 4,
+    "explanation": "Adjusts the delay between input of the original sound and start of the reverb sound.",
+    "pedal": false
+   },
+   {
+    "name": "Decay",
+    "max": 29,
+    "default": 9,
+    "explanation": "Sets the duration of the reverberations.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 60,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   },
+   {
+    "name": "Tail",
+    "max": 1,
+    "default": 0,
+    "explanation": "When ON, effect sound continues even after effect is turned off. When OFF, effect sound stops right when effect is turned off.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x02000040": {
+  "id": "0x02000040",
+  "name": "SeqFLTR",
+  "group": "FILTER",
+  "file": "SEQFLTR.ZD2",
+  "version": "1.50",
+  "dsp": 21.33,
+  "description": "The sequence filter has the flavor of a Z.Vex Seek-Wah.",
+  "params": [
+   {
+    "name": "Step",
+    "max": 6,
+    "default": 6,
+    "explanation": "Adjusts number of sequence steps.",
+    "pedal": false
+   },
+   {
+    "name": "PTTRN",
+    "max": 7,
+    "default": 6,
+    "explanation": "Sets effect pattern.",
+    "pedal": false
+   },
+   {
+    "name": "Speed",
+    "max": 77,
+    "default": 25,
+    "explanation": "Sets the speed of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "RESO",
+    "max": 10,
+    "default": 10,
+    "explanation": "Sets effect resonance.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x080000c0": {
+  "id": "0x080000c0",
+  "name": "SlapBackD",
+  "group": "DELAY",
+  "file": "SLAPBKD.ZD2",
+  "version": "1.20",
+  "dsp": 34.25,
+  "description": "This delay features a short delay time that is good for muted rhythm playing and rockabilly.",
+  "params": [
+   {
+    "name": "Time",
+    "max": 300,
+    "default": 98,
+    "explanation": "Sets the delay time.\nWhen Sync is chosen, the delay time is synchronized to the tempo.",
+    "pedal": false
+   },
+   {
+    "name": "F.B",
+    "max": 100,
+    "default": 29,
+    "explanation": "Adjusts the feedback amount.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 40,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   },
+   {
+    "name": "SubDv",
+    "max": 2,
+    "default": 0,
+    "explanation": "Set the note length of the delay sound.\nWhen P-P is chosen, L/R channels output delays in quarter/dotted eighth notes respectively.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x060000f0": {
+  "id": "0x060000f0",
+  "name": "Slicer",
+  "group": "MODULATION",
+  "file": "SLICER.ZD2",
+  "version": "1.40",
+  "dsp": 20.71,
+  "description": "This effect creates a rhythmical sound by continuously slicing the input.",
+  "params": [
+   {
+    "name": "PTTRN",
+    "max": 19,
+    "default": 0,
+    "explanation": "Sets effect pattern.",
+    "pedal": false
+   },
+   {
+    "name": "Speed",
+    "max": 77,
+    "default": 24,
+    "explanation": "Sets the speed of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "THRSH",
+    "max": 50,
+    "default": 20,
+    "explanation": "Adjusts effect threshold.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 87,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x01000030": {
+  "id": "0x01000030",
+  "name": "SlowATTCK",
+  "group": "DYNAMICS",
+  "file": "SLWATK.ZD2",
+  "version": "1.50",
+  "dsp": 13.53,
+  "description": "This effect slows the attack of each note, resulting in a violin-like performance.",
+  "params": [
+   {
+    "name": "Time",
+    "max": 49,
+    "default": 20,
+    "explanation": "Adjusts the attack time.",
+    "pedal": false
+   },
+   {
+    "name": "Curve",
+    "max": 10,
+    "default": 10,
+    "explanation": "Set the curve of volume change during attack.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 100,
+    "default": 100,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x08000110": {
+  "id": "0x08000110",
+  "name": "SlwAtkDly",
+  "group": "DELAY",
+  "file": "SLWATKDL.ZD2",
+  "version": "1.10",
+  "dsp": 40.0,
+  "description": "This effect combines slow attack and delay.",
+  "params": [
+   {
+    "name": "Swell",
+    "max": 49,
+    "default": 24,
+    "explanation": "Adjusts the attack time.",
+    "pedal": false
+   },
+   {
+    "name": "Time",
+    "max": 1914,
+    "default": 489,
+    "explanation": "Sets the delay time. ",
+    "pedal": false
+   },
+   {
+    "name": "F.B",
+    "max": 100,
+    "default": 71,
+    "explanation": "Adjusts the feedback amount.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 64,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x08000120": {
+  "id": "0x08000120",
+  "name": "SoftEcho",
+  "group": "DELAY",
+  "file": "SOFTECHO.ZD2",
+  "version": "1.10",
+  "dsp": 63.16,
+  "description": "This echo has a soft tone.\nThis echo effect allows the use of modulation.",
+  "params": [
+   {
+    "name": "MOD",
+    "max": 1,
+    "default": 1,
+    "explanation": "Turns modulation ON or OFF.",
+    "pedal": false
+   },
+   {
+    "name": "Time",
+    "max": 562,
+    "default": 387,
+    "explanation": "Sets the delay time.",
+    "pedal": false
+   },
+   {
+    "name": "F.B",
+    "max": 100,
+    "default": 47,
+    "explanation": "Adjusts the feedback amount.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 69,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x09000090": {
+  "id": "0x09000090",
+  "name": "SpaceHole",
+  "group": "REVERB",
+  "file": "SPC_HOLE.ZD2",
+  "version": "1.20",
+  "dsp": 72.8,
+  "description": "This effect combines delay and reverb.",
+  "params": [
+   {
+    "name": "PreD",
+    "max": 1000,
+    "default": 80,
+    "explanation": "Adjusts the delay between input of the original sound and start of the reverb sound.",
+    "pedal": false
+   },
+   {
+    "name": "Decay",
+    "max": 200,
+    "default": 50,
+    "explanation": "Sets the duration of the reverberations.",
+    "pedal": false
+   },
+   {
+    "name": "F.B",
+    "max": 100,
+    "default": 45,
+    "explanation": "Adjusts the feedback amount. ",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 40,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   },
+   {
+    "name": "Depth",
+    "max": 100,
+    "default": 58,
+    "explanation": "Sets the depth of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Speed",
+    "max": 100,
+    "default": 39,
+    "explanation": "Sets the speed of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Size",
+    "max": 100,
+    "default": 29,
+    "explanation": "Adjusts the size of the reverb space.",
+    "pedal": false
+   },
+   {
+    "name": "INPUT",
+    "max": 1,
+    "default": 0,
+    "explanation": "Sets the foot switch function.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": false
+ },
+ "0x09000050": {
+  "id": "0x09000050",
+  "name": "Spring",
+  "group": "REVERB",
+  "file": "SPRING.ZD2",
+  "version": "1.50",
+  "dsp": 23.17,
+  "description": "This reverb effect simulates a spring reverb.",
+  "params": [
+   {
+    "name": "PreD",
+    "max": 99,
+    "default": 0,
+    "explanation": "Adjusts the delay between input of the original sound and start of the reverb sound.",
+    "pedal": false
+   },
+   {
+    "name": "Decay",
+    "max": 29,
+    "default": 19,
+    "explanation": "Sets the duration of the reverberations.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   },
+   {
+    "name": "Tail",
+    "max": 1,
+    "default": 0,
+    "explanation": "When ON, effect sound continues even after effect is turned off. When OFF, effect sound stops right when effect is turned off.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x030000b0": {
+  "id": "0x030000b0",
+  "name": "SpotBoost",
+  "group": "DRIVE",
+  "file": "SPTBOOST.ZD2",
+  "version": "1.30",
+  "dsp": 35.48,
+  "description": "This booster enables flexible control.",
+  "params": [
+   {
+    "name": "Boost",
+    "max": 100,
+    "default": 35,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "Bass",
+    "max": 20,
+    "default": 10,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Treble",
+    "max": 20,
+    "default": 8,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "ON/OFF",
+    "max": 1,
+    "default": 1,
+    "explanation": "Sets the foot switch function.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x03000130": {
+  "id": "0x03000130",
+  "name": "Squeak",
+  "group": "DRIVE",
+  "file": "SQUEAK.ZD2",
+  "version": "1.30",
+  "dsp": 31.37,
+  "description": "This models a ProCo RAT. \nA parameter has been added that allows you to adjust the mix level of the original sound.",
+  "params": [
+   {
+    "name": "Gain",
+    "max": 100,
+    "default": 47,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "FLTR",
+    "max": 100,
+    "default": 60,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 79,
+    "explanation": "Adjusts the volume. ",
+    "pedal": false
+   },
+   {
+    "name": "DryMx",
+    "max": 100,
+    "default": 0,
+    "explanation": "Adjusts the volume of the unaffected sound.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x020000c0": {
+  "id": "0x020000c0",
+  "name": "Step",
+  "group": "FILTER",
+  "file": "STEP.ZD2",
+  "version": "1.40",
+  "dsp": 19.89,
+  "description": "This special effect gives the sound a stepped quality.",
+  "params": [
+   {
+    "name": "Depth",
+    "max": 100,
+    "default": 60,
+    "explanation": "Sets the depth of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Rate",
+    "max": 78,
+    "default": 25,
+    "explanation": "Sets the speed of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "RESO",
+    "max": 10,
+    "default": 8,
+    "explanation": "Sets effect resonance.",
+    "pedal": false
+   },
+   {
+    "name": "Shape",
+    "max": 10,
+    "default": 10,
+    "explanation": "Adjusts the effect envelope.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x06000030": {
+  "id": "0x06000030",
+  "name": "StereoCho",
+  "group": "MODULATION",
+  "file": "STEREOCH.ZD2",
+  "version": "1.40",
+  "dsp": 18.66,
+  "description": "This is a stereo chorus with a clear tone.",
+  "params": [
+   {
+    "name": "Depth",
+    "max": 100,
+    "default": 80,
+    "explanation": "Sets the depth of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Rate",
+    "max": 49,
+    "default": 29,
+    "explanation": "Sets the speed of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 10,
+    "default": 7,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 60,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x06000120": {
+  "id": "0x06000120",
+  "name": "StonePha",
+  "group": "MODULATION",
+  "file": "STONEPHA.ZD2",
+  "version": "1.50",
+  "dsp": 19.48,
+  "description": "This phaser sound models the Electro-Harmonix SmallStone.",
+  "params": [
+   {
+    "name": "Color",
+    "max": 1,
+    "default": 0,
+    "explanation": "Sets the sound color.",
+    "pedal": false
+   },
+   {
+    "name": "Depth",
+    "max": 100,
+    "default": 100,
+    "explanation": "Sets the depth of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Rate",
+    "max": 100,
+    "default": 50,
+    "explanation": "Sets the speed of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "RESO",
+    "max": 100,
+    "default": 40,
+    "explanation": "Sets effect resonance.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x02000060": {
+  "id": "0x02000060",
+  "name": "St Gt GEQ",
+  "group": "FILTER",
+  "file": "ST_GT_GE.ZD2",
+  "version": "1.20",
+  "dsp": 26.86,
+  "description": "This stereo graphic equalizer has 6 bands that suit guitar frequencies.",
+  "params": [
+   {
+    "name": "160",
+    "max": 48,
+    "default": 24,
+    "explanation": "Boosts or cuts the low (160 Hz) frequency band.",
+    "pedal": false
+   },
+   {
+    "name": "400",
+    "max": 48,
+    "default": 24,
+    "explanation": "Boosts or cuts the low (400 Hz) frequency band.",
+    "pedal": false
+   },
+   {
+    "name": "800",
+    "max": 48,
+    "default": 24,
+    "explanation": "Boosts or cuts the low (800 Hz) frequency band.",
+    "pedal": false
+   },
+   {
+    "name": "3.2k",
+    "max": 48,
+    "default": 24,
+    "explanation": "Boosts or cuts the low (3.2 kHz) frequency band.",
+    "pedal": false
+   },
+   {
+    "name": "6.4k",
+    "max": 48,
+    "default": 24,
+    "explanation": "Boosts or cuts the low (6.4 kHz) frequency band.",
+    "pedal": false
+   },
+   {
+    "name": "12k",
+    "max": 48,
+    "default": 24,
+    "explanation": "Boosts or cuts the low (12 kHz) frequency band.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   },
+   {
+    "name": "CH SEL",
+    "max": 48,
+    "default": 24,
+    "explanation": "Sets the control switch function.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": true
+ },
+ "0x06000110": {
+  "id": "0x06000110",
+  "name": "SuperCho",
+  "group": "MODULATION",
+  "file": "SUPERCHO.ZD2",
+  "version": "1.70",
+  "dsp": 21.12,
+  "description": "This models the sound of a BOSS CH-1 SUPER CHORUS.",
+  "params": [
+   {
+    "name": "Depth",
+    "max": 100,
+    "default": 50,
+    "explanation": "Sets the depth of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Rate",
+    "max": 100,
+    "default": 50,
+    "explanation": "Sets the speed of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 42,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x03000050": {
+  "id": "0x03000050",
+  "name": "SweetDrv",
+  "group": "DRIVE",
+  "file": "SWEETDRV.ZD2",
+  "version": "1.30",
+  "dsp": 70.75,
+  "description": "This effect models a sweet sounding overdrive.",
+  "params": [
+   {
+    "name": "Gain",
+    "max": 100,
+    "default": 78,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Focus",
+    "max": 100,
+    "default": 67,
+    "explanation": "Adjusts volume of middle frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 62,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x080000f0": {
+  "id": "0x080000f0",
+  "name": "TapeEcho3",
+  "group": "DELAY",
+  "file": "TAPEECH3.ZD2",
+  "version": "1.30",
+  "dsp": 43.88,
+  "description": "This tape echo effect models the MAESTRO ECHOPLEX EP-3.",
+  "params": [
+   {
+    "name": "Gain",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "Hi",
+    "max": 100,
+    "default": 62,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Lo",
+    "max": 100,
+    "default": 47,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   },
+   {
+    "name": "TIME",
+    "max": 1005,
+    "default": 350,
+    "explanation": "Sets the delay time.",
+    "pedal": false
+   },
+   {
+    "name": "F.B",
+    "max": 100,
+    "default": 20,
+    "explanation": "Adjusts the feedback amount.",
+    "pedal": false
+   },
+   {
+    "name": "MIX",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   },
+   {
+    "name": "REC LV",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the volume recorded to the tape.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": false
+ },
+ "0x08000030": {
+  "id": "0x08000030",
+  "name": "TapeEcho",
+  "group": "DELAY",
+  "file": "TAPEECHO.ZD2",
+  "version": "1.50",
+  "dsp": 17.43,
+  "description": "This effect simulates a tape echo. Changing the \"Time\" parameter changes the pitch of the echoes.",
+  "params": [
+   {
+    "name": "Time",
+    "max": 2014,
+    "default": 559,
+    "explanation": "Sets the delay time.",
+    "pedal": false
+   },
+   {
+    "name": "F.B",
+    "max": 100,
+    "default": 64,
+    "explanation": "Adjusts the feedback amount.",
+    "pedal": false
+   },
+   {
+    "name": "Mix",
+    "max": 100,
+    "default": 56,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   },
+   {
+    "name": "Tail",
+    "max": 1,
+    "default": 0,
+    "explanation": "When ON, effect sound continues even after effect is turned off. When OFF, effect sound stops right when effect is turned off.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x03000090": {
+  "id": "0x03000090",
+  "name": "TB MK1.5",
+  "group": "DRIVE",
+  "file": "TB_MK15.ZD2",
+  "version": "1.30",
+  "dsp": 50.04,
+  "description": "This is a classic fuzz effect.",
+  "params": [
+   {
+    "name": "ATTCK",
+    "max": 100,
+    "default": 90,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 100,
+    "default": 100,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "Color",
+    "max": 1,
+    "default": 1,
+    "explanation": "Sets the sound color.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 92,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x06000060": {
+  "id": "0x06000060",
+  "name": "TheVibe",
+  "group": "MODULATION",
+  "file": "THEVIBE.ZD2",
+  "version": "1.50",
+  "dsp": 24.4,
+  "description": "This vibe sound features unique undulations.",
+  "params": [
+   {
+    "name": "Speed",
+    "max": 50,
+    "default": 25,
+    "explanation": "Sets the speed of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Depth",
+    "max": 100,
+    "default": 60,
+    "explanation": "Sets the depth of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Mode",
+    "max": 1,
+    "default": 1,
+    "explanation": "Sets effect to vibrato or chorus.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x06000010": {
+  "id": "0x06000010",
+  "name": "Tremolo",
+  "group": "MODULATION",
+  "file": "TREMOLO.ZD2",
+  "version": "1.50",
+  "dsp": 21.94,
+  "description": "This effect varies the volume at a regular rate.",
+  "params": [
+   {
+    "name": "Wave",
+    "max": 2,
+    "default": 0,
+    "explanation": "Sets the modulation waveform.",
+    "pedal": false
+   },
+   {
+    "name": "Depth",
+    "max": 100,
+    "default": 90,
+    "explanation": "Sets the depth of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Rate",
+    "max": 110,
+    "default": 50,
+    "explanation": "Sets the speed of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 62,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x03000100": {
+  "id": "0x03000100",
+  "name": "TS+Boost",
+  "group": "DRIVE",
+  "file": "TS_BOOST.ZD2",
+  "version": "1.30",
+  "dsp": 34.86,
+  "description": "This effect combines TS Drive and Booster.",
+  "params": [
+   {
+    "name": "Gain",
+    "max": 100,
+    "default": 34,
+    "explanation": "Adjusts gain of TS Drive.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts tone of TS Drive.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 75,
+    "explanation": "Adjusts volume of TS Drive.",
+    "pedal": false
+   },
+   {
+    "name": "Comp",
+    "max": 2,
+    "default": 1,
+    "explanation": "Sets the clipping type of TS Drive.",
+    "pedal": false
+   },
+   {
+    "name": "BOOST",
+    "max": 100,
+    "default": 60,
+    "explanation": "Adjusts gain of Booster.",
+    "pedal": false
+   },
+   {
+    "name": "BASS",
+    "max": 100,
+    "default": 40,
+    "explanation": "Adjusts low frequencies volume of booster.",
+    "pedal": false
+   },
+   {
+    "name": "TREBLE",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts high frequencies volume of booster.",
+    "pedal": false
+   },
+   {
+    "name": "CONNECT",
+    "max": 1,
+    "default": 0,
+    "explanation": "Set the connection order of TS Drive and Booster.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": false
+ },
+ "0x03000010": {
+  "id": "0x03000010",
+  "name": "TS Drive",
+  "group": "DRIVE",
+  "file": "TS_DRIVE.ZD2",
+  "version": "1.40",
+  "dsp": 39.37,
+  "description": "Simulation of the Ibanez TS808.",
+  "params": [
+   {
+    "name": "Gain",
+    "max": 100,
+    "default": 74,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "Boost",
+    "max": 1,
+    "default": 0,
+    "explanation": "Turns boost ON/OFF.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 100,
+    "default": 57,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 82,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x05000030": {
+  "id": "0x05000030",
+  "name": "UK2x12",
+  "group": "CABINET",
+  "file": "UK2X12.ZD2",
+  "version": "1.30",
+  "dsp": 22.1,
+  "description": "This models the sound of an early British combo amp with two 12\" Celestion Alnico speakers.",
+  "params": [
+   {
+    "name": "MIC",
+    "max": 1,
+    "default": 0,
+    "explanation": "MIC=OFF: This tone is optimized for using amp modeling with a guitar amp.\nMIC=ON: This tone is optimized for using amp modeling with headphones or monitor speakers.",
+    "pedal": false
+   },
+   {
+    "name": "D57:D421",
+    "max": 100,
+    "default": 50,
+    "explanation": "This adjusts the volume balance between the Shure SM57 and the Sennheiser MD421.\nWhen the MIC parameter is set to OFF, this setting has no effect.",
+    "pedal": false
+   },
+   {
+    "name": "Hi",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Lo",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x04000030": {
+  "id": "0x04000030",
+  "name": "UK 30A",
+  "group": "AMP",
+  "file": "UK30A.ZD2",
+  "version": "1.10",
+  "dsp": 92.28,
+  "description": "This models the sound of an early class A British combo amp.",
+  "params": [
+   {
+    "name": "Bass",
+    "max": 100,
+    "default": 49,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Treble",
+    "max": 100,
+    "default": 38,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Cut",
+    "max": 100,
+    "default": 78,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "Gain",
+    "max": 100,
+    "default": 30,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 84,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   },
+   {
+    "name": "Depth",
+    "max": 100,
+    "default": 0,
+    "explanation": "Sets the depth of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Speed",
+    "max": 110,
+    "default": 50,
+    "explanation": "Sets the speed of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "SOLO",
+    "max": 8,
+    "default": 2,
+    "explanation": "Sets the volume when the control switch is on.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": true
+ },
+ "0x03000140": {
+  "id": "0x03000140",
+  "name": "UpOctBSTR",
+  "group": "DRIVE",
+  "file": "UPOCTBST.ZD2",
+  "version": "1.20",
+  "dsp": 43.47,
+  "description": "This effect adds an upper octave to the original sound. \nWe recommend using the front guitar pickup.",
+  "params": [
+   {
+    "name": "UpOct",
+    "max": 100,
+    "default": 65,
+    "explanation": "Adjusts the amount of effected sound that is mixed with the original sound.",
+    "pedal": false
+   },
+   {
+    "name": "DryMx",
+    "max": 100,
+    "default": 47,
+    "explanation": "Adjusts the volume of the unaffected sound.",
+    "pedal": false
+   },
+   {
+    "name": "Bottom",
+    "max": 100,
+    "default": 75,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "PRSNC",
+    "max": 100,
+    "default": 70,
+    "explanation": "Adjusts volume of super-high frequencies.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x06000070": {
+  "id": "0x06000070",
+  "name": "Vibrato",
+  "group": "MODULATION",
+  "file": "VIBRATO.ZD2",
+  "version": "1.40",
+  "dsp": 18.46,
+  "description": "This effect automatically adds vibrato.",
+  "params": [
+   {
+    "name": "Depth",
+    "max": 100,
+    "default": 40,
+    "explanation": "Sets the depth of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Rate",
+    "max": 78,
+    "default": 30,
+    "explanation": "Sets the speed of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 10,
+    "default": 7,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "BAL",
+    "max": 100,
+    "default": 72,
+    "explanation": "Adjusts the balance between original and effect sounds.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x06000050": {
+  "id": "0x06000050",
+  "name": "VinFLNGR",
+  "group": "MODULATION",
+  "file": "VINFLNGR.ZD2",
+  "version": "1.40",
+  "dsp": 14.76,
+  "description": "This analog flanger sound is similar to an MXR M-117R.",
+  "params": [
+   {
+    "name": "PreD",
+    "max": 50,
+    "default": 4,
+    "explanation": "Sets pre-delay time of effect sound.",
+    "pedal": false
+   },
+   {
+    "name": "Depth",
+    "max": 100,
+    "default": 47,
+    "explanation": "Sets the depth of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "Rate",
+    "max": 78,
+    "default": 7,
+    "explanation": "Sets the speed of the modulation.",
+    "pedal": false
+   },
+   {
+    "name": "RESO",
+    "max": 20,
+    "default": 18,
+    "explanation": "Sets effect resonance.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x03000190": {
+  "id": "0x03000190",
+  "name": "VioletDST",
+  "group": "DRIVE",
+  "file": "VIOLETDS.ZD2",
+  "version": "1.20",
+  "dsp": 34.04,
+  "description": "This models the sound of a SUHR Riot Reloaded.",
+  "params": [
+   {
+    "name": "Gain",
+    "max": 100,
+    "default": 70,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "Voice",
+    "max": 2,
+    "default": 2,
+    "explanation": "Sets the sound style.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 70,
+    "explanation": "Adjusts the volume. ",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x0b0000d0": {
+  "id": "0x0b0000d0",
+  "name": "VoiceWah",
+  "group": "PEDAL",
+  "file": "VOICE_WH.ZD2",
+  "version": "1.40",
+  "dsp": 29.53,
+  "description": "This effect can make a guitar sound like a human voice.",
+  "params": [
+   {
+    "name": "Vowel",
+    "max": 100,
+    "default": 0,
+    "explanation": "Adjusts the emphasized vowel.",
+    "pedal": true
+   },
+   {
+    "name": "PTTRN",
+    "max": 2,
+    "default": 1,
+    "explanation": "Sets effect pattern.",
+    "pedal": false
+   },
+   {
+    "name": "Voice",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts the vowel sounds.",
+    "pedal": false
+   },
+   {
+    "name": "Mode",
+    "max": 1,
+    "default": 0,
+    "explanation": "Sets the sound style.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x0b000040": {
+  "id": "0x0b000040",
+  "name": "WAH100",
+  "group": "PEDAL",
+  "file": "WH100.ZD2",
+  "version": "1.60",
+  "dsp": 16.0,
+  "description": "Simulates an Ibanez wah pedal.",
+  "params": [
+   {
+    "name": "FREQ",
+    "max": 50,
+    "default": 25,
+    "explanation": "Adjusts the emphasized frequency.",
+    "pedal": true
+   },
+   {
+    "name": "Depth",
+    "max": 100,
+    "default": 40,
+    "explanation": "Sets the depth of the wah.",
+    "pedal": false
+   },
+   {
+    "name": "Dry",
+    "max": 100,
+    "default": 0,
+    "explanation": "Adjusts the volume of the unaffected sound.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x06000160": {
+  "id": "0x06000160",
+  "name": "WarpPhase",
+  "group": "MODULATION",
+  "file": "WRPPHASE.ZD2",
+  "version": "1.40",
+  "dsp": 22.56,
+  "description": "This phaser has a one way effect.",
+  "params": [
+   {
+    "name": "Mode",
+    "max": 1,
+    "default": 0,
+    "explanation": "Sets direction of warping.",
+    "pedal": false
+   },
+   {
+    "name": "Speed",
+    "max": 77,
+    "default": 24,
+    "explanation": "Sets modulation speed.",
+    "pedal": false
+   },
+   {
+    "name": "RESO",
+    "max": 10,
+    "default": 7,
+    "explanation": "Sets effect resonance.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x04000050": {
+  "id": "0x04000050",
+  "name": "XtasyBlue",
+  "group": "AMP",
+  "file": "XTACYBLU.ZD2",
+  "version": "1.20",
+  "dsp": 83.67,
+  "description": "This models the sound of the Bogner Ecstasy Blue channel.",
+  "params": [
+   {
+    "name": "Bass",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of low frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "MID",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of middle frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "Treble",
+    "max": 100,
+    "default": 50,
+    "explanation": "Adjusts volume of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "PRSNC",
+    "max": 100,
+    "default": 40,
+    "explanation": "Adjusts volume of super-high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "STRCT",
+    "max": 1,
+    "default": 1,
+    "explanation": "Selects the type and gain of the tone.",
+    "pedal": false
+   },
+   {
+    "name": "Gain",
+    "max": 100,
+    "default": 60,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 42,
+    "explanation": "Adjusts the volume.",
+    "pedal": false
+   },
+   {
+    "name": "SOLO",
+    "max": 8,
+    "default": 2,
+    "explanation": "Sets the volume when the control switch is on.",
+    "pedal": false
+   }
+  ],
+  "slots": 2,
+  "slots_confirmed": true
+ },
+ "0x03000170": {
+  "id": "0x03000170",
+  "name": "Zen O.DRV",
+  "group": "DRIVE",
+  "file": "ZEN_DRV.ZD2",
+  "version": "1.20",
+  "dsp": 45.11,
+  "description": "This models the sound of a Hermida Audio Zendrive.",
+  "params": [
+   {
+    "name": "Gain",
+    "max": 100,
+    "default": 70,
+    "explanation": "Adjusts the gain.",
+    "pedal": false
+   },
+   {
+    "name": "Tone",
+    "max": 100,
+    "default": 60,
+    "explanation": "Adjusts the tone.",
+    "pedal": false
+   },
+   {
+    "name": "Voice",
+    "max": 100,
+    "default": 80,
+    "explanation": "Adjusts gain of high frequencies.",
+    "pedal": false
+   },
+   {
+    "name": "VOL",
+    "max": 100,
+    "default": 70,
+    "explanation": "Adjusts the volume. ",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x01000040": {
+  "id": "0x01000040",
+  "name": "ZNR",
+  "group": "DYNAMICS",
+  "file": "ZNR.ZD2",
+  "version": "1.50",
+  "dsp": 10.87,
+  "description": "ZOOM's unique noise reduction cuts noise during pauses in playing without affecting the tone.",
+  "params": [
+   {
+    "name": "DETCT",
+    "max": 1,
+    "default": 1,
+    "explanation": "Sets control signal detection level.",
+    "pedal": false
+   },
+   {
+    "name": "Depth",
+    "max": 100,
+    "default": 100,
+    "explanation": "Sets the depth of noise reduction.",
+    "pedal": false
+   },
+   {
+    "name": "THRSH",
+    "max": 100,
+    "default": 30,
+    "explanation": "Adjusts the effect sensitivity.",
+    "pedal": false
+   },
+   {
+    "name": "Decay",
+    "max": 100,
+    "default": 0,
+    "explanation": "Adjust the envelope release.",
+    "pedal": false
+   }
+  ],
+  "slots": 1,
+  "slots_confirmed": true
+ },
+ "0x1e000010": {
+  "name": "Builtin 1E10",
+  "group": "BUILTIN",
+  "id": "0x1e000010",
+  "file": null,
+  "slots": 1,
+  "slots_confirmed": true,
+  "params": [],
+  "dsp": null
+ },
+ "0x1f000010": {
+  "name": "Builtin 1F10",
+  "group": "BUILTIN",
+  "id": "0x1f000010",
+  "file": null,
+  "slots": 1,
+  "slots_confirmed": true,
+  "params": [],
+  "dsp": null
+ },
+ "0x1f000020": {
+  "name": "Builtin 1F20",
+  "group": "BUILTIN",
+  "id": "0x1f000020",
+  "file": null,
+  "slots": 1,
+  "slots_confirmed": true,
+  "params": [],
+  "dsp": null
+ }
+}
