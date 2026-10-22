@@ -41,6 +41,7 @@ class Pedal:
         self.device = device
         self.state_file = getattr(device, "state_file", STATE_FILE)
         self.inport = self.outport = None
+        self._bank, self._note = 0, None      # running state for events()
 
     # --- connection ---
 
@@ -277,6 +278,34 @@ class Pedal:
                 elif m.control == P.TUNER_CENTS_CC:
                     yield {"note": note, "meter": m.value - 8}
             time.sleep(0.005)
+
+    # --- what the pedal says on its own ---
+
+    def events(self):
+        """Messages the pedal sent unprompted since the last request: patch changes
+        made on the pedal, edit echoes, tuner readings. A list of dicts with a "type".
+        (Requests drain the input first, so read these between requests.)"""
+        out = []
+        edit_echo = bytes(P.msg(P.EDIT, P.EDIT_PARAM, 1))
+        for m in self.inport.iter_pending():
+            if m.type == "control_change" and m.control == 32:
+                self._bank = m.value
+            elif m.type == "program_change":
+                out.append({"type": "patch", "slot": self._bank * self.bank_size + m.program + 1})
+            elif m.type == "control_change" and m.control == P.TUNER_NOTE_CC:
+                self._note = P.TUNER_NOTES[m.value - 1] if 1 <= m.value <= 12 else None
+            elif m.type == "control_change" and m.control == P.TUNER_CENTS_CC:
+                out.append({"type": "tuner", "note": self._note, "meter": m.value - 8})
+            elif m.type == "sysex" and bytes(m.data).startswith(edit_echo):
+                d = m.data
+                out.append({"type": "edit", "target": d[6], "param": d[7], "value": P.from_u35(d[8:13])})
+        return out
+
+    def present(self):
+        """Is the pedal still plugged in? (Cheap: lists ports, sends nothing.)"""
+        if self.device:
+            return True
+        return any(p.startswith(P.PORT_PREFIX) for p in mido.get_input_names())
 
     # --- screen text ---
 
