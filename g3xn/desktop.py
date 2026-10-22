@@ -35,7 +35,8 @@ def main(argv=None):
         real = args.sim is None
         url, stop = daemon.start_in_thread(daemon.pedal_factory(args), port, announce=real,
                                            history_file=daemon.HISTORY_FILE if real else None,
-                                           gigs_folder=daemon.GIGS_FOLDER if real else None)
+                                           gigs_folder=daemon.GIGS_FOLDER if real else None,
+                                           remote=daemon.Remote(daemon.REMOTE_FILE if real else None))
     try:
         _show(url)
     finally:

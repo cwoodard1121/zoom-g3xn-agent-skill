@@ -7,7 +7,8 @@ Status: building. Done so far:
 - Gigs: saved setlists (song, patch, tempo, key, notes), a slot plan that names every patch it would replace, load with a backup first, and the stage view (follows the pedal; arrows, space and page-turner pedals step through the set).
 - Gig tools (API and Claude tools; screens wait for the UI design pass): one change to every song of a gig (`/api/setlists/{id}/batch`, `edit_gig`), a lock that refuses writes to a gig's slots during a show (`/lock`), and a check/restore of anything changed on the pedal since loading (`/check`, `/restore`, `check_gig`).
 - UI: the user is designing the screens; new features land as API + MCP first, then mockups, then screens.
-- Next: phone remote, MIDI footswitches, Claude in the app.
+- Phone remote (API; the pairing and phone screens wait for the UI design pass): `g3xn-daemon --remote` or `POST /api/remote` serves the app on the local network (port 8372). Phones pair with a six-digit code from the computer (five minutes, five tries) and get a cookie; everything else on the network gets 401. Pairing is managed only from the computer (`/api/remote`, `/api/remote/code`, `/api/remote/devices/{id}`). Plain HTTP, so a phone hotspot is the safer network at a venue. The first time it listens, Windows asks to allow it through the firewall.
+- Next: MIDI footswitches, Claude in the app.
 
 The app is a full replacement for ToneLib / Guitar Lab, built on the `g3xn` library, with Claude built in. Everything the app does goes through the same library the agent uses, so a change made by hand, by voice, or from the phone shows up everywhere.
 

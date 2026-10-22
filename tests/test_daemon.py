@@ -18,9 +18,9 @@ TONE = {"name": "DAEMON", "volume": 90,
         "chain": [{"effect": "TS Drive", "knobs": {"Gain": 40}}, {"effect": "FD TWNR"}, {"effect": "Delay"}]}
 
 
-def start_daemon(device):
+def start_daemon(device, **options):
     """A daemon on a free port, connected to `device` with every slot name read. Returns (url, stop)."""
-    url, stop = start_in_thread(lambda: Pedal(device=device), free_port(), announce=False)
+    url, stop = start_in_thread(lambda: Pedal(device=device), free_port(), announce=False, **options)
     deadline = time.time() + 10
     while time.time() < deadline:
         status = get_json(url + "/api/status")
@@ -34,6 +34,17 @@ def start_daemon(device):
 def get_json(url):
     with urllib.request.urlopen(url, timeout=10) as r:
         return json.loads(r.read())
+
+
+def request(url, method="GET", body=None, headers=None):
+    """(status, JSON body, headers), for answers that are errors too."""
+    req = urllib.request.Request(url, method=method, data=None if body is None else json.dumps(body).encode(),
+                                 headers={"Content-Type": "application/json", **(headers or {})})
+    try:
+        with urllib.request.urlopen(req, timeout=10) as r:
+            return r.status, json.loads(r.read() or b"null"), r.headers
+    except urllib.error.HTTPError as err:
+        return err.code, json.loads(err.read() or b"null"), err.headers
 
 
 @unittest.skipIf(start_in_thread is None, "pip install g3xn[app] to test the daemon")
@@ -185,6 +196,62 @@ class DaemonTest(unittest.TestCase):
     def test_refuses_other_websites(self):
         code, _ = self.error("POST", "/api/patches/7/select", headers={"Origin": "https://evil.example"})
         self.assertEqual(code, 403)
+
+
+@unittest.skipIf(start_in_thread is None, "pip install g3xn[app] to test the daemon")
+class RemoteTest(unittest.TestCase):
+    """The phone remote. It listens on 127.0.0.1 here, so the tests never open a port on the network."""
+
+    @classmethod
+    def setUpClass(cls):
+        from g3xn.remote import Remote
+        cls.remote_port = free_port()
+        cls.url, cls.stop = start_daemon(VirtualPedal(), remote=Remote(port=cls.remote_port, host="127.0.0.1"))
+        cls.phone = "http://127.0.0.1:%d" % cls.remote_port
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.stop()
+
+    def test_pairing(self):
+        local, phone = self.url, self.phone
+        self.assertFalse(request(local + "/api/remote")[1]["on"])
+        info = request(local + "/api/remote", "POST", {"on": True})[1]
+        self.assertEqual((info["on"], info["url"]), (True, phone))
+        self.assertEqual(request(phone + "/api/status")[0], 401)
+
+        wrong = "%06d" % ((int(info["code"]) + 1) % 10 ** 6)
+        answers = [request(phone + "/api/pair", "POST", {"code": wrong})[1]["error"] for _ in range(5)]
+        self.assertIn("too many", answers[-1])
+        self.assertEqual(request(phone + "/api/pair", "POST", {"code": info["code"]})[0], 403)    # burned
+        self.assertEqual(request(phone + "/api/remote/code", "POST")[0], 403)    # codes come from the computer
+        code = request(local + "/api/remote/code", "POST")[1]["code"]
+        status, body, headers = request(phone + "/api/pair", "POST", {"code": code, "name": "Test phone"})
+        self.assertEqual((status, body["paired"]["name"]), (200, "Test phone"))
+        self.assertIn("HttpOnly", headers["Set-Cookie"])
+        cookie = {"Cookie": headers["Set-Cookie"].split(";", 1)[0]}
+
+        self.assertEqual(request(phone + "/api/status", headers=cookie)[1]["connection"], "connected")
+        self.assertEqual(request(phone + "/api/remote", headers=cookie)[0], 403)
+        evil = dict(cookie, Origin="http://evil.example")
+        self.assertEqual(request(phone + "/api/patches/7/select", "POST", headers=evil)[0], 403)
+        rebound = dict(cookie, Host="evil.example:%d" % self.remote_port)
+        self.assertEqual(request(phone + "/api/status", headers=rebound)[0], 403)
+        events = "ws://127.0.0.1:%d/api/events" % self.remote_port
+        with ws_connect(events, additional_headers=cookie) as ws:
+            self.assertEqual(json.loads(ws.recv(timeout=5))["type"], "status")
+        with self.assertRaises(Exception):
+            with ws_connect(events) as ws:                                     # no cookie, no events
+                ws.recv(timeout=5)
+
+        devices = request(local + "/api/remote")[1]["devices"]
+        self.assertEqual([d["name"] for d in devices], ["Test phone"])
+        self.assertNotIn("token", devices[0])
+        request(local + "/api/remote/devices/%s" % devices[0]["id"], "DELETE")
+        self.assertEqual(request(phone + "/api/status", headers=cookie)[0], 401)
+        request(local + "/api/remote", "POST", {"on": False})
+        with self.assertRaises(urllib.error.URLError):
+            urllib.request.urlopen(phone + "/api/status", timeout=3)
 
 
 if __name__ == "__main__":

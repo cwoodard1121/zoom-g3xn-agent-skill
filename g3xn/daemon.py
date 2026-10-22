@@ -34,7 +34,7 @@ import threading
 import time
 
 import uvicorn
-from fastapi import Body, FastAPI, Request, WebSocket, WebSocketDisconnect
+from fastapi import Body, FastAPI, Request, Response, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -43,12 +43,15 @@ from . import service
 from . import gig as gig_files
 from .gig import GigLibrary, shown as shown_gig
 from .history import History
+from .remote import COOKIE, Remote
+from .remote import DEFAULT_PORT as REMOTE_PORT
 from .pedal import Pedal, PedalError
 
 DEFAULT_PORT = 8370
 DISCOVERY_FILE = os.path.join(os.path.expanduser("~"), ".g3xn", "daemon.json")
 HISTORY_FILE = os.path.join(os.path.expanduser("~"), ".g3xn", "history.json")
 GIGS_FOLDER = gig_files.FOLDER
+REMOTE_FILE = os.path.join(os.path.expanduser("~"), ".g3xn", "remote.json")
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 UI_DIR = os.path.join(REPO, "app", "dist")          # the built web UI (npm run build in app/)
 RETRY_SECONDS = 2.0
@@ -303,14 +306,29 @@ class BatchRequest(BaseModel):
     save: bool = False
 
 
+class RemoteRequest(BaseModel):
+    on: bool = True
+
+
+class PairRequest(BaseModel):
+    code: str
+    name: str = ""
+
+
 class TunerReadRequest(BaseModel):
     seconds: float = 8.0
 
 
-def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, gigs_folder=None):
+def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, gigs_folder=None,
+               remote=None, remote_on=False):
     """announce: write ~/.g3xn/daemon.json so g3xn-mcp finds this daemon.
     history_file: where the time machine keeps its versions (None = memory only).
-    gigs_folder: where saved gigs live (None = a temporary folder)."""
+    gigs_folder: where saved gigs live (None = a temporary folder).
+    remote: the phone remote (a remote.Remote; default: one that forgets phones on exit);
+    remote_on: start it listening on the network straight away."""
+    remote = remote or Remote()
+    if remote.port == port:
+        raise ValueError("the phone remote needs a port of its own (both are %d)" % port)
     hub = EventHub()
     worker = PedalWorker(make_pedal, hub.emit)
     history = History(history_file)
@@ -322,11 +340,16 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
         worker.start()
         if announce:
             _write_discovery(port)
+        if remote_on:
+            await asyncio.to_thread(remote.start, app)
+            info = remote.info()
+            print("Phone remote: open %s on your phone and enter %s" % (info["url"], info["code"]))
         try:
             yield
         finally:
             if announce:
                 _remove_discovery()
+            await asyncio.to_thread(remote.stop)
             await asyncio.to_thread(worker.stop)
 
     app = FastAPI(title="g3xn", version="0.1.0", lifespan=lifespan,
@@ -348,16 +371,28 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
             hub.emit(dict(history.summary(), type="history"))
         return view
 
+    def refusal(scope, path, headers, cookies):
+        """None if a request may go ahead, else (status, why). On this computer's own port, only
+        pages from this computer (so web pages on other sites can't drive the pedal through the
+        browser); on the phone remote's port, only paired phones."""
+        if _arrived_on(scope, remote.port):
+            return remote.refusal(path, headers, cookies)
+        return None if _local_request(headers) else (403, "g3xn only answers requests from this computer")
+
     @app.middleware("http")
     async def local_only(request: Request, call_next):
-        # Blocks web pages on other sites from driving the pedal through the browser.
-        if not _local_request(request.headers):
-            return JSONResponse({"error": "g3xn only answers requests from this computer"}, status_code=403)
+        refused = refusal(request.scope, request.url.path, request.headers, request.cookies)
+        if refused:
+            return JSONResponse({"error": refused[1]}, status_code=refused[0])
         return await call_next(request)
 
     @app.exception_handler(PedalError)
     async def pedal_error(request, err):
         return JSONResponse({"error": str(err)}, status_code=503 if isinstance(err, NotConnected) else 409)
+
+    @app.exception_handler(PermissionError)
+    async def refused(request, err):
+        return JSONResponse({"error": str(err)}, status_code=403)
 
     @app.exception_handler(ValueError)
     @app.exception_handler(KeyError)
@@ -657,6 +692,49 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
         except OSError:
             raise KeyError("no saved gig %r" % gig_id)
 
+    # --- the phone remote ---
+
+    @app.get("/api/remote", tags=["remote"])
+    async def remote_info():
+        """The phone remote: whether it's on, the address to open on the phone, the pairing code
+        that's open (if any) and the paired phones. Only answered on this computer."""
+        return remote.info()
+
+    @app.post("/api/remote", tags=["remote"])
+    async def remote_switch(req: RemoteRequest = RemoteRequest()):
+        """Turn the phone remote on (listen on the network, with a fresh pairing code) or off."""
+        if req.on:
+            await asyncio.to_thread(remote.start, app)
+        else:
+            await asyncio.to_thread(remote.stop)
+        hub.emit(remote_event())
+        return remote.info()
+
+    @app.post("/api/remote/code", tags=["remote"])
+    async def remote_code():
+        """A new six-digit pairing code (good for five minutes or five wrong tries)."""
+        remote.new_code()
+        return remote.info()
+
+    @app.delete("/api/remote/devices/{device_id}", tags=["remote"])
+    async def remote_forget(device_id: str):
+        """Forget a paired phone: its cookie stops working."""
+        remote.forget(device_id)
+        hub.emit(remote_event())
+        return remote.info()
+
+    @app.post("/api/pair", tags=["remote"])
+    async def pair(req: PairRequest, response: Response):
+        """A phone on the network pairs with the code shown on the computer, and gets a cookie
+        that works until it's forgotten."""
+        token, device = remote.pair(req.code, req.name)
+        response.set_cookie(COOKIE, token, max_age=400 * 86400, httponly=True, samesite="lax", path="/")
+        hub.emit(remote_event())
+        return {"paired": device}
+
+    def remote_event():
+        return dict(remote.info(with_code=False), type="remote")      # phones get events too: no code
+
     # --- tuner ---
 
     @app.post("/api/tuner", tags=["tuner"])
@@ -677,7 +755,7 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
 
     @app.websocket("/api/events")
     async def events(ws: WebSocket):
-        if not _local_request(ws.headers):
+        if refusal(ws.scope, "/api/events", ws.headers, ws.cookies):
             await ws.close(code=1008)
             return
         await ws.accept()
@@ -710,10 +788,11 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
     return app
 
 
-def start_in_thread(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, gigs_folder=None):
+def start_in_thread(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, gigs_folder=None,
+                    remote=None):
     """Run the daemon on a background thread (for the desktop window and tests).
     Returns (url, stop) once it is serving."""
-    app = create_app(make_pedal, port, announce, history_file, gigs_folder)
+    app = create_app(make_pedal, port, announce, history_file, gigs_folder, remote)
     server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning"))
     thread = threading.Thread(target=server.run, name="g3xn-daemon", daemon=True)
     thread.start()
@@ -732,6 +811,12 @@ def free_port():
     with socket.socket() as s:
         s.bind(("127.0.0.1", 0))
         return s.getsockname()[1]
+
+
+def _arrived_on(scope, port):
+    """Did this request come in on `port` (rather than look like it, from its headers)?"""
+    server = scope.get("server")
+    return bool(server) and server[1] == port
 
 
 def _local_request(headers):
@@ -772,12 +857,15 @@ def pedal_factory(args):
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="g3xn-daemon", description=__doc__.split("\n\n")[0])
     ap.add_argument("--port", type=int, default=DEFAULT_PORT)
+    ap.add_argument("--remote", action="store_true", help="start the phone remote (listen on the local network)")
+    ap.add_argument("--remote-port", type=int, default=REMOTE_PORT, help="the phone remote's port (default %d)" % REMOTE_PORT)
     add_pedal_options(ap)
     args = ap.parse_args(argv)
 
     real = args.sim is None
     app = create_app(pedal_factory(args), args.port, announce=real, history_file=HISTORY_FILE if real else None,
-                     gigs_folder=GIGS_FOLDER if real else None)
+                     gigs_folder=GIGS_FOLDER if real else None,
+                     remote=Remote(REMOTE_FILE if real else None, port=args.remote_port), remote_on=args.remote)
     print("g3xn daemon on http://127.0.0.1:%d (API docs at /docs)%s" % (args.port, "" if os.path.isdir(UI_DIR) else
           "; build the app with: cd app && npm install && npm run build"))
     uvicorn.run(app, host="127.0.0.1", port=args.port, log_level="warning")
