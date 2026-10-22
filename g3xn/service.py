@@ -104,6 +104,18 @@ def tweak(pedal, changes=None, volume=None, name=None):
     return live_view(pedal)
 
 
+def play(pedal, tone):
+    """Make the scratch slot sound like `tone` as fast as possible: live edits when only
+    knobs, on/off, volume or name differ from what is playing, else a full audition.
+    (Undo, the time machine and A/B use this.)"""
+    patch = Patch.from_dict(tone)
+    problems = patch.problems()
+    if problems:
+        raise PedalError("; ".join(problems))
+    pedal.push(patch)
+    return live_view(pedal)
+
+
 # --- storing patches ---
 
 def save_to_slot(pedal, slot, name=None, replace=False):

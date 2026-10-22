@@ -32,7 +32,8 @@ def main(argv=None):
     url, stop = _running_daemon(), None
     if url is None or args.sim is not None:
         port = args.port if args.sim is None else daemon.free_port()
-        url, stop = daemon.start_in_thread(daemon.pedal_factory(args), port, announce=args.sim is None)
+        url, stop = daemon.start_in_thread(daemon.pedal_factory(args), port, announce=args.sim is None,
+                                           history_file=None if args.sim is not None else daemon.HISTORY_FILE)
     try:
         _show(url)
     finally:

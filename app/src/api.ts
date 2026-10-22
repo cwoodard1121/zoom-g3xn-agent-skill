@@ -54,13 +54,35 @@ export interface EffectInfo {
   params: Param[];
 }
 
+export interface EffectSummary {
+  name: string;
+  group: string;
+  positions: number;
+  dsp_percent: number;
+  description: string;
+}
+
+export interface HistoryEntry {
+  id: number;
+  time: number; // seconds since 1970
+  label: string;
+  source: "app" | "claude" | string;
+  reason: string;
+}
+
+export interface HistorySummary {
+  position: number;
+  entries: HistoryEntry[];
+}
+
 export type PedalEvent =
   | ({ type: "status" } & Status)
   | { type: "patches"; patches: PatchName[] }
   | { type: "patch"; slot: number; name: string }
   | { type: "current"; slot: number; name: string | null }
   | { type: "live"; tone: Tone }
-  | { type: "tuner"; note: string | null; meter: number };
+  | { type: "tuner"; note: string | null; meter: number }
+  | ({ type: "history" } & HistorySummary);
 
 export interface TweakChange {
   effect: number; // 1-based chain number
@@ -88,6 +110,11 @@ export const api = {
   patch: (slot: number) => call<Tone>("GET", `/api/patches/${slot}`),
   select: (slot: number) => call<{ slot: number; name: string }>("POST", `/api/patches/${slot}/select`),
   audition: (req: { tone?: Tone; slot?: number }) => call<Tone>("POST", "/api/audition", req),
+  play: (tone: Tone) => call<Tone>("POST", "/api/play", { tone }),
+  undo: () => call<Tone>("POST", "/api/undo"),
+  redo: () => call<Tone>("POST", "/api/redo"),
+  goTo: (entryId: number) => call<Tone>("POST", `/api/history/${entryId}/play`),
+  effects: () => call<{ effects: EffectSummary[] }>("GET", "/api/effects"),
   tweak: (req: { changes?: TweakChange[]; volume?: number; name?: string }) => call<Tone>("POST", "/api/tweak", req),
   save: (slot: number, name: string | undefined, replace: boolean) =>
     call<{ saved: string; slot: number }>("POST", `/api/patches/${slot}/save`, { name, replace }),
@@ -96,6 +123,13 @@ export const api = {
   release: () => call<Status>("POST", "/api/release"),
   connect: () => call<Status>("POST", "/api/connect"),
 };
+
+let allEffects: Promise<EffectSummary[]> | null = null;
+/** Every effect the pedal has (fetched once). */
+export function effectList(): Promise<EffectSummary[]> {
+  allEffects ??= api.effects().then((r) => r.effects, (err) => { allEffects = null; throw err; });
+  return allEffects;
+}
 
 /** Effect details never change, so each is fetched once. */
 const effects = new Map<string, Promise<EffectInfo>>();

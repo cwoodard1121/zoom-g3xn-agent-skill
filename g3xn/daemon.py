@@ -15,6 +15,7 @@ Clients get live events from the WebSocket at /api/events:
     {"type": "patch", "slot": 12, "name": ...}   a slot was written
     {"type": "current", "slot": 150, "name": ...} the pedal switched patches
     {"type": "live", "tone": {...}}              the tone playing now changed
+    {"type": "history", "position": 4, "entries": [...]}   the time machine (see history.py)
     {"type": "tuner", "note": "E", "meter": -1}  while the tuner is on
 
 The daemon writes ~/.g3xn/daemon.json while it runs, so g3xn-mcp sends its
@@ -38,10 +39,12 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from . import service
+from .history import History
 from .pedal import Pedal, PedalError
 
 DEFAULT_PORT = 8370
 DISCOVERY_FILE = os.path.join(os.path.expanduser("~"), ".g3xn", "daemon.json")
+HISTORY_FILE = os.path.join(os.path.expanduser("~"), ".g3xn", "history.json")
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 UI_DIR = os.path.join(REPO, "app", "dist")          # the built web UI (npm run build in app/)
 RETRY_SECONDS = 2.0
@@ -249,12 +252,19 @@ class EventHub:
 class AuditionRequest(BaseModel):
     tone: dict | None = None
     slot: int | None = None
+    reason: str = ""          # why (Claude says what it was going for); shown in the history
 
 
 class TweakRequest(BaseModel):
     changes: list[dict] = []
     volume: int | None = None
     name: str | None = None
+    reason: str = ""
+
+
+class PlayRequest(BaseModel):
+    tone: dict
+    reason: str = ""
 
 
 class WriteRequest(BaseModel):
@@ -279,10 +289,12 @@ class TunerReadRequest(BaseModel):
     seconds: float = 8.0
 
 
-def create_app(make_pedal, port=DEFAULT_PORT, announce=True):
-    """announce: write ~/.g3xn/daemon.json so g3xn-mcp finds this daemon."""
+def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None):
+    """announce: write ~/.g3xn/daemon.json so g3xn-mcp finds this daemon.
+    history_file: where the time machine keeps its versions (None = memory only)."""
     hub = EventHub()
     worker = PedalWorker(make_pedal, hub.emit)
+    history = History(history_file)
 
     @contextlib.asynccontextmanager
     async def lifespan(app):
@@ -303,6 +315,15 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True):
 
     async def run(label, fn, touches=()):
         return await asyncio.wrap_future(worker.submit(label, fn, touches))
+
+    def playing(request, view, reason="", merge=False):
+        """A new version of the tone being tried: tell every client and add it to the history."""
+        hub.emit({"type": "live", "tone": view})
+        if worker.pedal and view.get("slot") == worker.pedal.scratch:
+            source = request.headers.get("x-g3xn-source", "app")
+            history.record(view, source, reason, merge)
+            hub.emit(dict(history.summary(), type="history"))
+        return view
 
     @app.middleware("http")
     async def local_only(request: Request, call_next):
@@ -384,19 +405,63 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True):
         return await run("reading the live tone", service.live_view)
 
     @app.post("/api/audition", tags=["live"])
-    async def audition(req: AuditionRequest):
-        """Play a tone (or a copy of a slot) on the scratch slot. Nothing of yours is changed."""
+    async def audition(req: AuditionRequest, request: Request):
+        """Play a tone (or a copy of a slot) on the scratch slot. Nothing of yours is changed.
+        This is also how the chain is edited: send the whole tone with effects added, removed or moved."""
         view = await run("loading a tone to audition", lambda p: service.audition(p, req.tone, req.slot),
                          touches=lambda r: [worker.pedal.scratch])
-        hub.emit({"type": "live", "tone": view})
-        return view
+        return playing(request, view, req.reason)
 
     @app.post("/api/tweak", tags=["live"])
-    async def tweak(req: TweakRequest):
+    async def tweak(req: TweakRequest, request: Request):
         """Change knobs, on/off, volume or name of the auditioned tone, live."""
         view = await run("tweaking", lambda p: service.tweak(p, req.changes, req.volume, req.name),
                          touches=[] if req.name is None else lambda r: [worker.pedal.scratch])
+        return playing(request, view, req.reason, merge=True)
+
+    @app.post("/api/play", tags=["live"])
+    async def play(req: PlayRequest, request: Request):
+        """Make the scratch slot sound like a tone the fastest way (live edits when the chain is
+        the same). For A/B snapshots and anything else that already has the tone JSON."""
+        view = await run("playing a tone", lambda p: service.play(p, req.tone),
+                         touches=lambda r: [worker.pedal.scratch])
+        return playing(request, view, req.reason)
+
+    # --- the time machine ---
+
+    @app.get("/api/history", tags=["history"])
+    async def get_history():
+        """Every version of the tone being tried, oldest first; `position` is the one playing."""
+        return history.summary()
+
+    @app.get("/api/history/{entry_id}", tags=["history"])
+    async def history_entry(entry_id: int):
+        """One version, with its tone JSON."""
+        return history.entries[history.find(entry_id)]
+
+    @app.post("/api/history/{entry_id}/play", tags=["history"])
+    async def history_play(entry_id: int):
+        """Go back (or forward) to a version and hear it."""
+        return await go(history.find(entry_id))
+
+    @app.post("/api/undo", tags=["history"])
+    async def undo():
+        """Back to the previous version."""
+        return await go(history.position - 1)
+
+    @app.post("/api/redo", tags=["history"])
+    async def redo():
+        """Forward again after an undo."""
+        return await go(history.position + 1)
+
+    async def go(index):
+        if not 0 <= index < len(history.entries):
+            raise IndexError("nothing to go back or forward to")
+        view = await run("going back to an earlier version", lambda p: service.play(p, history.entries[index]["tone"]),
+                         touches=lambda r: [worker.pedal.scratch])
+        history.go(index)
         hub.emit({"type": "live", "tone": view})
+        hub.emit(dict(history.summary(), type="history"))
         return view
 
     # --- effects ---
@@ -462,6 +527,7 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True):
             if worker.names:
                 await ws.send_json({"type": "patches", "patches": [{"slot": n, "name": name}
                                                                    for n, name in sorted(worker.names.items())]})
+            await ws.send_json(dict(history.summary(), type="history"))
             while True:
                 await ws.send_json(await q.get())
 
@@ -481,11 +547,11 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True):
     return app
 
 
-def start_in_thread(make_pedal, port=DEFAULT_PORT, announce=True):
+def start_in_thread(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None):
     """Run the daemon on a background thread (for the desktop window and tests).
     Returns (url, stop) once it is serving."""
-    server = uvicorn.Server(uvicorn.Config(create_app(make_pedal, port, announce), host="127.0.0.1", port=port,
-                                           log_level="warning"))
+    server = uvicorn.Server(uvicorn.Config(create_app(make_pedal, port, announce, history_file), host="127.0.0.1",
+                                           port=port, log_level="warning"))
     thread = threading.Thread(target=server.run, name="g3xn-daemon", daemon=True)
     thread.start()
     while not server.started:
@@ -546,7 +612,8 @@ def main(argv=None):
     add_pedal_options(ap)
     args = ap.parse_args(argv)
 
-    app = create_app(pedal_factory(args), args.port, announce=args.sim is None)
+    app = create_app(pedal_factory(args), args.port, announce=args.sim is None,
+                     history_file=None if args.sim is not None else HISTORY_FILE)
     print("g3xn daemon on http://127.0.0.1:%d (API docs at /docs)%s" % (args.port, "" if os.path.isdir(UI_DIR) else
           "; build the app with: cd app && npm install && npm run build"))
     uvicorn.run(app, host="127.0.0.1", port=args.port, log_level="warning")

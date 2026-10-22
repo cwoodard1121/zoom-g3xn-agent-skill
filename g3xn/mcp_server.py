@@ -64,7 +64,8 @@ def _daemon_url():
 
 
 def _http(url, method, path, body):
-    req = urllib.request.Request(url + path, method=method, headers={"Content-Type": "application/json"},
+    req = urllib.request.Request(url + path, method=method,
+                                 headers={"Content-Type": "application/json", "X-G3xn-Source": "claude"},
                                  data=None if body is None else json.dumps(body).encode())
     with urllib.request.urlopen(req, timeout=300) as r:
         return json.loads(r.read())
@@ -119,27 +120,31 @@ def effect_details(name: str) -> dict:
 # --- hearing tones ---
 
 @server.tool()
-def audition(tone: dict | None = None, slot: int | None = None) -> dict:
+def audition(tone: dict | None = None, slot: int | None = None, reason: str = "") -> dict:
     """Play a tone on the pedal right now, on the scratch slot (nothing of the user's is changed).
     Pass `tone` (tone JSON: name, volume 0-120, chain of {effect, on, knobs}; effects in signal
-    order, max 7 positions, unset knobs use defaults) or `slot` to audition a copy of a stored patch."""
-    return _pedal(lambda p: service.audition(p, tone, slot), "POST", "/api/audition", {"tone": tone, "slot": slot})
+    order, max 7 positions, unset knobs use defaults) or `slot` to audition a copy of a stored patch.
+    `reason`: a few words on what you were going for; the g3xn app shows it in its history."""
+    return _pedal(lambda p: service.audition(p, tone, slot), "POST", "/api/audition",
+                  {"tone": tone, "slot": slot, "reason": reason})
 
 
 @server.tool()
-def tweak(changes: list[dict] | None = None, volume: int | None = None, name: str | None = None) -> dict:
+def tweak(changes: list[dict] | None = None, volume: int | None = None, name: str | None = None,
+          reason: str = "") -> dict:
     """Adjust the tone being auditioned, live (under 0.1 s). Each change is
     {"effect": "FD TWNR", "knob": "Treble", "value": 40} or {"effect": "TS Drive", "on": false}.
-    `effect` may be a name or its 1-based chain number. Make several related changes in one call."""
+    `effect` may be a name or its 1-based chain number. Make several related changes in one call.
+    `reason`: why, in the user's terms ("too ice-picky"); the g3xn app shows it in its history."""
     return _pedal(lambda p: service.tweak(p, changes, volume, name), "POST", "/api/tweak",
-                  {"changes": changes or [], "volume": volume, "name": name})
+                  {"changes": changes or [], "volume": volume, "name": name, "reason": reason})
 
 
 @server.tool()
-def change_chain(tone: dict) -> dict:
+def change_chain(tone: dict, reason: str = "") -> dict:
     """Replace the auditioned tone with a new chain (add/remove/reorder effects). Same as audition,
     but keeps you on the scratch slot. Use tweak for knob-only changes; it is faster."""
-    return audition(tone=tone)
+    return audition(tone=tone, reason=reason)
 
 
 @server.tool()

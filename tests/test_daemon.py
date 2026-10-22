@@ -91,6 +91,23 @@ class DaemonTest(unittest.TestCase):
             else:
                 self.fail("no current event")
 
+    def test_history_undo_redo(self):
+        self.call("POST", "/api/audition", {"tone": TONE})
+        self.call("POST", "/api/tweak", {"changes": [{"effect": 1, "knob": "Gain", "value": 60}]})
+        self.call("POST", "/api/tweak", {"changes": [{"effect": 1, "knob": "Gain", "value": 70}]})   # same drag
+        self.call("POST", "/api/tweak", {"changes": [{"effect": 3, "on": False}], "reason": "too washy"},
+                  headers={"X-G3xn-Source": "claude"})
+        entries = self.call("GET", "/api/history")["entries"]
+        self.assertTrue(entries[-2]["label"].startswith("TS Drive Gain 40"))
+        self.assertTrue(entries[-2]["label"].endswith("70"))
+        self.assertEqual((entries[-1]["source"], entries[-1]["reason"]), ("claude", "too washy"))
+        self.assertEqual(self.call("POST", "/api/undo")["chain"][2]["on"], True)
+        self.assertEqual(self.call("POST", "/api/undo")["chain"][0]["knobs"]["Gain"], 40)
+        self.assertEqual(self.call("POST", "/api/redo")["chain"][0]["knobs"]["Gain"], 70)
+        played = self.call("POST", "/api/play", {"tone": dict(TONE, volume=100)})
+        self.assertEqual(played["volume"], 100)
+        self.assertEqual(self.error("POST", "/api/redo")[0], 400)      # a new change drops the redo
+
     def test_effects_and_errors(self):
         self.assertTrue(self.call("GET", "/api/effects?query=fuzz")["effects"])
         code, _ = self.error("GET", "/api/effects/NoSuchPedal")

@@ -4,15 +4,23 @@ import type { ChainEffect, EffectInfo } from "../api";
 import { shownText } from "../api";
 import { Knob } from "./Knob";
 
+export interface ChainActions {
+  onMoveLeft?: () => void; // undefined = already first
+  onMoveRight?: () => void;
+  onSwap: () => void;
+  onRemove: () => void;
+}
+
 interface Props {
   fx: ChainEffect;
   info?: EffectInfo;
   editable: boolean;
   onKnob: (knob: string, value: number) => void;
   onToggle: (on: boolean) => void;
+  actions?: ChainActions; // shown when the chain can be edited
 }
 
-export function Enclosure({ fx, info, editable, onKnob, onToggle }: Props) {
+export function Enclosure({ fx, info, editable, onKnob, onToggle, actions }: Props) {
   const names = Object.keys(fx.knobs);
   const screens: string[][] = [];
   for (let i = 0; i < names.length; i += 4) screens.push(names.slice(i, i + 4));
@@ -27,6 +35,14 @@ export function Enclosure({ fx, info, editable, onKnob, onToggle }: Props) {
         <span className={`led${fx.on ? " on" : ""}`} aria-hidden="true" />
         <h3 className="enclosure-name">{fx.effect}</h3>
         <span className="enclosure-group">{info?.group.toLowerCase()}</span>
+        {actions && (
+          <div className="enclosure-tools">
+            <button onClick={actions.onMoveLeft} disabled={!actions.onMoveLeft} aria-label={`Move ${fx.effect} earlier`} title="Earlier in the chain">‹</button>
+            <button onClick={actions.onMoveRight} disabled={!actions.onMoveRight} aria-label={`Move ${fx.effect} later`} title="Later in the chain">›</button>
+            <button onClick={actions.onSwap} aria-label={`Swap ${fx.effect} for another effect`} title="Swap for another effect">⇄</button>
+            <button onClick={actions.onRemove} aria-label={`Remove ${fx.effect}`} title="Remove">×</button>
+          </div>
+        )}
       </header>
       <div className="enclosure-screens">
         {screens.map((screen, i) => (
