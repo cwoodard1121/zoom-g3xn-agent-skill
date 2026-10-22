@@ -267,6 +267,11 @@ class PlayRequest(BaseModel):
     reason: str = ""
 
 
+class MorphRequest(BaseModel):
+    to: dict
+    seconds: float = 3.0
+
+
 class WriteRequest(BaseModel):
     tone: dict
     replace: bool = False
@@ -426,6 +431,15 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None):
         view = await run("playing a tone", lambda p: service.play(p, req.tone),
                          touches=lambda r: [worker.pedal.scratch])
         return playing(request, view, req.reason)
+
+    @app.post("/api/morph", tags=["live"])
+    async def morph(req: MorphRequest, request: Request):
+        """Glide from the tone playing now to another with the same effects, over `seconds`."""
+        if not 0.2 <= req.seconds <= 30:
+            raise ValueError("morph time must be 0.2 to 30 seconds")
+        view = await run("morphing over %g s" % req.seconds, lambda p: service.morph(p, req.to, req.seconds),
+                         touches=lambda r: [worker.pedal.scratch])
+        return playing(request, view, "")
 
     # --- the time machine ---
 

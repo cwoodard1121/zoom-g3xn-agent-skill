@@ -8,6 +8,7 @@ import { EffectBrowser, MAX_POSITIONS } from "../components/EffectBrowser";
 import { Enclosure } from "../components/Enclosure";
 import { HistoryPanel } from "../components/HistoryPanel";
 import { Knob } from "../components/Knob";
+import { Macros } from "../components/Macros";
 import { usePedal } from "../pedal";
 import { SaveDialog } from "./SaveDialog";
 
@@ -20,7 +21,7 @@ export function ToneView() {
   const pedal = usePedal();
   const { live, status, onScratch, act, setLive, refreshLive, history } = pedal;
   const infos = useEffectInfos(live);
-  const { draft, queue } = useTweaks(setLive, refreshLive, pedal.say);
+  const { draft, queue, queueMany } = useTweaks(setLive, refreshLive, pedal.say);
   const [saving, setSaving] = useState(false);
   const [panel, setPanel] = useState<Panel>(null);
   const [drag, setDrag] = useState<{ from: number; over: number | null } | null>(null);
@@ -117,6 +118,19 @@ export function ToneView() {
           </button>
         </div>
       </div>
+
+      {onScratch && (
+        <Macros
+          tone={tone}
+          infos={infos}
+          onMove={(m) =>
+            queueMany([
+              ...m.knobs.map((k) => [`k:${k.index + 1}:${k.knob}`, { change: { effect: k.index + 1, knob: k.knob, value: k.value } }] as const),
+              ...(m.volume !== undefined ? [["volume", { volume: m.volume }] as const] : []),
+            ])
+          }
+        />
+      )}
 
       {!onScratch && (
         <div className="notice">
@@ -317,16 +331,22 @@ function useTweaks(setLive: (t: Tone) => void, refreshLive: () => void, say: (t:
     }
   }, [setLive, refreshLive, say]);
 
-  const queue = useCallback(
-    (key: string, p: Pending) => {
-      pending.current.set(key, p);
-      const shown = p.change?.value ?? p.change?.on ?? p.volume ?? p.name;
-      if (shown !== undefined) setDraft((d) => ({ ...d, [key]: shown }));
+  /** Several changes that belong together (a macro) go out in one request. */
+  const queueMany = useCallback(
+    (items: readonly (readonly [string, Pending])[]) => {
+      const shown: Record<string, number | boolean | string> = {};
+      for (const [key, p] of items) {
+        pending.current.set(key, p);
+        const v = p.change?.value ?? p.change?.on ?? p.volume ?? p.name;
+        if (v !== undefined) shown[key] = v;
+      }
+      setDraft((d) => ({ ...d, ...shown }));
       flush();
     },
     [flush],
   );
-  return { draft, queue };
+  const queue = useCallback((key: string, p: Pending) => queueMany([[key, p]]), [queueMany]);
+  return { draft, queue, queueMany };
 }
 
 function withDraft(tone: Tone, draft: Record<string, number | boolean | string>): Tone {

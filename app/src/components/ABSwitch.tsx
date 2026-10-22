@@ -9,9 +9,12 @@ type Side = "A" | "B";
 type Snaps = Partial<Record<Side, Tone>>;
 const KEY = "g3xn.ab";
 
+const MORPH_TIMES = [1, 2, 4, 8];
+
 export function ABSwitch({ tone }: { tone: Tone }) {
   const { act, say } = usePedal();
   const [snaps, setSnaps] = useState<Snaps>(load);
+  const [seconds, setSeconds] = useState(4);
   const current = plain(tone);
   const matches = (side: Side) => !!snaps[side] && same(snaps[side]!, current);
 
@@ -40,6 +43,10 @@ export function ABSwitch({ tone }: { tone: Tone }) {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  // Morph glides to the other side; it needs the same effects in the same order.
+  const target: Side | null = matches("A") ? "B" : matches("B") ? "A" : snaps.B ? "B" : null;
+  const canMorph = !!target && !!snaps[target] && sameChain(snaps[target]!, current) && !matches(target);
+
   return (
     <div className="toolbar-group ab" aria-label="A/B compare">
       {(["A", "B"] as const).map((side) => (
@@ -59,8 +66,24 @@ export function ABSwitch({ tone }: { tone: Tone }) {
           )}
         </div>
       ))}
+      {canMorph && (
+        <div className="morph">
+          <button className="button" onClick={() => act(() => api.morph(snaps[target!]!, seconds))}>
+            Morph to {target}
+          </button>
+          <select aria-label="Morph time" value={seconds} onChange={(e) => setSeconds(Number(e.target.value))}>
+            {MORPH_TIMES.map((s) => (
+              <option key={s} value={s}>{s} s</option>
+            ))}
+          </select>
+        </div>
+      )}
     </div>
   );
+}
+
+function sameChain(a: Tone, b: Tone): boolean {
+  return a.chain.map((f) => f.effect).join() === b.chain.map((f) => f.effect).join();
 }
 
 function plain(t: Tone): Tone {

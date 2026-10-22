@@ -111,6 +111,7 @@ export const api = {
   select: (slot: number) => call<{ slot: number; name: string }>("POST", `/api/patches/${slot}/select`),
   audition: (req: { tone?: Tone; slot?: number }) => call<Tone>("POST", "/api/audition", req),
   play: (tone: Tone) => call<Tone>("POST", "/api/play", { tone }),
+  morph: (to: Tone, seconds: number) => call<Tone>("POST", "/api/morph", { to, seconds }),
   undo: () => call<Tone>("POST", "/api/undo"),
   redo: () => call<Tone>("POST", "/api/redo"),
   goTo: (entryId: number) => call<Tone>("POST", `/api/history/${entryId}/play`),

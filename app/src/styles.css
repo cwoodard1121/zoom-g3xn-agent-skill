@@ -239,6 +239,22 @@ button, input { font: inherit; color: inherit; }
 }
 .ab-set:hover { color: var(--ink); }
 
+.morph { display: flex; align-items: center; gap: 6px; }
+.morph select {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 6px; color: var(--ink);
+}
+
+.macros {
+  display: flex; align-items: flex-end; gap: 22px; flex-wrap: wrap;
+  margin: 0 0 18px; padding: 12px 18px 10px;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--panel);
+  --coat-ink: var(--ink);
+}
+.macros-label {
+  align-self: center; margin-right: 6px;
+  font: 700 20px/1 var(--display); text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-dim);
+}
+
 /* ---------- enclosures ---------- */
 
 .enclosure {

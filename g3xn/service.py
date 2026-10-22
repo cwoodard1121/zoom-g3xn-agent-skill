@@ -15,6 +15,7 @@ Tone JSON (what audition / write_tone / gigs take):
 """
 import datetime
 import os
+import time
 
 from . import gig as gigs
 from .catalog import catalog
@@ -113,6 +114,44 @@ def play(pedal, tone):
     if problems:
         raise PedalError("; ".join(problems))
     pedal.push(patch)
+    return live_view(pedal)
+
+
+def morph(pedal, to, seconds=3.0, steps_per_second=12):
+    """Glide from the tone playing now to `to` over a few seconds, for swells and build-ups.
+    Both need the same effects in the same order. Knobs sweep; switches (on/off, and knobs
+    with named settings like Tail OFF/ON) flip halfway; the patch volume lands at the end."""
+    if pedal.current() != pedal.scratch:
+        raise PedalError("nothing is being auditioned; audition a tone first")
+    start, target = pedal.edit_buffer(), Patch.from_dict(to)
+    if [s.id for s in start.slots] != [s.id for s in target.slots]:
+        raise PedalError("morphing needs the same effects in the same order (%s vs %s)" % (
+            " > ".join(c.name for c in start.chain), " > ".join(c.name for c in target.chain)))
+    sent = [list(s.knobs) for s in start.slots]
+    on = [s.enabled for s in start.slots]
+    steps = max(1, int(seconds * steps_per_second))
+    t0 = time.time()
+    for step in range(1, steps + 1):
+        f = step / steps
+        for pos, (a, b) in enumerate(zip(start.slots, target.slots)):
+            if b.is_empty or b.is_continuation:
+                continue
+            effect = catalog().find(b.id)
+            for k, (va, vb) in enumerate(zip(a.knobs, b.knobs)):
+                param = effect.params[k] if effect and k < len(effect.params) else None
+                if va == vb or param is None:
+                    continue
+                switch = bool(param.display and "options" in param.display)
+                value = (vb if f >= 0.5 else va) if switch else round(va + (vb - va) * f)
+                if value != sent[pos][k]:
+                    pedal.set_knob(pos, k, value)
+                    sent[pos][k] = value
+            if f >= 0.5 and on[pos] != b.enabled:
+                pedal.set_enabled(pos, b.enabled)
+                on[pos] = b.enabled
+        time.sleep(max(0.0, t0 + seconds * f - time.time()))
+    if start.volume != target.volume:
+        pedal.set_volume(target.volume)
     return live_view(pedal)
 
 

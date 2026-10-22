@@ -108,6 +108,18 @@ class DaemonTest(unittest.TestCase):
         self.assertEqual(played["volume"], 100)
         self.assertEqual(self.error("POST", "/api/redo")[0], 400)      # a new change drops the redo
 
+    def test_morph(self):
+        self.call("POST", "/api/audition", {"tone": TONE})
+        loud = {"name": "DAEMON", "volume": 100, "chain": [
+            {"effect": "TS Drive", "knobs": {"Gain": 90}}, {"effect": "FD TWNR"}, {"effect": "Delay", "on": False}]}
+        start = time.time()
+        view = self.call("POST", "/api/morph", {"to": loud, "seconds": 0.5})
+        self.assertGreaterEqual(time.time() - start, 0.45)
+        self.assertEqual((view["chain"][0]["knobs"]["Gain"], view["chain"][2]["on"], view["volume"]), (90, False, 100))
+        code, msg = self.error("POST", "/api/morph", {"to": {"name": "X", "chain": [{"effect": "Comp"}]}})
+        self.assertEqual(code, 409)
+        self.assertIn("same effects", msg)
+
     def test_effects_and_errors(self):
         self.assertTrue(self.call("GET", "/api/effects?query=fuzz")["effects"])
         code, _ = self.error("GET", "/api/effects/NoSuchPedal")

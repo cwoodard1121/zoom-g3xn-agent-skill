@@ -15,9 +15,10 @@ interface Props {
   hint?: string;
   disabled?: boolean;
   onChange: (value: number) => void;
+  onGrab?: (held: boolean) => void; // pointer pressed / released
 }
 
-export function Knob({ label, value, max, text, defaultValue, hint, disabled, onChange }: Props) {
+export function Knob({ label, value, max, text, defaultValue, hint, disabled, onChange, onGrab }: Props) {
   const drag = useRef<{ y: number; start: number } | null>(null);
   const clamp = (v: number) => Math.max(0, Math.min(max, Math.round(v)));
   const set = (v: number) => {
@@ -29,6 +30,7 @@ export function Knob({ label, value, max, text, defaultValue, hint, disabled, on
     if (disabled) return;
     e.currentTarget.setPointerCapture(e.pointerId);
     drag.current = { y: e.clientY, start: value };
+    onGrab?.(true);
   };
   const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
     if (!drag.current) return;
@@ -36,6 +38,7 @@ export function Knob({ label, value, max, text, defaultValue, hint, disabled, on
     set(drag.current.start + (drag.current.y - e.clientY) * scale);
   };
   const onPointerUp = () => {
+    if (drag.current) onGrab?.(false);
     drag.current = null;
   };
   const onWheel = (e: WheelEvent<HTMLDivElement>) => {
