@@ -10,3 +10,6 @@ venv/
 *.egg-info/
 dist/
 build/
+
+# web UI
+node_modules/

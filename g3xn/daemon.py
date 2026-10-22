@@ -1,7 +1,8 @@
 """The g3xn daemon: one process that owns the pedal, for the app, Claude and the CLI.
 
     g3xn-daemon                  # http://127.0.0.1:8370, API docs at /docs
-    g3xn-daemon --sim            # a virtual pedal (data/pedal_dump if present), no hardware
+    g3xn-daemon --sim            # a virtual pedal (data/pedal_dump if present), no hardware;
+                                 # Claude's tool calls keep going to the real pedal
 
 MIDI ports are exclusive and the pedal answers one request at a time, so a
 single worker thread holds the port and runs every pedal action in turn.
@@ -523,23 +524,32 @@ def _remove_discovery():
         os.remove(DISCOVERY_FILE)
 
 
-def main(argv=None):
-    ap = argparse.ArgumentParser(prog="g3xn-daemon", description=__doc__.split("\n\n")[0])
-    ap.add_argument("--port", type=int, default=DEFAULT_PORT)
+def add_pedal_options(ap):
     ap.add_argument("--scratch", type=int, default=150, help="slot used for auditions (default 150)")
     ap.add_argument("--sim", nargs="?", const="", metavar="BACKUP",
                     help="use a virtual pedal, loaded from a backup folder (default data/pedal_dump if present)")
+
+
+def pedal_factory(args):
+    """() -> Pedal for the options from add_pedal_options: the real pedal, or a virtual one."""
+    if args.sim is None:
+        return lambda: Pedal(scratch=args.scratch)
+    from .sim import VirtualPedal
+    folder = args.sim or os.path.join(REPO, "data", "pedal_dump")
+    device = VirtualPedal.from_backup(folder) if os.path.isdir(folder) else VirtualPedal()
+    return lambda: Pedal(scratch=args.scratch, device=device)
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(prog="g3xn-daemon", description=__doc__.split("\n\n")[0])
+    ap.add_argument("--port", type=int, default=DEFAULT_PORT)
+    add_pedal_options(ap)
     args = ap.parse_args(argv)
 
-    if args.sim is not None:
-        from .sim import VirtualPedal
-        folder = args.sim or os.path.join(REPO, "data", "pedal_dump")
-        device = VirtualPedal.from_backup(folder) if os.path.isdir(folder) else VirtualPedal()
-        make_pedal = lambda: Pedal(scratch=args.scratch, device=device)   # noqa: E731
-    else:
-        make_pedal = lambda: Pedal(scratch=args.scratch)                   # noqa: E731
-
-    uvicorn.run(create_app(make_pedal, args.port), host="127.0.0.1", port=args.port, log_level="warning")
+    app = create_app(pedal_factory(args), args.port, announce=args.sim is None)
+    print("g3xn daemon on http://127.0.0.1:%d (API docs at /docs)%s" % (args.port, "" if os.path.isdir(UI_DIR) else
+          "; build the app with: cd app && npm install && npm run build"))
+    uvicorn.run(app, host="127.0.0.1", port=args.port, log_level="warning")
 
 
 if __name__ == "__main__":

@@ -36,6 +36,7 @@ $ g3xn save 123                    # keep it
 | **Gigs** | A setlist file â†’ consecutive slots, with a plan showing what gets replaced and an automatic backup first |
 | **AI agent plugin** | Claude Code / Claude Desktop (or any MCP client): design tones by talking, research them on the web, audition and tweak live |
 | **ToneLib import** | Reads `.zg3xn` exports directly |
+| **Desktop app** (early) | Your effect chain as a row of stompboxes with knobs you turn, a patch library, and a big tuner; works in a window, a browser tab or on a phone |
 
 ## Use it with Claude
 
@@ -74,6 +75,21 @@ Clone the repo, then add the server to `claude_desktop_config.json` (Settings â†
 ```
 
 The agent's playbook (how to research, translate "too muddy" into knob moves, stay safe) is [`skills/zoom-g3xn/SKILL.md`](skills/zoom-g3xn/SKILL.md). Other agents can read it and drive the `g3xn --json` CLI instead of MCP.
+
+## The app (early)
+
+![The tone view: the effect chain as a row of stompboxes](docs/img/app-tone.png)
+
+The app shows the tone playing now as a pedalboard: each effect is a stompbox coloured by its type, with the knobs the pedal has and the values its screen shows. Drag a knob up or down (or scroll on it, or use the arrow keys) and you hear it straight away; click a footswitch to turn an effect on or off. Your own patches are never edited in place: **Tweak a copy** puts one on the scratch slot, and **Keep it in a slot** saves it, refusing to replace a patch unless you tick the box that names it. **Patches** lists all 150 slots in their banks of three, and **Tuner** is the pedal's tuner, big.
+
+```bash
+pip install -e ".[app]"
+cd app && npm install && npm run build && cd ..   # once, and after pulling UI changes
+g3xn-app                                          # the app in its own window
+g3xn-app --sim                                    # try it with no pedal plugged in
+```
+
+Behind the window is `g3xn-daemon`, one process that holds the pedal so the app, Claude and the command line can share it. While it runs, the Claude plugin's tool calls go through it, so you watch Claude's changes happen in the app. The bar at the top always says what the pedal is doing; **Let go of the pedal** frees it for ToneLib. The daemon's API is documented at `http://127.0.0.1:8370/docs`. What's next is in [`docs/APP_PLAN.md`](docs/APP_PLAN.md).
 
 ## Install (library + CLI)
 
@@ -191,7 +207,7 @@ Patch format notes live at the top of [`g3xn/patch.py`](g3xn/patch.py).
 ## Roadmap
 
 - ~~**Agent plugin**~~: done (see *Use it with Claude*)
-- **Desktop app**: patch librarian, editor, tuner, gig/stage view, built-in AI, phone remote, MIDI controllers. Plan: [`docs/APP_PLAN.md`](docs/APP_PLAN.md)
+- **Desktop app**: started (tone editor, patch library, tuner, the daemon). Next: gigs and stage view, built-in Claude chat, phone remote, MIDI controllers. Plan: [`docs/APP_PLAN.md`](docs/APP_PLAN.md)
 
 ## Credits
 
