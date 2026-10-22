@@ -1,0 +1,14 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "g3xn",
+  "owner": { "name": "cwoodard1121" },
+  "metadata": { "description": "Zoom G3n/G3Xn tone design and live pedal control for Claude." },
+  "plugins": [
+    {
+      "name": "g3xn",
+      "source": "./",
+      "description": "Design, audition and tweak Zoom G3n/G3Xn tones live on the pedal; back up patches and load gig setlists.",
+      "category": "music"
+    }
+  ]
+}

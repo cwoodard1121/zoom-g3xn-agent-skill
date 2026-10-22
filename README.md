@@ -2,6 +2,9 @@
 
 **Build, edit and play Zoom G3n / G3Xn patches from code, the command line, or an AI agent.**
 
+> *"Give me the Sultans of Swing tone."* … *"Less fizzy."* … *"Save it to 123."*
+> With the Claude plugin you just say what you want and hear it on the pedal.
+
 No ToneLib, no Guitar Lab. `g3xn` talks to the pedal over USB-MIDI, knows every one of its 162 effects by name, and lets you hear a change about a tenth of a second after you make it.
 
 ```text
@@ -30,8 +33,49 @@ $ g3xn save 123                    # keep it
 | **Tuner** | Turn it on and stream the note + meter |
 | **Effect catalog** | 162 effects: name, group, description, DSP cost, chain positions, every knob's range/default/explanation |
 | **Backups** | Dump every slot to `.zptc` files in one command |
+| **Gigs** | A setlist file → consecutive slots, with a plan showing what gets replaced and an automatic backup first |
+| **AI agent plugin** | Claude Code / Claude Desktop (or any MCP client): design tones by talking, research them on the web, audition and tweak live |
+| **ToneLib import** | Reads `.zg3xn` exports directly |
 
-## Install
+## Use it with Claude
+
+You need [uv](https://docs.astral.sh/uv/) (it installs Python and the dependencies for you). Plug the pedal in and **close ToneLib / Guitar Lab** first.
+
+**Claude Code**
+
+```text
+/plugin marketplace add cwoodard1121/zoom-g3xn-agent-skill
+/plugin install g3xn@g3xn
+```
+
+Restart Claude Code, then try:
+
+- *"What's on my pedal?"*
+- *"Audition a Texas blues tone, I'm on the neck pickup of a Strat into headphones."*
+- *"Too fizzy."* / *"More gain for the solo."* / *"Turn the reverb down."*
+- *"Save it to slot 123."* (it asks before replacing anything that isn't Empty)
+- *"Back up the pedal"*, *"tune"*, *"load my Friday setlist starting at slot 100"*
+
+Everything you hear while designing happens on **slot 150** (the scratch slot), so your patches stay untouched until you say save. Use Claude in Chrome or web search alongside and it researches rigs ("what did Knopfler use on Sultans?") before building.
+
+**Claude Desktop / other MCP clients**
+
+Clone the repo, then add the server to `claude_desktop_config.json` (Settings → Developer → Edit config):
+
+```json
+{
+  "mcpServers": {
+    "g3xn": {
+      "command": "uv",
+      "args": ["run", "--quiet", "--directory", "C:/path/to/zoom-g3xn-agent-skill", "--extra", "mcp", "g3xn-mcp"]
+    }
+  }
+}
+```
+
+The agent's playbook (how to research, translate "too muddy" into knob moves, stay safe) is [`skills/zoom-g3xn/SKILL.md`](skills/zoom-g3xn/SKILL.md). Other agents can read it and drive the `g3xn --json` CLI instead of MCP.
+
+## Install (library + CLI)
 
 ```bash
 git clone https://github.com/cwoodard1121/zoom-g3xn-agent-skill
@@ -146,8 +190,8 @@ Patch format notes live at the top of [`g3xn/patch.py`](g3xn/patch.py).
 
 ## Roadmap
 
-- **Agent plugin**: a Claude Code / Claude Desktop plugin (MCP server + skill) so you can say *"make it less fizzy"* or *"build me the Sultans of Swing tone"* and hear it on the pedal right away
-- **Desktop app**: patch librarian, tuner, gig setlists, built-in AI tone assistant
+- ~~**Agent plugin**~~: done (see *Use it with Claude*)
+- **Desktop app**: patch librarian, editor, tuner, gig/stage view, built-in AI, phone remote, MIDI controllers. Plan: [`docs/APP_PLAN.md`](docs/APP_PLAN.md)
 
 ## Credits
 
