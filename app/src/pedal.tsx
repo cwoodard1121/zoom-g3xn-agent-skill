@@ -109,6 +109,11 @@ export function PedalProvider({ children }: { children: ReactNode }) {
     if (current) refreshLive();
   }, [current, refreshLive]);
   const setLive = useCallback((tone: Tone) => dispatch({ type: "live-read", tone }), []);
+  // Off the scratch slot, whatever plays there next may not be that copy any more.
+  const scratch = state.status?.scratch_slot;
+  useEffect(() => {
+    if (current && current !== scratch) setCopyOf(null);
+  }, [current, scratch]);
 
   const value = useMemo<Pedal>(
     () => ({
