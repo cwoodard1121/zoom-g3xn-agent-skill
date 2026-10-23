@@ -7,6 +7,8 @@ import { Icon } from "../components/Icon";
 import { usePedal } from "../pedal";
 
 const BLANK: Gig = { name: "New gig", start_slot: 100, patches: [] };
+// Strat five-way, then Les Paul three-way; anything else can be typed.
+const PICKUPS = ["Neck", "Neck + middle", "Middle", "Middle + bridge", "Bridge", "Rhythm", "Both", "Treble"];
 
 export function Gigs({ onStage }: { onStage: () => void }) {
   const { gigs, names, act } = usePedal();
@@ -101,7 +103,7 @@ interface EditorProps {
 }
 
 function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
-  const { names, live, act } = usePedal();
+  const { names, live, act, say } = usePedal();
   const [g, setG] = useState<Gig>(gig);
   const [dirty, setDirty] = useState(false);
   const [plan, setPlan] = useState<PlanStep[] | null>(null);
@@ -113,6 +115,28 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
     setPlan(null);
   };
   const setEntry = (i: number, entry: GigEntry) => update({ ...g, patches: g.patches.map((e, j) => (j === i ? entry : e)) });
+  const [words, setWords] = useState<number | null>(null);    // the song whose lyrics are open
+  const [finding, setFinding] = useState(false);
+
+  // Look up the words for the songs that have none (or just one), on LRCLIB.
+  const findLyrics = async (only?: number) => {
+    setFinding(true);
+    let patches = g.patches, found = 0, missing: string[] = [];
+    for (let i = 0; i < patches.length; i++) {
+      const e = patches[i];
+      if ((only !== undefined && i !== only) || (only === undefined && e.lyrics) || !e.song.trim()) continue;
+      const hit = await act(() => api.lyrics(e.song, e.artist));
+      if (hit === undefined) break;                       // offline: act already said so
+      if (hit.found && hit.lyrics) {
+        patches = patches.map((x, j) => (j === i ? { ...x, lyrics: hit.lyrics, artist: x.artist || hit.artist } : x));
+        found++;
+      } else missing.push(e.song);
+    }
+    setFinding(false);
+    if (found) update({ ...g, patches });
+    say(found ? `Found lyrics for ${found} song${found === 1 ? "" : "s"}${missing.length ? `. None for ${missing.join(", ")}` : ""}` :
+        missing.length ? `No lyrics found for ${missing.join(", ")}` : "Every song already has lyrics", !found && missing.length > 0);
+  };
   const moveEntry = (i: number, d: number) => {
     const patches = [...g.patches];
     const [e] = patches.splice(i, 1);
@@ -163,6 +187,7 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
             <span>Patch</span>
             <span>BPM</span>
             <span>Key</span>
+            <span>Pickup</span>
             <span>Notes</span>
           </li>
         )}
@@ -208,6 +233,14 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
               onChange={(e) => setEntry(i, { ...entry, key: e.target.value || undefined })}
             />
             <input
+              className="song-pickup"
+              placeholder="Pickup"
+              aria-label={`Pickup for song ${i + 1}`}
+              list="pickups"
+              value={entry.pickup ?? ""}
+              onChange={(e) => setEntry(i, { ...entry, pickup: e.target.value || undefined })}
+            />
+            <input
               className="song-notes"
               placeholder="Notes for the stage view"
               aria-label={`Notes for song ${i + 1}`}
@@ -215,19 +248,58 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
               onChange={(e) => setEntry(i, { ...entry, notes: e.target.value || undefined })}
             />
             <span className="song-tools">
+              <button
+                className={`song-words${entry.lyrics ? " has" : ""}`}
+                onClick={() => setWords(words === i ? null : i)}
+                aria-expanded={words === i}
+                aria-label={`Lyrics for song ${i + 1}`}
+                title={entry.lyrics ? "Lyrics" : "No lyrics yet"}
+              >
+                Aa
+              </button>
               <button onClick={() => moveEntry(i, -1)} disabled={i === 0} aria-label={`Move song ${i + 1} up`}><Icon name="up" /></button>
               <button onClick={() => moveEntry(i, 1)} disabled={i === g.patches.length - 1} aria-label={`Move song ${i + 1} down`}><Icon name="down" /></button>
               <button onClick={() => update({ ...g, patches: g.patches.filter((_, j) => j !== i) })} aria-label={`Remove song ${i + 1}`}><Icon name="close" /></button>
             </span>
+            {words === i && (
+              <div className="song-lyrics">
+                <div className="song-lyrics-head">
+                  <input
+                    placeholder="Artist (helps find the right words)"
+                    aria-label={`Artist for song ${i + 1}`}
+                    value={entry.artist ?? ""}
+                    onChange={(e) => setEntry(i, { ...entry, artist: e.target.value || undefined })}
+                  />
+                  <button className="button" disabled={finding || !entry.song.trim()} onClick={() => findLyrics(i)}>
+                    {finding ? "Looking…" : entry.lyrics ? "Find them again" : "Find lyrics"}
+                  </button>
+                </div>
+                <textarea
+                  aria-label={`Lyrics for ${entry.song || `song ${i + 1}`}`}
+                  placeholder="Paste or type the words. They scroll under the song on the stage view."
+                  rows={10}
+                  value={entry.lyrics ?? ""}
+                  onChange={(e) => setEntry(i, { ...entry, lyrics: e.target.value || undefined })}
+                />
+              </div>
+            )}
           </li>
         ))}
       </ol>
-      <button
-        className="button"
-        onClick={() => update({ ...g, patches: [...g.patches, { song: "", tone: live ? stripTone(live) : undefined }] })}
-      >
-        Add a song
-      </button>
+      <datalist id="pickups">
+        {PICKUPS.map((p) => <option key={p} value={p} />)}
+      </datalist>
+      <div className="songs-actions">
+        <button
+          className="button"
+          onClick={() => update({ ...g, patches: [...g.patches, { song: "", tone: live ? stripTone(live) : undefined }] })}
+        >
+          Add a song
+        </button>
+        <button className="button" disabled={finding || g.patches.every((e) => e.lyrics || !e.song.trim())} onClick={() => findLyrics()}>
+          {finding ? "Finding lyrics…" : "Find lyrics for every song"}
+        </button>
+      </div>
 
       <div className="gig-actions">
         <button className="button" onClick={() => save()} disabled={!dirty}>{dirty ? "Save" : "Saved"}</button>

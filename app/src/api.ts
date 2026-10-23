@@ -80,9 +80,20 @@ export interface GigEntry {
   tone?: Tone;
   from_slot?: number;
   slot?: number;
+  artist?: string;
   notes?: string;
   tempo?: number;
   key?: string;
+  pickup?: string; // the guitar's pickup selector for the song: "Bridge", "Neck", "2"…
+  lyrics?: string;
+}
+
+export interface LyricsHit {
+  found: boolean;
+  song: string;
+  artist?: string;
+  lyrics?: string;
+  source?: string;
 }
 
 export interface Gig {
@@ -196,6 +207,8 @@ export const api = {
   goTo: (entryId: number) => call<Tone>("POST", `/api/history/${entryId}/play`),
   effects: () => call<{ effects: EffectSummary[] }>("GET", "/api/effects"),
   gig: (id: string) => call<Gig>("GET", `/api/setlists/${id}`),
+  lyrics: (song: string, artist?: string) =>
+    call<LyricsHit>("GET", `/api/lyrics?${new URLSearchParams({ song, artist: artist ?? "" })}`),
   saveGig: (gig: Gig) => call<Gig>("PUT", `/api/setlists/${gig.id ?? "new"}`, gig),
   deleteGig: (id: string) => call<{ deleted: string }>("DELETE", `/api/setlists/${id}`),
   planGig: (id: string) => call<{ plan: PlanStep[] }>("POST", `/api/setlists/${id}/plan`),

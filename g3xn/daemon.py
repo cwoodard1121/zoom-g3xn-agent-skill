@@ -45,6 +45,8 @@ from .gig import GigLibrary, shown as shown_gig
 from .chat import Chat, ChatError
 from .footswitch import Footswitches
 from .history import History
+from .lyrics import LyricsError
+from . import lyrics as lyric_search
 from .remote import COOKIE, Remote
 from .remote import DEFAULT_PORT as REMOTE_PORT
 from .pedal import Pedal, PedalError
@@ -605,6 +607,15 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
         """A run of slots as a gig file."""
         return await run("reading slots %d-%d" % (first_slot, last_slot),
                          lambda p: service.export_gig(p, first_slot, last_slot, name))
+
+    @app.get("/api/lyrics", tags=["gigs"])
+    async def find_lyrics(song: str, artist: str = ""):
+        """A song's words from LRCLIB, for a gig song's lyrics. {"found": false} when it has none."""
+        try:
+            hit = await asyncio.to_thread(lyric_search.find, song, artist or None)
+        except LyricsError as e:
+            return JSONResponse({"error": str(e)}, status_code=502)
+        return dict(hit, found=True) if hit else {"found": False, "song": song}
 
     # --- saved gigs (the app's setlists) ---
 

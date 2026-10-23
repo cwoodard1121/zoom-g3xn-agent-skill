@@ -716,8 +716,16 @@ select { cursor: pointer; }
 .songs { list-style: none; margin: 8px 0 14px; padding: 0; display: grid; gap: 5px; }
 .song {
   display: grid; align-items: center; gap: 8px;
-  grid-template-columns: 30px minmax(0, 1.3fr) minmax(0, 1.6fr) 64px 58px minmax(0, 1.8fr) auto;
+  grid-template-columns: 30px minmax(0, 1.3fr) minmax(0, 1.6fr) 64px 58px 108px minmax(0, 1.6fr) auto;
 }
+.song-tools .song-words { width: auto; padding: 0 7px; font: 600 12px/1 var(--body); color: var(--ink-dim); }
+.song-tools .song-words.has { color: var(--ink); }
+.song-tools .song-words[aria-expanded="true"] { border-color: var(--line, #9aa0a6); }
+.song-lyrics { grid-column: 2 / -1; display: grid; gap: 6px; padding: 4px 0 12px; }
+.song-lyrics-head { display: flex; gap: 8px; }
+.song-lyrics-head input { flex: 1; }
+.song-lyrics textarea { width: 100%; font: 400 14px/1.5 var(--body); resize: vertical; }
+.songs-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .song-head span { font: 400 9px/1.2 var(--engraved); letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-dim); }
 .song-number {
   font: 400 20px/1 var(--readout); color: var(--vfd); background: var(--glass);
@@ -792,6 +800,28 @@ select { cursor: pointer; }
 .stage-fact b { color: var(--vfd); font-weight: 400; font-size: 34px; }
 
 .stage-notes { font-size: clamp(20px, 2vw, 25px); line-height: 1.4; color: #e3b45a; max-width: 42ch; margin: 24px 0 0; }
+
+/* The patch's effects, lit like the pedal's own footswitch LEDs. */
+.stage-stomps { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 0; padding: 0; }
+.stage-stomps li {
+  display: inline-flex; align-items: center; gap: 9px;
+  font: 400 22px/1 var(--readout); color: #6b4c12;
+  padding: 7px 13px 5px; border: 1px solid #2a1d00; background: #0b0905;
+}
+.stage-stomps li.on { color: var(--vfd); border-color: #4d3500; text-shadow: 0 0 6px var(--vfd-glow); }
+.stage-stomp-led { width: 9px; height: 9px; border-radius: 50%; background: #2b1e05; flex: none; }
+.stage-stomps li.on .stage-stomp-led { background: #ff3b1f; box-shadow: 0 0 8px #ff3b1f; }
+
+.stage-lyrics {
+  margin-top: 28px; padding: 18px 22px; max-height: 46vh; overflow: auto;
+  white-space: pre-line; font-size: clamp(19px, 1.7vw, 24px); line-height: 1.55; color: #e3b45a;
+  background: #0b0905; border: 1px solid #2a1d00; box-shadow: inset 0 2px 10px #000;
+}
+.stage-lyrics:focus-visible { outline: 2px solid var(--vfd); outline-offset: 2px; }
+.stage:fullscreen .stage-lyrics { max-height: 52vh; font-size: clamp(22px, 2vw, 30px); }
+
+.stage-rehearse { display: inline-flex; gap: 1px; }
+.stage-rehearsing { margin: 18px 0 0; font: 400 10px/1.4 var(--engraved); letter-spacing: 0.22em; text-transform: uppercase; color: var(--vfd); }
 
 .stage-tuner { display: flex; align-items: center; gap: 20px; margin-top: 26px; }
 .stage-tuner-note { font: 400 84px/1 var(--readout); min-width: 1.4ch; color: var(--vfd); }
@@ -1041,7 +1071,7 @@ select { cursor: pointer; }
   .gigs, .stage { grid-template-columns: minmax(0, 1fr); gap: 26px; }
   .gig-editor { padding: 14px; }
   .song { grid-template-columns: 30px minmax(0, 1fr) minmax(0, 1fr); }
-  .song select, .song-notes, .song-tools { grid-column: 2 / -1; }
+  .song select, .song-notes, .song-pickup, .song-tools { grid-column: 2 / -1; }
   .song-tools { justify-content: flex-end; }
   .song-head { display: none; }
   .gig-head { flex-wrap: wrap; }
