@@ -820,6 +820,7 @@ select { cursor: pointer; }
 .stage-lyrics:focus-visible { outline: 2px solid var(--vfd); outline-offset: 2px; }
 .stage:fullscreen .stage-lyrics { max-height: 52vh; font-size: clamp(22px, 2vw, 30px); }
 
+.stage-no-lyrics { margin: 28px 0 0; display: flex; align-items: center; gap: 14px; color: var(--vfd-dim); font-size: 16px; }
 .stage-rehearse { display: inline-flex; gap: 1px; }
 .stage-rehearsing { margin: 18px 0 0; font: 400 10px/1.4 var(--engraved); letter-spacing: 0.22em; text-transform: uppercase; color: var(--vfd); }
 

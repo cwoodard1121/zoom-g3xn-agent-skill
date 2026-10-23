@@ -4,6 +4,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../api";
 import type { Gig, GigEntry } from "../api";
+import { fillLyrics, lyricsMessage } from "../lyrics";
 import { usePedal } from "../pedal";
 
 const SEGMENTS = Array.from({ length: 15 }, (_, i) => i - 7);
@@ -26,8 +27,19 @@ function remembered(): Player | null {
 }
 
 export function Stage() {
-  const { gigs, status, names, tuner, live, act } = usePedal();
+  const { gigs, status, names, tuner, live, act, say } = usePedal();
   const [gig, setGig] = useState<Gig | null>(null);
+  const [finding, setFinding] = useState(false);
+  const findLyrics = async () => {
+    setFinding(true);
+    const r = await act(() => fillLyrics(gig!));
+    if (r?.found) {
+      const saved = await act(() => api.saveGig(r.gig));
+      if (saved) setGig(saved);
+    }
+    setFinding(false);
+    if (r) say(lyricsMessage(r.found, r.missing), !r.found && r.missing.length > 0);
+  };
   const [rehearse, setRehearseState] = useState<Player | null>(remembered);
   const setRehearse = (p: Player | null) => {
     setRehearseState(p);
@@ -209,11 +221,18 @@ export function Stage() {
           </button>
         </div>
 
-        {info?.lyrics && (
+        {info?.lyrics ? (
           <section className="stage-lyrics" aria-label={`Lyrics for ${song?.song}`} tabIndex={0}>
             {info.lyrics}
           </section>
-        )}
+        ) : song ? (
+          <p className="stage-no-lyrics">
+            No lyrics for this song yet.{" "}
+            <button className="button" disabled={finding} onClick={findLyrics}>
+              {finding ? "Finding lyrics…" : "Find lyrics for the set"}
+            </button>
+          </p>
+        ) : null}
       </div>
 
       <ol className="setlist" aria-label="Setlist">

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { api } from "../api";
 import type { Gig, GigEntry, PlanStep } from "../api";
 import { Icon } from "../components/Icon";
+import { fillLyrics, lyricsMessage } from "../lyrics";
 import { usePedal } from "../pedal";
 
 const BLANK: Gig = { name: "New gig", start_slot: 100, patches: [] };
@@ -118,24 +119,17 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
   const [words, setWords] = useState<number | null>(null);    // the song whose lyrics are open
   const [finding, setFinding] = useState(false);
 
-  // Look up the words for the songs that have none (or just one), on LRCLIB.
+  // Look up the words for the songs that have none (or just one), on LRCLIB, and keep them.
   const findLyrics = async (only?: number) => {
     setFinding(true);
-    let patches = g.patches, found = 0, missing: string[] = [];
-    for (let i = 0; i < patches.length; i++) {
-      const e = patches[i];
-      if ((only !== undefined && i !== only) || (only === undefined && e.lyrics) || !e.song.trim()) continue;
-      const hit = await act(() => api.lyrics(e.song, e.artist));
-      if (hit === undefined) break;                       // offline: act already said so
-      if (hit.found && hit.lyrics) {
-        patches = patches.map((x, j) => (j === i ? { ...x, lyrics: hit.lyrics, artist: x.artist || hit.artist } : x));
-        found++;
-      } else missing.push(e.song);
-    }
+    const r = await act(() => fillLyrics(g, only));
     setFinding(false);
-    if (found) update({ ...g, patches });
-    say(found ? `Found lyrics for ${found} song${found === 1 ? "" : "s"}${missing.length ? `. None for ${missing.join(", ")}` : ""}` :
-        missing.length ? `No lyrics found for ${missing.join(", ")}` : "Every song already has lyrics", !found && missing.length > 0);
+    if (!r) return;
+    if (r.found) {
+      setG(r.gig);
+      await save(true, r.gig);
+    }
+    say(lyricsMessage(r.found, r.missing), !r.found && r.missing.length > 0);
   };
   const moveEntry = (i: number, d: number) => {
     const patches = [...g.patches];
@@ -143,8 +137,8 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
     patches.splice(i + d, 0, e);
     update({ ...g, patches });
   };
-  const save = async (quiet = false) => {
-    const saved = await act(() => api.saveGig(g), () => (quiet ? undefined : `Saved ${g.name}`));
+  const save = async (quiet = false, gig: Gig = g) => {
+    const saved = await act(() => api.saveGig(gig), () => (quiet ? undefined : `Saved ${gig.name}`));
     if (saved) {
       setDirty(false);
       onSaved(saved);
