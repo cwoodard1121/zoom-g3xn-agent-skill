@@ -1,9 +1,14 @@
 // Stage: the gig that's on the pedal, readable from where you stand.
 // It follows the pedal: stomp to the next patch and the next song comes up.
 // Arrow keys, space and Page Up/Down (what Bluetooth page-turner pedals send) step through the set.
-import { useEffect, useRef, useState } from "react";
+// Moving on is the one big moment: the next song's title flies out of the setlist into place, the
+// last one slides away, and the patch's effects light up one after another (View Transitions,
+// where the browser has them and motion is welcome; otherwise it just changes).
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { api } from "../api";
 import type { Gig, GigEntry } from "../api";
+import type React from "react";
 import { Lyrics } from "../components/Lyrics";
 import { fillLyrics, lyricsMessage } from "../lyrics";
 import { usePedal } from "../pedal";
@@ -39,7 +44,27 @@ export function Stage() {
 
   const slots = gig?.loaded?.slots ?? [];
   const current = status?.current_slot ?? null;
-  const index = slots.findIndex((s) => s.slot === current);
+  const playing = slots.findIndex((s) => s.slot === current);
+
+  // The song on screen trails the pedal by the length of the transition into it.
+  const [index, setShown] = useState(playing);
+  const [incoming, setIncoming] = useState<number | null>(null);
+  useEffect(() => {
+    if (playing === index || incoming !== null) return;
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!document.startViewTransition || still || index < 0 || playing < 0) setShown(playing);
+    else setIncoming(playing);              // first mark the setlist row the title flies out of
+  }, [playing, index, incoming]);
+  useLayoutEffect(() => {
+    if (incoming === null) return;
+    const to = incoming;
+    const move = document.startViewTransition(() => flushSync(() => {
+      setShown(to);
+      setIncoming(null);
+    }));
+    move.finished.catch(() => {});
+  }, [incoming]);
+
   const song = index >= 0 ? slots[index] : null;
   const next = slots[index + 1];
   // Notes, tempo and key can change after loading; match them by song title.
@@ -100,13 +125,15 @@ export function Stage() {
   return (
     <section className="stage" ref={stageRef} aria-labelledby="stage-song">
       <div className="stage-now">
-        <p className="stage-where">
+        <p className="stage-where" style={{ viewTransitionName: "stage-where" }}>
           {gig.name} · {song ? `song ${index + 1} of ${slots.length}` : `${slots.length} songs`}
         </p>
         {song ? (
           <>
-            <h1 id="stage-song" className="stage-song">{song.song}</h1>
-            <div className="stage-patch">
+            <h1 id="stage-song" className="stage-song" style={{ viewTransitionName: incoming !== null ? "stage-leaving" : "stage-song" }}>
+              {song.song}
+            </h1>
+            <div className="stage-patch" style={{ viewTransitionName: "stage-patch" }}>
               <span className="stage-lcd" aria-label={`Slot ${song.slot}, ${song.patch}`}>
                 <span className="stage-lcd-slot">{String(song.slot).padStart(3, "0")}</span>
                 <span>{song.patch}</span>
@@ -116,9 +143,9 @@ export function Stage() {
               {info?.pickup && <span className="stage-fact">Pickup <b>{info.pickup}</b></span>}
             </div>
             {live && live.slot === song.slot && live.chain.length > 0 && (
-              <ul className="stage-stomps" aria-label="Effects in this patch">
+              <ul className="stage-stomps" aria-label="Effects in this patch" key={song.slot} style={{ viewTransitionName: "stage-stomps" }}>
                 {live.chain.map((c, i) => (
-                  <li key={i} className={c.on ? "on" : ""}>
+                  <li key={i} className={c.on ? "on" : ""} style={{ "--i": i } as React.CSSProperties}>
                     <span className="stage-stomp-led" aria-hidden="true" />
                     {c.effect}
                     <span className="visually-hidden">{c.on ? " on" : " off"}</span>
@@ -126,9 +153,9 @@ export function Stage() {
                 ))}
               </ul>
             )}
-            {info?.notes && <p className="stage-notes">{info.notes}</p>}
+            {info?.notes && <p className="stage-notes" style={{ viewTransitionName: "stage-notes" }}>{info.notes}</p>}
             {info?.chords && (
-              <dl className="stage-chords" aria-label="Chords">
+              <dl className="stage-chords" aria-label="Chords" style={{ viewTransitionName: "stage-chords" }}>
                 {info.chords.split("\n").filter((l) => l.trim()).map((l, i) => {
                   const [part, chords] = l.includes(":") ? [l.slice(0, l.indexOf(":")), l.slice(l.indexOf(":") + 1)] : ["", l];
                   return (
@@ -162,7 +189,7 @@ export function Stage() {
           </div>
         )}
 
-        <div className="stage-next">
+        <div className="stage-next" style={{ viewTransitionName: "stage-next" }}>
           {next ? (
             <p><span className="stage-next-label">Next</span> {next.song} <span className="stage-next-slot">slot {next.slot}</span></p>
           ) : song ? (
@@ -170,7 +197,7 @@ export function Stage() {
           ) : null}
         </div>
 
-        <div className="stage-controls">
+        <div className="stage-controls" style={{ viewTransitionName: "stage-controls" }}>
           <button className="stage-step" onClick={() => stepRef.current(-1)} disabled={index <= 0}>Previous</button>
           <button className="stage-step primary" onClick={() => stepRef.current(1)} disabled={index >= slots.length - 1}>
             {song ? "Next" : "Start"}
@@ -206,7 +233,7 @@ export function Stage() {
         {info?.lyrics ? (
           <Lyrics entry={info} />
         ) : song ? (
-          <p className="stage-no-lyrics">
+          <p className="stage-no-lyrics" style={{ viewTransitionName: "stage-words" }}>
             No lyrics for this song yet.{" "}
             <button className="button" disabled={finding} onClick={findLyrics}>
               {finding ? "Finding lyrics…" : "Find lyrics for the set"}
@@ -221,10 +248,11 @@ export function Stage() {
             <button
               className={`setlist-song${index >= 0 && i < index ? " played" : ""}`}
               aria-current={i === index ? "true" : undefined}
+              style={i === index ? { viewTransitionName: "setlist-now" } : undefined}
               onClick={() => goTo(i)}
             >
               <span className="setlist-n">{i + 1}</span>
-              <span className="setlist-title">{s.song}</span>
+              <span className="setlist-title" style={i === incoming ? { viewTransitionName: "stage-song" } : undefined}>{s.song}</span>
               <span className="setlist-slot">{s.slot}</span>
             </button>
           </li>

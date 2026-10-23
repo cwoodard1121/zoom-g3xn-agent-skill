@@ -812,6 +812,46 @@ select { cursor: pointer; }
 .stage-stomps li.on { color: var(--vfd); border-color: #4d3500; text-shadow: 0 0 6px var(--vfd-glow); }
 .stage-stomp-led { width: 9px; height: 9px; border-radius: 50%; background: #2b1e05; flex: none; }
 .stage-stomps li.on .stage-stomp-led { background: #ff3b1f; box-shadow: 0 0 8px #ff3b1f; }
+/* A new patch: its effects power up one after another, the way a rack comes on. */
+.stage-stomps li { animation: stomp-wake 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards; animation-delay: calc(var(--i, 0) * 85ms + 200ms); }
+.stage-stomps li.on .stage-stomp-led { animation: led-strike 0.6s steps(1, end) backwards; animation-delay: calc(var(--i, 0) * 85ms + 260ms); }
+@keyframes stomp-wake { from { opacity: 0.15; transform: translateY(6px); filter: blur(2px); } }
+@keyframes led-strike {
+  0% { background: #2b1e05; box-shadow: none; }
+  30% { background: #ffb3a6; box-shadow: 0 0 14px #ff3b1f; }
+  45% { background: #5a1408; box-shadow: none; }
+  60% { background: #ff3b1f; box-shadow: 0 0 8px #ff3b1f; }
+}
+
+/* Moving on to the next song. */
+::view-transition-group(*) { animation-duration: 0.6s; animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+/* Only the named blocks move; the rest of the page just changes, so nothing ghosts. */
+::view-transition-old(root) { animation: none; display: none; }
+::view-transition-new(root) { animation: none; }
+::view-transition-old(stage-words), ::view-transition-old(stage-chords), ::view-transition-old(stage-notes),
+::view-transition-old(stage-stomps), ::view-transition-old(stage-where), ::view-transition-old(stage-patch) { animation: vt-fade-out 0.14s ease-out both; }
+::view-transition-new(stage-words), ::view-transition-new(stage-chords), ::view-transition-new(stage-notes),
+::view-transition-new(stage-where), ::view-transition-new(stage-patch) { animation: vt-rise 0.45s 0.12s cubic-bezier(0.16, 1, 0.3, 1) both; }
+::view-transition-new(stage-stomps) { animation: none; }
+::view-transition-old(stage-song), ::view-transition-new(stage-song) {
+  height: 100%; width: 100%; object-fit: contain; object-position: left center;
+}
+::view-transition-old(stage-song) { animation: vt-fade-out 0.18s ease-out both; }
+::view-transition-new(stage-song) { animation: vfd-strike 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+::view-transition-old(stage-leaving) { animation: vt-leave 0.26s cubic-bezier(0.3, 0, 0.8, 0.15) both; }
+::view-transition-new(stage-next) { animation: vt-rise 0.5s 0.15s cubic-bezier(0.16, 1, 0.3, 1) both; }
+::view-transition-old(stage-next) { animation: vt-fade-out 0.15s both; }
+@keyframes vt-fade-out { to { opacity: 0; } }
+@keyframes vt-leave { to { opacity: 0; transform: translateX(-8%); filter: blur(6px); } }
+@keyframes vt-rise { from { opacity: 0; transform: translateY(14px); } }
+@keyframes vfd-strike {
+  0% { opacity: 0; filter: blur(5px) brightness(2.2); }
+  55% { opacity: 1; filter: blur(0) brightness(1.5); }
+  100% { opacity: 1; filter: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage-stomps li, .stage-stomps li.on .stage-stomp-led { animation: none; }
+}
 
 .stage-chords { margin: 22px 0 0; display: grid; gap: 6px; }
 .stage-chords div { display: flex; align-items: baseline; gap: 16px; }
@@ -827,8 +867,15 @@ select { cursor: pointer; }
 .lyrics-tempo { font: 400 22px/1 var(--readout); color: var(--vfd-dim); }
 .lyrics-tempo b { font-weight: 400; font-size: 30px; color: var(--vfd); }
 .lyrics-time { font: 400 20px/1 var(--readout); color: var(--vfd-dim); }
-.lyrics-count { font: 400 22px/1 var(--readout); color: var(--vfd-dim); }
-.lyrics-count b { font-weight: 400; font-size: 38px; color: var(--vfd-bright); text-shadow: 0 0 10px var(--vfd-glow); }
+/* Two bars of taps: the first bar (warm) only finds the beat. Running, the beat goes round them. */
+.tap-lights { display: inline-flex; align-items: center; gap: 6px; padding: 9px 12px; background: var(--glass); box-shadow: inset 0 2px 6px #000, 0 0 0 1px #2a1d00; }
+.tap-light { width: 12px; height: 12px; border-radius: 50%; background: var(--vfd-ghost); transition: background 0.08s, box-shadow 0.08s; }
+.tap-light:nth-child(5) { margin-left: 8px; }
+.tap-light.warm.lit { background: var(--vfd-dim); }
+.tap-light.lit { background: var(--vfd); box-shadow: 0 0 10px var(--vfd-glow); }
+.tap-lights.running .tap-light.lit { background: var(--vfd-bright); box-shadow: 0 0 12px var(--vfd-glow); }
+.tap-lights.running .tap-light.one.lit { background: #fff1cc; box-shadow: 0 0 16px var(--vfd); }
+.tap-hint { margin: 0 0 10px; font: 400 10px/1.4 var(--engraved); letter-spacing: 0.22em; text-transform: uppercase; color: var(--vfd-dim); }
 .stage-lyrics {
   position: relative; padding: 18px 22px; max-height: 46vh; overflow: auto;
   font-size: clamp(19px, 1.7vw, 24px); line-height: 1.55; color: #e3b45a;
