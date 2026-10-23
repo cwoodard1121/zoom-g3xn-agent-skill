@@ -1,7 +1,7 @@
 // The song clock's bar on the stage view (tap in, the band's tempo, where the song is) and the
-// song's words moving with it (songclock.ts has how the tapping works). With timed lyrics the line
-// being sung lights up a third of the way down; otherwise they scroll evenly. Clicking a line
-// carries on from there.
+// song's words moving with it (songclock.ts has how the tapping works). With timed lyrics the
+// three lines around the one being sung light up (the clock is only roughly with the band), held
+// near the top; otherwise they scroll evenly. Clicking a line carries on from there.
 import { useEffect, useMemo, useRef } from "react";
 import type { GigEntry } from "../api";
 import { length, lines } from "../lyrics";
@@ -76,13 +76,13 @@ export function Lyrics({ entry, clock }: { entry: GigEntry; clock: SongClock }) 
     if (!clock.running && clock.time() === 0) box.current?.scrollTo({ top: 0, behavior: "smooth" });
   }, [entry.song, clock.moved]);
 
-  // Keep the words moving: the sung line a third of the way down, or an even scroll.
+  // Keep the words moving: the lit lines near the top, or an even scroll.
   useEffect(() => {
     const el = box.current;
     if (!el || !clock.running) return;
     if (timed) {
-      const line = el.querySelectorAll<HTMLElement>(".lyric")[Math.max(current, 0)];
-      if (line) el.scrollTo({ top: line.offsetTop - el.clientHeight * 0.35, behavior: "smooth" });
+      const line = el.querySelectorAll<HTMLElement>(".lyric")[Math.max(current - 1, 0)];
+      if (line) el.scrollTo({ top: line.offsetTop - el.clientHeight * 0.12, behavior: "smooth" });
     } else {
       el.scrollTo({ top: (el.scrollHeight - el.clientHeight) * Math.min(1, now / total) });
     }
@@ -96,7 +96,7 @@ export function Lyrics({ entry, clock }: { entry: GigEntry; clock: SongClock }) 
       {all.map((l, i) => (
         <p
           key={i}
-          className={`lyric${i === current ? " now" : ""}${current >= 0 && i < current ? " sung" : ""}`}
+          className={`lyric${current >= 0 && Math.abs(i - current) <= 1 ? " now" : ""}${current >= 0 && i < current - 1 ? " sung" : ""}`}
           onClick={() => jump(i)}
           title="Carry on from here"
         >
