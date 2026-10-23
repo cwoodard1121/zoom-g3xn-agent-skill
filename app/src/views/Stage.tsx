@@ -34,7 +34,7 @@ export function Stage() {
   const findLyrics = async () => {
     setFinding(true);
     const r = await act(() => fillLyrics(gig!));
-    if (r?.found) {
+    if (r?.changed) {
       const saved = await act(() => api.saveGig(r.gig));
       if (saved) setGig(saved);
     }

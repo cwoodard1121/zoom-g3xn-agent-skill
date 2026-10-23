@@ -5,9 +5,10 @@ import type { Gig, GigEntry } from "./api";
 
 /** Look up words for the songs with none (or just song `only`). Songs that already have words
  * keep them; they only gain the timing (when LRCLIB's words are the same ones). Throws offline. */
-export async function fillLyrics(gig: Gig, only?: number): Promise<{ gig: Gig; found: number; missing: string[] }> {
+export async function fillLyrics(gig: Gig, only?: number): Promise<{ gig: Gig; found: number; changed: number; missing: string[] }> {
   let patches = gig.patches;
   let found = 0;
+  let changed = 0;
   const missing: string[] = [];
   for (let i = 0; i < patches.length; i++) {
     const e = patches[i];
@@ -28,14 +29,15 @@ export async function fillLyrics(gig: Gig, only?: number): Promise<{ gig: Gig; f
       duration: hit.duration ?? undefined,
     };
     patches = patches.map((x, j) => (j === i ? next : x));
+    changed++;
     if (replace) found++;
   }
-  return { gig: { ...gig, patches }, found, missing };
+  return { gig: { ...gig, patches }, found, changed, missing };
 }
 
 export function lyricsMessage(found: number, missing: string[]): string {
   if (found) return `Found lyrics for ${found} song${found === 1 ? "" : "s"}${missing.length ? `. None for ${missing.join(", ")}` : ""}`;
-  return missing.length ? `No lyrics found for ${missing.join(", ")}` : "Every song has lyrics";
+  return missing.length ? `No lyrics found for ${missing.join(", ")}` : "Every song has lyrics. Their timing is up to date";
 }
 
 export interface Line {

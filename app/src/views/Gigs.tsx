@@ -125,7 +125,7 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
     const r = await act(() => fillLyrics(g, only));
     setFinding(false);
     if (!r) return;
-    if (r.found) {
+    if (r.changed) {
       setG(r.gig);
       await save(true, r.gig);
     }
