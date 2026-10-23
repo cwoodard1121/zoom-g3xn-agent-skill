@@ -1,0 +1,874 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-23T00:23:11+00:00",
+  "title": "Design System: g3xn",
+  "extensions": {
+    "colorMeta": {
+      "vfd": {
+        "role": "primary",
+        "displayName": "VFD Amber",
+        "canonical": "#ffb000",
+        "tonalRamp": [
+          "oklch(15.0% 0.109 76.4)",
+          "oklch(26.0% 0.131 76.4)",
+          "oklch(37.0% 0.154 76.4)",
+          "oklch(48.0% 0.170 76.4)",
+          "oklch(60.0% 0.170 76.4)",
+          "oklch(72.0% 0.156 76.4)",
+          "oklch(84.0% 0.131 76.4)",
+          "oklch(95.0% 0.109 76.4)"
+        ]
+      },
+      "vfd-bright": {
+        "role": "primary",
+        "displayName": "Bright Phosphor",
+        "canonical": "#ffd27a",
+        "tonalRamp": [
+          "oklch(15.0% 0.081 82.9)",
+          "oklch(26.0% 0.097 82.9)",
+          "oklch(37.0% 0.113 82.9)",
+          "oklch(48.0% 0.118 82.9)",
+          "oklch(60.0% 0.118 82.9)",
+          "oklch(72.0% 0.114 82.9)",
+          "oklch(84.0% 0.097 82.9)",
+          "oklch(95.0% 0.081 82.9)"
+        ]
+      },
+      "vfd-dim": {
+        "role": "primary",
+        "displayName": "Dim Phosphor",
+        "canonical": "#b07a00",
+        "tonalRamp": [
+          "oklch(15.0% 0.087 77.7)",
+          "oklch(26.0% 0.104 77.7)",
+          "oklch(37.0% 0.121 77.7)",
+          "oklch(48.0% 0.129 77.7)",
+          "oklch(60.0% 0.129 77.7)",
+          "oklch(72.0% 0.123 77.7)",
+          "oklch(84.0% 0.104 77.7)",
+          "oklch(95.0% 0.087 77.7)"
+        ]
+      },
+      "vfd-ghost": {
+        "role": "primary",
+        "displayName": "Unlit Segment",
+        "canonical": "#3a2700",
+        "tonalRamp": [
+          "oklch(15.0% 0.051 80.5)",
+          "oklch(26.0% 0.059 80.5)",
+          "oklch(37.0% 0.060 80.5)",
+          "oklch(48.0% 0.060 80.5)",
+          "oklch(60.0% 0.060 80.5)",
+          "oklch(72.0% 0.060 80.5)",
+          "oklch(84.0% 0.059 80.5)",
+          "oklch(95.0% 0.051 80.5)"
+        ]
+      },
+      "vfd-glow": {
+        "role": "primary",
+        "displayName": "Phosphor Glow",
+        "canonical": "rgba(255, 176, 0, 0.55)"
+      },
+      "glass": {
+        "role": "primary",
+        "displayName": "VFD Glass",
+        "canonical": "#120c00",
+        "tonalRamp": [
+          "oklch(15.0% 0.032 90.7)",
+          "oklch(26.0% 0.032 90.7)",
+          "oklch(37.0% 0.032 90.7)",
+          "oklch(48.0% 0.032 90.7)",
+          "oklch(60.0% 0.032 90.7)",
+          "oklch(72.0% 0.032 90.7)",
+          "oklch(84.0% 0.032 90.7)",
+          "oklch(95.0% 0.032 90.7)"
+        ]
+      },
+      "night": {
+        "role": "neutral",
+        "displayName": "Stage Black",
+        "canonical": "#050403",
+        "tonalRamp": [
+          "oklch(15.0% 0.005 71.3)",
+          "oklch(26.0% 0.005 71.3)",
+          "oklch(37.0% 0.005 71.3)",
+          "oklch(48.0% 0.005 71.3)",
+          "oklch(60.0% 0.005 71.3)",
+          "oklch(72.0% 0.005 71.3)",
+          "oklch(84.0% 0.005 71.3)",
+          "oklch(95.0% 0.005 71.3)"
+        ]
+      },
+      "stage-plate": {
+        "role": "neutral",
+        "displayName": "Stage Plate",
+        "canonical": "#1a1200",
+        "tonalRamp": [
+          "oklch(15.0% 0.038 89.1)",
+          "oklch(26.0% 0.038 89.1)",
+          "oklch(37.0% 0.038 89.1)",
+          "oklch(48.0% 0.038 89.1)",
+          "oklch(60.0% 0.038 89.1)",
+          "oklch(72.0% 0.038 89.1)",
+          "oklch(84.0% 0.038 89.1)",
+          "oklch(95.0% 0.038 89.1)"
+        ]
+      },
+      "stage-rule": {
+        "role": "neutral",
+        "displayName": "Stage Rule",
+        "canonical": "#2a1d00",
+        "tonalRamp": [
+          "oklch(15.0% 0.046 84.9)",
+          "oklch(26.0% 0.049 84.9)",
+          "oklch(37.0% 0.049 84.9)",
+          "oklch(48.0% 0.049 84.9)",
+          "oklch(60.0% 0.049 84.9)",
+          "oklch(72.0% 0.049 84.9)",
+          "oklch(84.0% 0.049 84.9)",
+          "oklch(95.0% 0.046 84.9)"
+        ]
+      },
+      "led": {
+        "role": "secondary",
+        "displayName": "Clip Red",
+        "canonical": "#e0362c",
+        "tonalRamp": [
+          "oklch(15.0% 0.128 28.6)",
+          "oklch(26.0% 0.155 28.6)",
+          "oklch(37.0% 0.183 28.6)",
+          "oklch(48.0% 0.208 28.6)",
+          "oklch(60.0% 0.208 28.6)",
+          "oklch(72.0% 0.185 28.6)",
+          "oklch(84.0% 0.155 28.6)",
+          "oklch(95.0% 0.128 28.6)"
+        ]
+      },
+      "go": {
+        "role": "secondary",
+        "displayName": "In-Tune Green",
+        "canonical": "#5ee07a",
+        "tonalRamp": [
+          "oklch(15.0% 0.115 148.1)",
+          "oklch(26.0% 0.139 148.1)",
+          "oklch(37.0% 0.163 148.1)",
+          "oklch(48.0% 0.182 148.1)",
+          "oklch(60.0% 0.182 148.1)",
+          "oklch(72.0% 0.165 148.1)",
+          "oklch(84.0% 0.139 148.1)",
+          "oklch(95.0% 0.115 148.1)"
+        ]
+      },
+      "focus": {
+        "role": "secondary",
+        "displayName": "Focus Orange",
+        "canonical": "#ff7a00",
+        "tonalRamp": [
+          "oklch(15.0% 0.119 50.5)",
+          "oklch(26.0% 0.144 50.5)",
+          "oklch(37.0% 0.169 50.5)",
+          "oklch(48.0% 0.190 50.5)",
+          "oklch(60.0% 0.190 50.5)",
+          "oklch(72.0% 0.171 50.5)",
+          "oklch(84.0% 0.144 50.5)",
+          "oklch(95.0% 0.119 50.5)"
+        ]
+      },
+      "alu-ground": {
+        "role": "neutral",
+        "displayName": "Room Aluminium",
+        "canonical": "#c6c9cd",
+        "tonalRamp": [
+          "oklch(15.0% 0.006 255.5)",
+          "oklch(26.0% 0.006 255.5)",
+          "oklch(37.0% 0.006 255.5)",
+          "oklch(48.0% 0.006 255.5)",
+          "oklch(60.0% 0.006 255.5)",
+          "oklch(72.0% 0.006 255.5)",
+          "oklch(84.0% 0.006 255.5)",
+          "oklch(95.0% 0.006 255.5)"
+        ]
+      },
+      "key-face": {
+        "role": "neutral",
+        "displayName": "Key Aluminium",
+        "canonical": "#f3f4f6",
+        "tonalRamp": [
+          "oklch(15.0% 0.003 264.5)",
+          "oklch(26.0% 0.003 264.5)",
+          "oklch(37.0% 0.003 264.5)",
+          "oklch(48.0% 0.003 264.5)",
+          "oklch(60.0% 0.003 264.5)",
+          "oklch(72.0% 0.003 264.5)",
+          "oklch(84.0% 0.003 264.5)",
+          "oklch(95.0% 0.003 264.5)"
+        ]
+      },
+      "key-face-lo": {
+        "role": "neutral",
+        "displayName": "Key Aluminium Shade",
+        "canonical": "#d8dbde",
+        "tonalRamp": [
+          "oklch(15.0% 0.005 247.9)",
+          "oklch(26.0% 0.005 247.9)",
+          "oklch(37.0% 0.005 247.9)",
+          "oklch(48.0% 0.005 247.9)",
+          "oklch(60.0% 0.005 247.9)",
+          "oklch(72.0% 0.005 247.9)",
+          "oklch(84.0% 0.005 247.9)",
+          "oklch(95.0% 0.005 247.9)"
+        ]
+      },
+      "edge": {
+        "role": "neutral",
+        "displayName": "Machined Edge",
+        "canonical": "#7d8186",
+        "tonalRamp": [
+          "oklch(15.0% 0.009 253.9)",
+          "oklch(26.0% 0.009 253.9)",
+          "oklch(37.0% 0.009 253.9)",
+          "oklch(48.0% 0.009 253.9)",
+          "oklch(60.0% 0.009 253.9)",
+          "oklch(72.0% 0.009 253.9)",
+          "oklch(84.0% 0.009 253.9)",
+          "oklch(95.0% 0.009 253.9)"
+        ]
+      },
+      "field": {
+        "role": "neutral",
+        "displayName": "Field White",
+        "canonical": "#f6f7f8",
+        "tonalRamp": [
+          "oklch(15.0% 0.002 247.8)",
+          "oklch(26.0% 0.002 247.8)",
+          "oklch(37.0% 0.002 247.8)",
+          "oklch(48.0% 0.002 247.8)",
+          "oklch(60.0% 0.002 247.8)",
+          "oklch(72.0% 0.002 247.8)",
+          "oklch(84.0% 0.002 247.8)",
+          "oklch(95.0% 0.002 247.8)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Engraving Ink",
+        "canonical": "#1c1d1f",
+        "tonalRamp": [
+          "oklch(15.0% 0.004 264.5)",
+          "oklch(26.0% 0.004 264.5)",
+          "oklch(37.0% 0.004 264.5)",
+          "oklch(48.0% 0.004 264.5)",
+          "oklch(60.0% 0.004 264.5)",
+          "oklch(72.0% 0.004 264.5)",
+          "oklch(84.0% 0.004 264.5)",
+          "oklch(95.0% 0.004 264.5)"
+        ]
+      },
+      "ink-dim": {
+        "role": "neutral",
+        "displayName": "Dim Ink",
+        "canonical": "#43464b",
+        "tonalRamp": [
+          "oklch(15.0% 0.009 260.7)",
+          "oklch(26.0% 0.009 260.7)",
+          "oklch(37.0% 0.009 260.7)",
+          "oklch(48.0% 0.009 260.7)",
+          "oklch(60.0% 0.009 260.7)",
+          "oklch(72.0% 0.009 260.7)",
+          "oklch(84.0% 0.009 260.7)",
+          "oklch(95.0% 0.009 260.7)"
+        ]
+      },
+      "ink-faint": {
+        "role": "neutral",
+        "displayName": "Faint Ink",
+        "canonical": "#5f6267",
+        "tonalRamp": [
+          "oklch(15.0% 0.009 260.7)",
+          "oklch(26.0% 0.009 260.7)",
+          "oklch(37.0% 0.009 260.7)",
+          "oklch(48.0% 0.009 260.7)",
+          "oklch(60.0% 0.009 260.7)",
+          "oklch(72.0% 0.009 260.7)",
+          "oklch(84.0% 0.009 260.7)",
+          "oklch(95.0% 0.009 260.7)"
+        ]
+      },
+      "plate-black": {
+        "role": "neutral",
+        "displayName": "Black Anodized",
+        "canonical": "#1d1f22",
+        "tonalRamp": [
+          "oklch(15.0% 0.006 258.4)",
+          "oklch(26.0% 0.006 258.4)",
+          "oklch(37.0% 0.006 258.4)",
+          "oklch(48.0% 0.006 258.4)",
+          "oklch(60.0% 0.006 258.4)",
+          "oklch(72.0% 0.006 258.4)",
+          "oklch(84.0% 0.006 258.4)",
+          "oklch(95.0% 0.006 258.4)"
+        ]
+      },
+      "plate-black-2": {
+        "role": "neutral",
+        "displayName": "Black Anodized Hover",
+        "canonical": "#2a2c30",
+        "tonalRamp": [
+          "oklch(15.0% 0.008 264.4)",
+          "oklch(26.0% 0.008 264.4)",
+          "oklch(37.0% 0.008 264.4)",
+          "oklch(48.0% 0.008 264.4)",
+          "oklch(60.0% 0.008 264.4)",
+          "oklch(72.0% 0.008 264.4)",
+          "oklch(84.0% 0.008 264.4)",
+          "oklch(95.0% 0.008 264.4)"
+        ]
+      },
+      "plate-ink": {
+        "role": "neutral",
+        "displayName": "Plate Ink",
+        "canonical": "#e4e6e9",
+        "tonalRamp": [
+          "oklch(15.0% 0.005 258.3)",
+          "oklch(26.0% 0.005 258.3)",
+          "oklch(37.0% 0.005 258.3)",
+          "oklch(48.0% 0.005 258.3)",
+          "oklch(60.0% 0.005 258.3)",
+          "oklch(72.0% 0.005 258.3)",
+          "oklch(84.0% 0.005 258.3)",
+          "oklch(95.0% 0.005 258.3)"
+        ]
+      },
+      "plate-dim": {
+        "role": "neutral",
+        "displayName": "Plate Dim",
+        "canonical": "#a3a6ab",
+        "tonalRamp": [
+          "oklch(15.0% 0.008 260.7)",
+          "oklch(26.0% 0.008 260.7)",
+          "oklch(37.0% 0.008 260.7)",
+          "oklch(48.0% 0.008 260.7)",
+          "oklch(60.0% 0.008 260.7)",
+          "oklch(72.0% 0.008 260.7)",
+          "oklch(84.0% 0.008 260.7)",
+          "oklch(95.0% 0.008 260.7)"
+        ]
+      },
+      "rack-well": {
+        "role": "neutral",
+        "displayName": "Rack Well",
+        "canonical": "#121314",
+        "tonalRamp": [
+          "oklch(15.0% 0.003 248.0)",
+          "oklch(26.0% 0.003 248.0)",
+          "oklch(37.0% 0.003 248.0)",
+          "oklch(48.0% 0.003 248.0)",
+          "oklch(60.0% 0.003 248.0)",
+          "oklch(72.0% 0.003 248.0)",
+          "oklch(84.0% 0.003 248.0)",
+          "oklch(95.0% 0.003 248.0)"
+        ]
+      },
+      "plate-default": {
+        "role": "group",
+        "displayName": "Bare Plate",
+        "canonical": "#d2d5d9",
+        "tonalRamp": [
+          "oklch(15.0% 0.006 255.5)",
+          "oklch(26.0% 0.006 255.5)",
+          "oklch(37.0% 0.006 255.5)",
+          "oklch(48.0% 0.006 255.5)",
+          "oklch(60.0% 0.006 255.5)",
+          "oklch(72.0% 0.006 255.5)",
+          "oklch(84.0% 0.006 255.5)",
+          "oklch(95.0% 0.006 255.5)"
+        ]
+      },
+      "plate-blank": {
+        "role": "group",
+        "displayName": "Blank Panel",
+        "canonical": "#b9bdc1",
+        "tonalRamp": [
+          "oklch(15.0% 0.007 247.9)",
+          "oklch(26.0% 0.007 247.9)",
+          "oklch(37.0% 0.007 247.9)",
+          "oklch(48.0% 0.007 247.9)",
+          "oklch(60.0% 0.007 247.9)",
+          "oklch(72.0% 0.007 247.9)",
+          "oklch(84.0% 0.007 247.9)",
+          "oklch(95.0% 0.007 247.9)"
+        ]
+      },
+      "plate-amp": {
+        "role": "group",
+        "displayName": "Amp Black",
+        "canonical": "#26282c",
+        "tonalRamp": [
+          "oklch(15.0% 0.008 264.4)",
+          "oklch(26.0% 0.008 264.4)",
+          "oklch(37.0% 0.008 264.4)",
+          "oklch(48.0% 0.008 264.4)",
+          "oklch(60.0% 0.008 264.4)",
+          "oklch(72.0% 0.008 264.4)",
+          "oklch(84.0% 0.008 264.4)",
+          "oklch(95.0% 0.008 264.4)"
+        ]
+      },
+      "plate-cabinet": {
+        "role": "group",
+        "displayName": "Cabinet Walnut",
+        "canonical": "#75664f",
+        "tonalRamp": [
+          "oklch(15.0% 0.039 78.3)",
+          "oklch(26.0% 0.039 78.3)",
+          "oklch(37.0% 0.039 78.3)",
+          "oklch(48.0% 0.039 78.3)",
+          "oklch(60.0% 0.039 78.3)",
+          "oklch(72.0% 0.039 78.3)",
+          "oklch(84.0% 0.039 78.3)",
+          "oklch(95.0% 0.039 78.3)"
+        ]
+      },
+      "plate-drive": {
+        "role": "group",
+        "displayName": "Drive Olive",
+        "canonical": "#4a6a43",
+        "tonalRamp": [
+          "oklch(15.0% 0.057 140.0)",
+          "oklch(26.0% 0.066 140.0)",
+          "oklch(37.0% 0.071 140.0)",
+          "oklch(48.0% 0.071 140.0)",
+          "oklch(60.0% 0.071 140.0)",
+          "oklch(72.0% 0.071 140.0)",
+          "oklch(84.0% 0.066 140.0)",
+          "oklch(95.0% 0.057 140.0)"
+        ]
+      },
+      "plate-dynamics": {
+        "role": "group",
+        "displayName": "Dynamics Blue",
+        "canonical": "#2f5379",
+        "tonalRamp": [
+          "oklch(15.0% 0.059 251.1)",
+          "oklch(26.0% 0.069 251.1)",
+          "oklch(37.0% 0.076 251.1)",
+          "oklch(48.0% 0.076 251.1)",
+          "oklch(60.0% 0.076 251.1)",
+          "oklch(72.0% 0.076 251.1)",
+          "oklch(84.0% 0.069 251.1)",
+          "oklch(95.0% 0.059 251.1)"
+        ]
+      },
+      "plate-filter": {
+        "role": "group",
+        "displayName": "Filter Gold",
+        "canonical": "#c9992c",
+        "tonalRamp": [
+          "oklch(15.0% 0.089 83.2)",
+          "oklch(26.0% 0.106 83.2)",
+          "oklch(37.0% 0.123 83.2)",
+          "oklch(48.0% 0.132 83.2)",
+          "oklch(60.0% 0.132 83.2)",
+          "oklch(72.0% 0.125 83.2)",
+          "oklch(84.0% 0.106 83.2)",
+          "oklch(95.0% 0.089 83.2)"
+        ]
+      },
+      "plate-modulation": {
+        "role": "group",
+        "displayName": "Modulation Violet",
+        "canonical": "#574876",
+        "tonalRamp": [
+          "oklch(15.0% 0.059 298.2)",
+          "oklch(26.0% 0.069 298.2)",
+          "oklch(37.0% 0.076 298.2)",
+          "oklch(48.0% 0.076 298.2)",
+          "oklch(60.0% 0.076 298.2)",
+          "oklch(72.0% 0.076 298.2)",
+          "oklch(84.0% 0.069 298.2)",
+          "oklch(95.0% 0.059 298.2)"
+        ]
+      },
+      "plate-sfx": {
+        "role": "group",
+        "displayName": "SFX Wine",
+        "canonical": "#8b3450",
+        "tonalRamp": [
+          "oklch(15.0% 0.083 3.2)",
+          "oklch(26.0% 0.099 3.2)",
+          "oklch(37.0% 0.115 3.2)",
+          "oklch(48.0% 0.121 3.2)",
+          "oklch(60.0% 0.121 3.2)",
+          "oklch(72.0% 0.117 3.2)",
+          "oklch(84.0% 0.099 3.2)",
+          "oklch(95.0% 0.083 3.2)"
+        ]
+      },
+      "plate-delay": {
+        "role": "group",
+        "displayName": "Delay Silver",
+        "canonical": "#d9dce0",
+        "tonalRamp": [
+          "oklch(15.0% 0.006 255.5)",
+          "oklch(26.0% 0.006 255.5)",
+          "oklch(37.0% 0.006 255.5)",
+          "oklch(48.0% 0.006 255.5)",
+          "oklch(60.0% 0.006 255.5)",
+          "oklch(72.0% 0.006 255.5)",
+          "oklch(84.0% 0.006 255.5)",
+          "oklch(95.0% 0.006 255.5)"
+        ]
+      },
+      "plate-reverb": {
+        "role": "group",
+        "displayName": "Reverb Teal",
+        "canonical": "#2d5764",
+        "tonalRamp": [
+          "oklch(15.0% 0.047 220.2)",
+          "oklch(26.0% 0.051 220.2)",
+          "oklch(37.0% 0.051 220.2)",
+          "oklch(48.0% 0.051 220.2)",
+          "oklch(60.0% 0.051 220.2)",
+          "oklch(72.0% 0.051 220.2)",
+          "oklch(84.0% 0.051 220.2)",
+          "oklch(95.0% 0.047 220.2)"
+        ]
+      },
+      "plate-pedal": {
+        "role": "group",
+        "displayName": "Pedal Grey",
+        "canonical": "#a3a7ac",
+        "tonalRamp": [
+          "oklch(15.0% 0.009 253.9)",
+          "oklch(26.0% 0.009 253.9)",
+          "oklch(37.0% 0.009 253.9)",
+          "oklch(48.0% 0.009 253.9)",
+          "oklch(60.0% 0.009 253.9)",
+          "oklch(72.0% 0.009 253.9)",
+          "oklch(84.0% 0.009 253.9)",
+          "oklch(95.0% 0.009 253.9)"
+        ]
+      },
+      "plate-looper": {
+        "role": "group",
+        "displayName": "Looper Red",
+        "canonical": "#9a2f2a",
+        "tonalRamp": [
+          "oklch(15.0% 0.094 26.9)",
+          "oklch(26.0% 0.113 26.9)",
+          "oklch(37.0% 0.132 26.9)",
+          "oklch(48.0% 0.143 26.9)",
+          "oklch(60.0% 0.143 26.9)",
+          "oklch(72.0% 0.134 26.9)",
+          "oklch(84.0% 0.113 26.9)",
+          "oklch(95.0% 0.094 26.9)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "The current song on stage; the tuner note uses the same face larger."
+      },
+      "readout-lg": {
+        "displayName": "Readout Large",
+        "purpose": "The patch name in the master unit's glass."
+      },
+      "readout": {
+        "displayName": "Readout",
+        "purpose": "Every value the pedal reports, on VFD glass."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "View titles."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Unit names; drawer, dialog and detail titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Sentences, notes, hints, empty states."
+      },
+      "control": {
+        "displayName": "Control",
+        "purpose": "Button and slot names."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Engraved legends: knob names, field labels, table heads, nav links, badges."
+      }
+    },
+    "shadows": [
+      {
+        "name": "faceplate-bevel",
+        "value": "inset 0 1px 0 rgba(255, 255, 255, 0.45), inset 0 -1px 0 rgba(0, 0, 0, 0.35)",
+        "purpose": "Every unit face."
+      },
+      {
+        "name": "button-lift",
+        "value": "inset 0 1px 0 #fff, 0 1px 0 rgba(0, 0, 0, 0.18)",
+        "purpose": "Aluminium buttons, slots, A/B keys, gig items at rest."
+      },
+      {
+        "name": "pressed-in",
+        "value": "inset 0 2px 4px #000",
+        "purpose": "Toggled-on keys and buttons."
+      },
+      {
+        "name": "held",
+        "value": "inset 0 1px 3px rgba(0, 0, 0, 0.25)",
+        "purpose": "An aluminium button while held (with a 1px translate)."
+      },
+      {
+        "name": "recessed-field",
+        "value": "inset 0 1px 2px rgba(0, 0, 0, 0.18)",
+        "purpose": "Text fields on aluminium."
+      },
+      {
+        "name": "vfd-glass",
+        "value": "inset 0 2px 7px rgba(0, 0, 0, 0.95), inset 0 0 0 1px #000",
+        "purpose": "Every glass window."
+      },
+      {
+        "name": "rack-well",
+        "value": "inset 0 0 0 1px rgba(255, 255, 255, 0.04), inset 0 12px 26px rgba(0, 0, 0, 0.7)",
+        "purpose": "The cavity behind the units."
+      },
+      {
+        "name": "bezel-lip",
+        "value": "inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 3px 0 rgba(0, 0, 0, 0.3)",
+        "purpose": "Black units: master and patch detail (the tuner uses a 4px lip)."
+      },
+      {
+        "name": "drawer-chassis",
+        "value": "inset 0 10px 14px -10px #000",
+        "purpose": "A unit's knob drawer, shadowed under its faceplate."
+      },
+      {
+        "name": "float-dialog",
+        "value": "0 24px 60px rgba(0, 0, 0, 0.55)",
+        "purpose": "Dialogs."
+      },
+      {
+        "name": "float-drawer",
+        "value": "-18px 0 40px rgba(0, 0, 0, 0.4)",
+        "purpose": "The side drawer (effect browser, history)."
+      },
+      {
+        "name": "float-toast",
+        "value": "0 10px 24px rgba(0, 0, 0, 0.35)",
+        "purpose": "Toasts."
+      },
+      {
+        "name": "phosphor-glow",
+        "value": "0 0 7px rgba(255, 176, 0, 0.55)",
+        "purpose": "Text-shadow on lit amber readouts."
+      },
+      {
+        "name": "led-glow",
+        "value": "0 0 8px #e0362c, inset 0 0 2px #ffb3ab",
+        "purpose": "A lit effect LED."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Every entrance and the power lever."
+      },
+      {
+        "name": "unit-tools-fade",
+        "value": "opacity 0.15s",
+        "purpose": "Unit tools brighten on hover or focus."
+      },
+      {
+        "name": "power-lever",
+        "value": "transform 0.18s ease-out",
+        "purpose": "The power switch lever sliding."
+      },
+      {
+        "name": "drawer-out",
+        "value": "clip-path reveal 0.26s ease-out",
+        "purpose": "A unit's knob drawer sliding out from under its face."
+      },
+      {
+        "name": "slide-in",
+        "value": "translateX(24px) to 0, 0.28s ease-out",
+        "purpose": "The side drawer."
+      },
+      {
+        "name": "toast-in",
+        "value": "translateY(8px) to 0, 0.3s ease-out",
+        "purpose": "Toasts."
+      },
+      {
+        "name": "busy-blink",
+        "value": "0.9s steps(2) infinite",
+        "purpose": "The status light while the pedal is busy."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "prefers-reduced-motion: reduce",
+        "purpose": "Drops every entrance animation, the blink and the transitions."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "phone",
+        "value": "760px",
+        "purpose": "Rail becomes a bottom bar; two-column views stack; ears narrow to 20px."
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Aluminium Button",
+      "kind": "button",
+      "refersTo": "button-alu",
+      "description": "Default control on aluminium: a top-lit key that presses in.",
+      "html": "<button class=\"ds-btn-alu\">Undo</button>",
+      "css": ".ds-btn-alu{--vfd:#ffb000;--vfd-bright:#ffd27a;--vfd-dim:#b07a00;--glass:#120c00;--plate-black:#1d1f22;--plate-ink:#e4e6e9;--plate-dim:#a3a6ab;--edge:#7d8186;--ink:#1c1d1f;--focus:#ff7a00;--led:#e0362c;font-family:Archivo,system-ui,sans-serif;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--edge);background:linear-gradient(180deg,#f3f4f6,#d8dbde);border-radius:2px;padding:8px 14px;font-weight:600;font-size:13.5px;line-height:1.2;color:var(--ink);box-shadow:inset 0 1px 0 #fff,0 1px 0 rgba(0,0,0,.18);cursor:pointer}.ds-btn-alu:hover{background:linear-gradient(180deg,#fafbfc,#e3e5e8)}.ds-btn-alu:active{transform:translateY(1px);box-shadow:inset 0 1px 3px rgba(0,0,0,.25)}.ds-btn-alu:focus-visible{outline:2px solid var(--focus);outline-offset:2px}"
+    },
+    {
+      "name": "Primary Button (on aluminium)",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one primary action on an aluminium surface: black anodized, amber legend.",
+      "html": "<button class=\"ds-btn-primary\">Save to a slot</button>",
+      "css": ".ds-btn-primary{--vfd:#ffb000;--vfd-bright:#ffd27a;--vfd-dim:#b07a00;--glass:#120c00;--plate-black:#1d1f22;--plate-ink:#e4e6e9;--plate-dim:#a3a6ab;--edge:#7d8186;--ink:#1c1d1f;--focus:#ff7a00;--led:#e0362c;font-family:Archivo,system-ui,sans-serif;display:inline-flex;align-items:center;gap:6px;border:1px solid #000;background:linear-gradient(180deg,#2c2e32,var(--plate-black));color:var(--vfd);border-radius:2px;padding:8px 14px;font-weight:600;font-size:13.5px;line-height:1.2;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 1px 0 rgba(0,0,0,.3);cursor:pointer}.ds-btn-primary:hover{background:linear-gradient(180deg,#34363b,#222428)}.ds-btn-primary:active{transform:translateY(1px)}.ds-btn-primary:focus-visible{outline:2px solid var(--focus);outline-offset:2px}"
+    },
+    {
+      "name": "Primary Button (on dark)",
+      "kind": "button",
+      "refersTo": "button-primary-on-dark",
+      "description": "Primary action inside a drawer, dialog, patch detail or gig plan: amber fill, glass legend.",
+      "html": "<div class=\"ds-dark-surface\"><button class=\"ds-btn-amber\">Load onto the pedal</button></div>",
+      "css": ".ds-dark-surface{--vfd:#ffb000;--vfd-bright:#ffd27a;--vfd-dim:#b07a00;--glass:#120c00;--plate-black:#1d1f22;--plate-ink:#e4e6e9;--plate-dim:#a3a6ab;--edge:#7d8186;--ink:#1c1d1f;--focus:#ff7a00;--led:#e0362c;background:linear-gradient(180deg,#2b2d31,var(--plate-black));padding:20px;border:1px solid #000}.ds-btn-amber{font-family:Archivo,system-ui,sans-serif;display:inline-flex;align-items:center;border:1px solid #000;background:var(--vfd,#ffb000);color:var(--glass,#120c00);border-radius:2px;padding:8px 14px;font-weight:600;font-size:13.5px;line-height:1.2;box-shadow:0 0 12px rgba(255,176,0,.25);cursor:pointer}.ds-btn-amber:hover{background:var(--vfd-bright,#ffd27a)}.ds-btn-amber:focus-visible{outline:2px solid var(--focus,#ff7a00);outline-offset:2px}"
+    },
+    {
+      "name": "Glass Field",
+      "kind": "input",
+      "refersTo": "input-glass",
+      "description": "A text field on a dark surface becomes a VFD window: amber VT323 on glass.",
+      "html": "<div class=\"ds-dark-surface-i\"><label class=\"ds-field\"><span>Patch name</span><input class=\"ds-input-glass\" value=\"CLEAN DLY\"></label></div>",
+      "css": ".ds-dark-surface-i{--vfd:#ffb000;--vfd-bright:#ffd27a;--vfd-dim:#b07a00;--glass:#120c00;--plate-black:#1d1f22;--plate-ink:#e4e6e9;--plate-dim:#a3a6ab;--edge:#7d8186;--ink:#1c1d1f;--focus:#ff7a00;--led:#e0362c;background:var(--plate-black);padding:20px}.ds-field{display:grid;gap:5px}.ds-field>span{font-family:Michroma,Eurostile,sans-serif;font-weight:400;text-transform:uppercase;font-size:9.5px;line-height:1.2;letter-spacing:.18em;color:var(--plate-dim)}.ds-input-glass{font-family:VT323,ui-monospace,monospace;font-weight:400;background:var(--glass);color:var(--vfd);caret-color:var(--vfd-bright);border:1px solid #000;box-shadow:inset 0 2px 5px #000;font-size:22px;line-height:1;padding:7px 10px 5px;border-radius:0}.ds-input-glass:focus-visible{outline:2px solid var(--focus);outline-offset:2px}"
+    },
+    {
+      "name": "Aluminium Field",
+      "kind": "input",
+      "refersTo": "input-alu",
+      "description": "Recessed white field on aluminium.",
+      "html": "<input class=\"ds-input-alu\" placeholder=\"Find a patch\">",
+      "css": ".ds-input-alu{--vfd:#ffb000;--vfd-bright:#ffd27a;--vfd-dim:#b07a00;--glass:#120c00;--plate-black:#1d1f22;--plate-ink:#e4e6e9;--plate-dim:#a3a6ab;--edge:#7d8186;--ink:#1c1d1f;--focus:#ff7a00;--led:#e0362c;font-family:Archivo,system-ui,sans-serif;font-size:15px;background:#f6f7f8;border:1px solid var(--edge);border-radius:2px;box-shadow:inset 0 1px 2px rgba(0,0,0,.18);padding:8px 11px;color:var(--ink);width:min(320px,100%)}.ds-input-alu::placeholder{color:#5f6267}.ds-input-alu:focus-visible{outline:2px solid var(--focus);outline-offset:2px}"
+    },
+    {
+      "name": "Nav Rail",
+      "kind": "nav",
+      "refersTo": "rail-link",
+      "description": "Aluminium rail of engraved links, each with an LED; the current page is black with a lit amber LED.",
+      "html": "<nav class=\"ds-rail\"><a class=\"ds-rail-link\" aria-current=\"page\" href=\"#\"><span class=\"ds-rail-led\"></span>Tone</a><a class=\"ds-rail-link\" href=\"#\"><span class=\"ds-rail-led\"></span>Patches</a><a class=\"ds-rail-link\" href=\"#\"><span class=\"ds-rail-led\"></span>Gigs</a></nav>",
+      "css": ".ds-rail{--vfd:#ffb000;--vfd-bright:#ffd27a;--vfd-dim:#b07a00;--glass:#120c00;--plate-black:#1d1f22;--plate-ink:#e4e6e9;--plate-dim:#a3a6ab;--edge:#7d8186;--ink:#1c1d1f;--focus:#ff7a00;--led:#e0362c;display:flex;flex-direction:column;gap:3px;padding:20px 10px;width:136px;background:linear-gradient(90deg,#aeb2b7,#c0c4c8);border-right:1px solid var(--edge)}.ds-rail-link{font-family:Michroma,Eurostile,sans-serif;font-weight:400;text-transform:uppercase;display:flex;align-items:center;gap:10px;padding:11px 10px;font-size:10.5px;line-height:1;letter-spacing:.18em;color:var(--ink);text-decoration:none;border-radius:1px}.ds-rail-led{width:7px;height:7px;border-radius:50%;background:#6e7176;box-shadow:inset 0 1px 1px rgba(0,0,0,.7)}.ds-rail-link:hover{background:rgba(255,255,255,.35)}.ds-rail-link:focus-visible{outline:2px solid var(--focus);outline-offset:2px}.ds-rail-link[aria-current=page]{background:var(--plate-black);color:var(--vfd)}.ds-rail-link[aria-current=page] .ds-rail-led{background:var(--vfd);box-shadow:0 0 7px var(--vfd)}"
+    },
+    {
+      "name": "Rack Unit",
+      "kind": "custom",
+      "refersTo": "unit-face",
+      "description": "One effect as a bolted-in faceplate in its group's anodized colour: LED, engraved name, glass readout, power switch.",
+      "html": "<div class=\"ds-rack\"><div class=\"ds-unit\" style=\"--plate:#2d5764;--face-ink:#eef6f8;--face-dim:#c3d9df\"><span class=\"ds-led on\"></span><button class=\"ds-unit-name\">Hall<span>reverb</span></button><div class=\"ds-unit-readout\"><span><b>DECAY</b> 32</span><span><b>MIX</b> 40</span><span><b>TONE</b> 6</span></div><button class=\"ds-power\" aria-pressed=\"true\"><span class=\"ds-lever\"></span>On</button></div></div>",
+      "css": ".ds-rack{--vfd:#ffb000;--vfd-bright:#ffd27a;--vfd-dim:#b07a00;--glass:#120c00;--plate-black:#1d1f22;--plate-ink:#e4e6e9;--plate-dim:#a3a6ab;--edge:#7d8186;--ink:#1c1d1f;--focus:#ff7a00;--led:#e0362c;background:#121314;padding:6px 0;border:1px solid #000;box-shadow:inset 0 12px 26px rgba(0,0,0,.7)}.ds-unit{position:relative;display:flex;align-items:center;gap:14px;min-height:60px;padding:0 40px;color:var(--face-ink);background:repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 1px,rgba(0,0,0,.025) 1px 2px,transparent 2px 4px),linear-gradient(180deg,rgba(255,255,255,.26),rgba(255,255,255,0) 45%,rgba(0,0,0,.16)),var(--plate);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -1px 0 rgba(0,0,0,.35)}.ds-unit::before,.ds-unit::after{content:'';position:absolute;top:0;bottom:0;width:26px;background:radial-gradient(ellipse 5.5px 3.6px at 50% 13px,#0c0c0d 0 92%,rgba(255,255,255,.35) 100%,transparent 106%),radial-gradient(ellipse 5.5px 3.6px at 50% calc(100% - 13px),#0c0c0d 0 92%,rgba(255,255,255,.35) 100%,transparent 106%),linear-gradient(90deg,rgba(0,0,0,.12),rgba(255,255,255,.1) 40%,rgba(0,0,0,.14))}.ds-unit::before{left:0}.ds-unit::after{right:0}.ds-led{width:9px;height:9px;border-radius:50%;flex:none;background:#4a2320}.ds-led.on{background:var(--led);box-shadow:0 0 8px var(--led),inset 0 0 2px #ffb3ab}.ds-unit-name{font-family:Michroma,Eurostile,sans-serif;font-weight:400;text-transform:uppercase;flex:0 0 140px;display:flex;flex-direction:column;align-items:flex-start;gap:5px;background:none;border:0;padding:6px 0;font-size:13px;line-height:1.15;letter-spacing:.1em;color:var(--face-ink);cursor:pointer;text-align:left}.ds-unit-name span{font-size:8.5px;letter-spacing:.22em;color:var(--face-dim)}.ds-unit-name:hover{text-decoration:underline;text-underline-offset:4px}.ds-unit-name:focus-visible,.ds-power:focus-visible{outline:2px solid var(--focus);outline-offset:2px}.ds-unit-readout{font-family:VT323,ui-monospace,monospace;font-weight:400;flex:1;display:flex;gap:18px;white-space:nowrap;overflow:hidden;font-size:21px;line-height:1;padding:6px 12px 5px;background:var(--glass);color:var(--vfd);text-shadow:0 0 7px rgba(255,176,0,.55);box-shadow:inset 0 2px 7px rgba(0,0,0,.95),inset 0 0 0 1px #000}.ds-unit-readout b{font-weight:400;color:var(--vfd-dim);text-shadow:none}.ds-power{font-family:Michroma,Eurostile,sans-serif;font-weight:400;text-transform:uppercase;position:relative;flex:none;width:66px;height:28px;border-radius:14px;display:flex;align-items:center;justify-content:flex-start;padding:0 10px;background:#121314;border:1px solid #000;box-shadow:inset 0 2px 4px #000;color:var(--vfd);text-shadow:0 0 6px rgba(255,176,0,.55);font-size:8.5px;letter-spacing:.16em;cursor:pointer}.ds-lever{position:absolute;left:3px;top:2px;width:22px;height:22px;border-radius:50%;transform:translateX(37px);background:linear-gradient(180deg,#f3f4f6,#b4b8bd);box-shadow:0 1px 2px #000;transition:transform .18s cubic-bezier(.16,1,.3,1)}"
+    },
+    {
+      "name": "Knob",
+      "kind": "custom",
+      "refersTo": "knob",
+      "description": "Machined knob on a black drawer: amber tick ring, value in glass, engraved name.",
+      "html": "<div class=\"ds-drawer\"><div class=\"ds-knob\"><div class=\"ds-dial\" role=\"slider\" tabindex=\"0\" aria-label=\"Decay\" aria-valuenow=\"32\"><svg viewBox=\"-32 -32 64 64\" width=\"58\" height=\"58\"><g class=\"ds-ticks\"><line class=\"lit\" x1=\"-18.4\" y1=\"18.4\" x2=\"-21.2\" y2=\"21.2\"/><line class=\"lit\" x1=\"-24.7\" y1=\"8\" x2=\"-28.5\" y2=\"9.3\"/><line class=\"lit\" x1=\"-25.7\" y1=\"-4.1\" x2=\"-29.6\" y2=\"-4.7\"/><line x1=\"-21\" y1=\"-15.3\" x2=\"-24.3\" y2=\"-17.6\"/><line x1=\"-11.8\" y1=\"-23.2\" x2=\"-13.6\" y2=\"-26.7\"/><line x1=\"0\" y1=\"-26\" x2=\"0\" y2=\"-30\"/><line x1=\"11.8\" y1=\"-23.2\" x2=\"13.6\" y2=\"-26.7\"/><line x1=\"21\" y1=\"-15.3\" x2=\"24.3\" y2=\"-17.6\"/><line x1=\"25.7\" y1=\"-4.1\" x2=\"29.6\" y2=\"-4.7\"/><line x1=\"24.7\" y1=\"8\" x2=\"28.5\" y2=\"9.3\"/><line x1=\"18.4\" y1=\"18.4\" x2=\"21.2\" y2=\"21.2\"/></g><circle r=\"21\" fill=\"#c9ccd0\" stroke=\"#6e7277\"/><circle r=\"18.5\" fill=\"none\" stroke=\"#9fa3a8\" stroke-width=\"3.2\" stroke-dasharray=\"1.3 1.3\"/><circle r=\"14\" fill=\"#e4e6e9\" stroke=\"#b2b6bb\" stroke-width=\".8\"/><line x1=\"0\" y1=\"-6\" x2=\"0\" y2=\"-19\" stroke=\"#1d1f22\" stroke-width=\"2.6\" stroke-linecap=\"round\" transform=\"rotate(-48)\"/></svg></div><div class=\"ds-knob-lcd\">32</div><div class=\"ds-knob-label\">Decay</div></div></div>",
+      "css": ".ds-drawer{--vfd:#ffb000;--vfd-bright:#ffd27a;--vfd-dim:#b07a00;--glass:#120c00;--plate-black:#1d1f22;--plate-ink:#e4e6e9;--plate-dim:#a3a6ab;--edge:#7d8186;--ink:#1c1d1f;--focus:#ff7a00;--led:#e0362c;display:inline-block;padding:16px 20px 18px;background:var(--plate-black);border:1px solid #000;box-shadow:inset 0 10px 14px -10px #000}.ds-knob{display:flex;flex-direction:column;align-items:center;gap:5px}.ds-dial{width:58px;height:58px;border-radius:50%;cursor:ns-resize}.ds-dial:focus-visible{outline:2px solid var(--focus);outline-offset:2px}.ds-ticks line{stroke:var(--vfd);stroke-width:2;stroke-linecap:round;opacity:.22}.ds-ticks line.lit{opacity:1;filter:drop-shadow(0 0 2px rgba(255,176,0,.55))}.ds-knob-lcd{font-family:VT323,ui-monospace,monospace;font-weight:400;font-size:20px;line-height:1;color:var(--vfd);text-shadow:0 0 6px rgba(255,176,0,.55);background:var(--glass);box-shadow:inset 0 1px 4px #000,inset 0 0 0 1px #000;padding:3px 6px 2px;min-width:48px;text-align:center}.ds-knob-label{font-family:Michroma,Eurostile,sans-serif;font-weight:400;text-transform:uppercase;font-size:8.5px;line-height:1.2;letter-spacing:.14em;color:var(--plate-dim)}"
+    },
+    {
+      "name": "Group Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "An effect in a patch's chain, as a small plate in its group's anodized colour.",
+      "html": "<ol class=\"ds-chips\"><li class=\"ds-chip\" style=\"--plate:#4a6a43;--face-ink:#f1f5ee\">TS Drive</li><li class=\"ds-chip\" style=\"--plate:#26282c;--face-ink:#eceef0\">MS 800</li><li class=\"ds-chip off\" style=\"--plate:#574876;--face-ink:#f2eff8\">Chorus</li></ol>",
+      "css": ".ds-chips{list-style:none;margin:0;padding:0;display:grid;gap:2px;width:240px}.ds-chip{font-family:Michroma,Eurostile,sans-serif;font-weight:400;text-transform:uppercase;display:flex;align-items:center;min-height:30px;padding:0 12px;font-size:11px;line-height:1;letter-spacing:.1em;color:var(--face-ink);background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(0,0,0,.14)),var(--plate);box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}.ds-chip.off{opacity:.45}"
+    },
+    {
+      "name": "Stage Step",
+      "kind": "button",
+      "refersTo": "button-stage-step-primary",
+      "description": "Stage controls with the lights down: amber-filled Next, warm-black Previous, 64px tall.",
+      "html": "<div class=\"ds-stage\"><button class=\"ds-step\">Previous</button><button class=\"ds-step primary\">Next song</button></div>",
+      "css": ".ds-stage{--vfd:#ffb000;--vfd-bright:#ffd27a;--vfd-dim:#b07a00;--glass:#120c00;--plate-black:#1d1f22;--plate-ink:#e4e6e9;--plate-dim:#a3a6ab;--edge:#7d8186;--ink:#1c1d1f;--focus:#ff7a00;--led:#e0362c;display:flex;gap:10px;padding:20px;background:#050403}.ds-step{font-family:Michroma,Eurostile,sans-serif;font-weight:400;text-transform:uppercase;font-size:13px;line-height:1;letter-spacing:.22em;min-height:64px;padding:0 28px;border-radius:2px;cursor:pointer;background:#1a1200;color:var(--vfd);border:1px solid #4d3500}.ds-step:hover{background:#251a00}.ds-step.primary{background:var(--vfd);color:var(--glass);border-color:var(--vfd);min-width:200px;box-shadow:0 0 22px rgba(255,176,0,.25)}.ds-step.primary:hover{background:var(--vfd-bright)}.ds-step:focus-visible{outline:2px solid var(--focus);outline-offset:2px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Amber Rack",
+    "overview": "The tone is a rack of gear in a studio, read top to bottom from IN to OUT. Every effect is a brushed-aluminium or anodized faceplate bolted in with rack ears and two screws a side; the master unit sits at the top, a blank vented panel fills each free position, and the save bar is the OUT jack at the bottom. One unit at a time pulls out its black drawer to show every knob. Whatever the pedal reports (patch name, slot numbers, knob values, levels, the tuner) glows amber on dark VFD glass, so the number on screen reads like the number on the hardware.\n\nThe desk is dense and precise: small engraved legends, tight 3px seams between units, machined depth from 1px black borders and inset highlights rather than soft shadows. The stage is the same world with the room lights off: the aluminium disappears and only amber on near-black is left, at sizes readable from a pedalboard. The system rejects two forms outright: the row of stompboxes (the pedal's own metaphor, and Guitar Lab's) and the dashboard of rounded cards.\n\nThe build landed slightly off the contract in one place: the contract named the aluminium as `#c7cace`; the build paints the room in `alu-ground` and the keys in a lighter top-lit pair (`key-face` to `key-face-lo`). The stylesheet also declares `--alu`, `--alu-hi` and `--alu-lo`, but nothing consumes them, so they are not recorded. The frontmatter records the build.",
+    "keyCharacteristics": [
+      "A vertical rack of full-width units, IN at the top, OUT at the bottom, with 3px black seams.",
+      "Rack ears with screw heads on every faceplate (master unit and effect units).",
+      "Anodized plate colour per effect group, carried from the unit face to the chip to the effect browser's swatch.",
+      "Pedal readouts in VT323 on amber VFD glass; engraved legends in Michroma; prose and controls in Archivo.",
+      "Machined depth: hard 1px black borders, inset highlight/shadow pairs, a 3px bezel lip under black units.",
+      "Stage mode: amber on black, nothing else."
+    ],
+    "rules": [
+      {
+        "name": "The Emitted Amber Rule",
+        "body": "Amber text is light, so it only appears where light can be seen: on VFD glass or on black anodizing. Amber ink never sits on aluminium. Where amber is a fill (badges, the primary action on dark surfaces), its text is `glass`.",
+        "section": "colors"
+      },
+      {
+        "name": "The Group Plate Rule",
+        "body": "An effect group's colour is its identity: the same `--plate` paints the unit face, the patch detail's chain chip and the effect browser's group swatch. Never use a plate colour for anything that isn't that group.",
+        "section": "colors"
+      },
+      {
+        "name": "The Lights Down Rule",
+        "body": "On stage the aluminium goes away: the rail and the main column turn `night`, every surface in them a warm black (`glass`, `stage-plate`), every legend amber or dim amber. No grey, no white, no group colours below the header; the black status header stays as it is.",
+        "section": "colors"
+      },
+      {
+        "name": "The Readout Rule",
+        "body": "A value the pedal reports (patch name, slot number, knob value, level, tuner note, tempo and key on stage) is set in VT323 on `glass` in amber. App-side counts and metadata in prose (patch counts, gig meta) stay in Archivo.",
+        "section": "typography"
+      },
+      {
+        "name": "The Engraved Legend Rule",
+        "body": "Michroma is always uppercase, always tracked (at least 0.08em), always weight 400, and always names a control, a field or a section of hardware. It is never used for sentences.",
+        "section": "typography"
+      },
+      {
+        "name": "The Bolted-In Rule",
+        "body": "Every faceplate in the rack, and the master unit, carries rack ears with two screw heads (26px each side, 20px under 760px). A faceplate without ears is not in the rack.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Only Overlays Float Rule",
+        "body": "Soft, blurred drop shadows are reserved for the drawer, dialogs and toasts. Everything else gets its depth from borders, bevels, insets and the 3px lip.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** read the tone top to bottom from IN to OUT, one full-width unit per effect, with 3px rack-well seams between them.",
+      "**Do** bolt every faceplate in with rack ears (26px, two screws) and give it its group's anodized `--plate` colour.",
+      "**Do** put every value the pedal reports on VFD glass: VT323, amber `#ffb000` on `#120c00`, with the phosphor glow.",
+      "**Do** keep engraved legends in Michroma, uppercase, tracked, weight 400.",
+      "**Do** flip the primary action with its surface: black with amber text on aluminium, amber with glass text on black.",
+      "**Do** give depth with 1px black borders, bevels, insets and the 3px bezel lip; keep soft shadows for overlays.",
+      "**Do** turn the lights down on stage: amber on black, large readouts, 64px step buttons.",
+      "**Do** honour reduced motion: the drawer, side drawer and toasts appear without animation, and the busy light stops blinking."
+    ],
+    "donts": [
+      "**Don't** lay effects out as a row of stompboxes, and don't build a dashboard of rounded cards.",
+      "**Don't** put amber text on aluminium.",
+      "**Don't** use a group's plate colour for anything other than that group.",
+      "**Don't** round corners past 2px except on things that are round on real gear (knobs, LEDs, the power pill).",
+      "**Don't** set sentences in Michroma or VT323, and don't set pedal values in Archivo.",
+      "**Don't** use `ink-faint` for running text; it is for placeholders and empty slots.",
+      "**Don't** bring grey, white or group colours into the stage view's rail or main column."
+    ]
+  }
+}
