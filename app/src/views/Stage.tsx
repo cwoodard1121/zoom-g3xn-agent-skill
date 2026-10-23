@@ -127,6 +127,19 @@ export function Stage() {
               </ul>
             )}
             {info?.notes && <p className="stage-notes">{info.notes}</p>}
+            {info?.chords && (
+              <dl className="stage-chords" aria-label="Chords">
+                {info.chords.split("\n").filter((l) => l.trim()).map((l, i) => {
+                  const [part, chords] = l.includes(":") ? [l.slice(0, l.indexOf(":")), l.slice(l.indexOf(":") + 1)] : ["", l];
+                  return (
+                    <div key={i}>
+                      <dt>{part.trim()}</dt>
+                      <dd>{chords.trim()}</dd>
+                    </div>
+                  );
+                })}
+              </dl>
+            )}
           </>
         ) : (
           <>

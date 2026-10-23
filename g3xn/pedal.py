@@ -293,7 +293,8 @@ class Pedal:
         (Requests drain the input first, so read these between requests.)"""
         out = []
         edit_echo = bytes(P.msg(P.EDIT, P.EDIT_PARAM))       # then 1 for an edit echo, 0 for a setting (a tap tempo)
-        for m in self.inport.iter_pending():
+        held, self._unheard = getattr(self, "_unheard", []), []
+        for m in held + list(self.inport.iter_pending()):
             if os.environ.get("G3XN_LOG_MIDI"):                 # finding out what the pedal says, e.g. on a tap
                 with open(os.environ["G3XN_LOG_MIDI"], "a") as f:
                     f.write("%.3f %s\n" % (time.time(), m.hex() if m.type == "sysex" else m))
@@ -409,11 +410,19 @@ class Pedal:
                 time.sleep(0.002)
             elif m.type == "sysex" and (expect is None or bytes(m.data).startswith(bytes(expect))):
                 return bytes(m.data)
+            else:
+                self._keep(m)
         return None
 
     def _drain(self):
-        for _ in self.inport.iter_pending():
-            pass
+        for m in self.inport.iter_pending():
+            self._keep(m)
+
+    def _keep(self, m):
+        """Hold on to what the pedal said unasked during a request (a stomp, a tap tempo), for events()."""
+        unheard = self.__dict__.setdefault("_unheard", [])
+        if len(unheard) < 200:
+            unheard.append(m)
 
     def _check_location(self, location):
         if not isinstance(location, int) or not 1 <= location <= self.patch_count:

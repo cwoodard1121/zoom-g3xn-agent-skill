@@ -725,6 +725,7 @@ select { cursor: pointer; }
 .song-lyrics-head { display: flex; gap: 8px; }
 .song-lyrics-head input { flex: 1; }
 .song-lyrics textarea { width: 100%; font: 400 14px/1.5 var(--body); resize: vertical; }
+.song-lyrics textarea.song-chords { font: 400 18px/1.35 var(--readout); }
 .songs-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .song-head span { font: 400 9px/1.2 var(--engraved); letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-dim); }
 .song-number {
@@ -812,6 +813,10 @@ select { cursor: pointer; }
 .stage-stomp-led { width: 9px; height: 9px; border-radius: 50%; background: #2b1e05; flex: none; }
 .stage-stomps li.on .stage-stomp-led { background: #ff3b1f; box-shadow: 0 0 8px #ff3b1f; }
 
+.stage-chords { margin: 22px 0 0; display: grid; gap: 6px; }
+.stage-chords div { display: flex; align-items: baseline; gap: 16px; }
+.stage-chords dt { min-width: 92px; font: 400 10px/1 var(--engraved); letter-spacing: 0.24em; text-transform: uppercase; color: var(--vfd-dim); }
+.stage-chords dd { margin: 0; font: 400 clamp(28px, 2.6vw, 38px)/1.05 var(--readout); color: var(--vfd-bright); word-spacing: 0.35em; text-shadow: 0 0 8px var(--vfd-glow); }
 .stage-lyrics-wrap { margin-top: 28px; }
 .lyrics-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-bottom: 10px; }
 .stage .button.lyrics-tap {
