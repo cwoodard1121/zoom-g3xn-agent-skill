@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { api } from "../api";
 import type { Gig, GigEntry, PlanStep } from "../api";
 import { Icon } from "../components/Icon";
+import { TUNINGS } from "../tuning";
 import { fillLyrics, lyricsMessage } from "../lyrics";
 import { usePedal } from "../pedal";
 
@@ -181,6 +182,7 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
             <span>Patch</span>
             <span>BPM</span>
             <span>Key</span>
+            <span>Tuning</span>
             <span>Pickup</span>
             <span>Notes</span>
           </li>
@@ -225,6 +227,15 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
               aria-label={`Key for song ${i + 1}`}
               value={entry.key ?? ""}
               onChange={(e) => setEntry(i, { ...entry, key: e.target.value || undefined })}
+            />
+            <input
+              className="song-tuning"
+              placeholder="Tuning"
+              aria-label={`Tuning for song ${i + 1}`}
+              title="Empty is standard. A name from the list, or six notes low to high: D A D G B E"
+              list="tunings"
+              value={entry.tuning ?? ""}
+              onChange={(e) => setEntry(i, { ...entry, tuning: e.target.value || undefined })}
             />
             <input
               className="song-pickup"
@@ -290,6 +301,9 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
       </ol>
       <datalist id="pickups">
         {PICKUPS.map((p) => <option key={p} value={p} />)}
+      </datalist>
+      <datalist id="tunings">
+        {TUNINGS.map((t) => <option key={t.name} value={t.name} label={t.about === t.name ? undefined : t.about} />)}
       </datalist>
       <div className="songs-actions">
         <button

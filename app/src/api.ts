@@ -85,6 +85,7 @@ export interface GigEntry {
   tempo?: number;
   key?: string;
   pickup?: string; // the guitar's pickup selector for the song: "Bridge", "Neck", "2"…
+  tuning?: string; // "Eb", "Drop D", "D A D G B E"… (none is standard): see tuning.ts
   chords?: string; // the song's chords by section, one section a line: "Verse: Dm C Bb A"
   lyrics?: string;
   synced?: string; // the lyrics with a [mm:ss.xx] time per line (from LRCLIB), for scrolling

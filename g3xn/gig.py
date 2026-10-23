@@ -13,7 +13,7 @@
 Each entry is a tone (tone JSON), a copy of a slot already on the pedal
 (`from_slot`), or a .json/.zptc/.zg3xn file. An entry may set "slot" to pin
 it; otherwise entries fill consecutive slots from start_slot. Entries may
-also carry "artist", "notes", "tempo", "key", "pickup", "chords" and "lyrics"
+also carry "artist", "notes", "tempo", "key", "pickup", "tuning", "chords" and "lyrics"
 for the stage view.
 
 GigLibrary keeps gigs as JSON files (the app's saved setlists). A gig that

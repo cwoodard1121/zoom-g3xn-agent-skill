@@ -4,6 +4,8 @@
 // Moving on is the one big moment: the next song's title flies out of the setlist into place, the
 // last one slides away, and the patch's effects light up one after another (View Transitions,
 // where the browser has them and motion is welcome; otherwise it just changes).
+// Between songs in different tunings a RETUNE banner says which strings go where, and lights each
+// one as the tuner holds it in tune.
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { api } from "../api";
@@ -12,6 +14,8 @@ import type React from "react";
 import { Lyrics } from "../components/Lyrics";
 import { fillLyrics, lyricsMessage } from "../lyrics";
 import { usePedal } from "../pedal";
+import { sameTuning, tuningOf } from "../tuning";
+import type { Tuning } from "../tuning";
 
 const SEGMENTS = Array.from({ length: 15 }, (_, i) => i - 7);
 // The recording, to play along with. A search, since a gig only knows titles.
@@ -109,6 +113,54 @@ export function Stage() {
     if (tunerOnRef.current) api.tuner(false).catch(() => {});
   }, []);
 
+  // Retuning: the guitar is in the tuning of the song shown before this one (on first arriving,
+  // the song before it in the set; before the first song, standard).
+  const entryAt = (i: number): GigEntry | undefined =>
+    gig && slots[i] ? gig.patches.find((p) => p.song === slots[i].song) ?? gig.patches[i] : undefined;
+  const [retune, setRetune] = useState<{ from: Tuning; to: Tuning } | null>(null);
+  const [tuned, setTuned] = useState<number[]>([]);       // strings the tuner has held in tune
+  const shownBefore = useRef<number | null>(null);
+  const tunerByBanner = useRef(false);                      // the banner turned the tuner on: it turns it off
+  const tunerOff = () => {
+    if (tunerByBanner.current && tunerOnRef.current) act(() => api.tuner(false));
+    tunerByBanner.current = false;
+  };
+  useEffect(() => {
+    if (index < 0) return;
+    const before = shownBefore.current ?? index - 1;
+    shownBefore.current = index;
+    tunerOff();                                             // a new song: play, don't tune
+    const from = tuningOf(entryAt(before)?.tuning), to = tuningOf(entryAt(index)?.tuning);
+    setTuned([]);
+    setRetune(sameTuning(from, to) ? null : { from, to });
+  }, [index]);
+  const changing = retune?.to.strings?.map((n, s) => n !== retune.from.strings?.[s]) ?? [];
+  const allTuned = !!retune?.to.strings && changing.every((c, s) => !c || tuned.includes(s));
+  const finish = () => {
+    setRetune(null);
+    tunerOff();
+  };
+  const finishRef = useRef(finish);
+  finishRef.current = finish;
+
+  // A string counts once the tuner has held its note in tune for a moment (not just swept past
+  // it). Strings sharing a note (the two E's) light lowest first, one per hold.
+  const holding = retune && tuner?.note && tuner.meter === 0 ? tuner.note : null;
+  useEffect(() => {
+    const to = retune?.to.strings;
+    if (!holding || !to) return;
+    const id = window.setTimeout(() => setTuned((t) => {
+      const s = to.findIndex((n, i) => n === holding && changing[i] && !t.includes(i));
+      return s < 0 ? t : [...t, s];
+    }), 400);
+    return () => window.clearTimeout(id);
+  }, [holding, retune]);
+  useEffect(() => {
+    if (!allTuned) return;
+    const id = window.setTimeout(() => finishRef.current(), 1500);
+    return () => window.clearTimeout(id);
+  }, [allTuned]);
+
   if (!gig || !slots.length) {
     return (
       <section className="stage stage-empty">
@@ -121,6 +173,17 @@ export function Stage() {
   }
 
   const meter = tuner?.note ? tuner.meter : null;
+  const tunerReadout = (
+    <div className="stage-tuner" aria-live="polite">
+      <span className={`stage-tuner-note${meter === 0 ? " in-tune" : ""}`}>{tuner?.note ?? "–"}</span>
+      <span className="tuner-meter compact" aria-hidden="true">
+        {SEGMENTS.map((s) => (
+          <span key={s} className={`seg${s === 0 ? " center" : ""}${meter !== null && s === meter ? " lit" : ""}`} />
+        ))}
+      </span>
+    </div>
+  );
+  const tuning = tuningOf(info?.tuning);
 
   return (
     <section className="stage" ref={stageRef} aria-labelledby="stage-song">
@@ -133,6 +196,46 @@ export function Stage() {
             <h1 id="stage-song" className="stage-song" style={{ viewTransitionName: incoming !== null ? "stage-leaving" : "stage-song" }}>
               {song.song}
             </h1>
+            {retune && (
+              <div className={`retune${allTuned ? " done" : ""}`} role="alert" key={`retune-${song.slot}`}>
+                <p className="retune-head">
+                  <span className="retune-word">{allTuned ? "In tune" : "Retune"}</span>
+                  <span className="retune-to">
+                    {retune.to.name}
+                    {retune.to.about && <small>{retune.to.about}</small>}
+                  </span>
+                </p>
+                {retune.to.strings && (
+                  <ol className="retune-strings" aria-label="Strings, low to high">
+                    {retune.to.strings.map((n, s) => (
+                      <li key={s} className={`${changing[s] ? "change" : "stays"}${tuned.includes(s) ? " tuned" : ""}`}>
+                        <span className="retune-string">{6 - s}</span>
+                        <b>{n}</b>
+                        <span className="retune-from">
+                          {!changing[s] ? "stays" : retune.from.strings ? `from ${retune.from.strings[s]}` : ""}
+                          {tuned.includes(s) && <span className="visually-hidden">, in tune</span>}
+                        </span>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+                <div className="retune-actions">
+                  {tunerOn ? (
+                    tunerReadout
+                  ) : (
+                    <button
+                      className="button"
+                      onClick={async () => {
+                        if (await act(() => api.tuner(true))) tunerByBanner.current = true;
+                      }}
+                    >
+                      Tuner
+                    </button>
+                  )}
+                  <button className="button primary" onClick={finish}>Done</button>
+                </div>
+              </div>
+            )}
             <div className="stage-patch" style={{ viewTransitionName: "stage-patch" }}>
               <span className="stage-lcd" aria-label={`Slot ${song.slot}, ${song.patch}`}>
                 <span className="stage-lcd-slot">{String(song.slot).padStart(3, "0")}</span>
@@ -141,6 +244,7 @@ export function Stage() {
               {info?.tempo && <span className="stage-fact"><b>{info.tempo}</b> BPM</span>}
               {info?.key && <span className="stage-fact">Key <b>{info.key}</b></span>}
               {info?.pickup && <span className="stage-fact">Pickup <b>{info.pickup}</b></span>}
+              {tuning.name !== "Standard" && <span className="stage-fact">Tuning <b>{tuning.name}</b></span>}
             </div>
             {live && live.slot === song.slot && live.chain.length > 0 && (
               <ul className="stage-stomps" aria-label="Effects in this patch" key={song.slot} style={{ viewTransitionName: "stage-stomps" }}>
@@ -178,16 +282,7 @@ export function Stage() {
           </>
         )}
 
-        {tunerOn && (
-          <div className="stage-tuner" aria-live="polite">
-            <span className={`stage-tuner-note${meter === 0 ? " in-tune" : ""}`}>{tuner?.note ?? "–"}</span>
-            <span className="tuner-meter compact" aria-hidden="true">
-              {SEGMENTS.map((s) => (
-                <span key={s} className={`seg${s === 0 ? " center" : ""}${meter !== null && s === meter ? " lit" : ""}`} />
-              ))}
-            </span>
-          </div>
-        )}
+        {tunerOn && !retune && tunerReadout}
 
         <div className="stage-next" style={{ viewTransitionName: "stage-next" }}>
           {next ? (
