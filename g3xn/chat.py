@@ -24,6 +24,10 @@ import tempfile
 import threading
 
 TOOL_PREFIX = "mcp__g3xn__"
+# Claude Code's own tools, off in the app's chat: it's there for the pedal, and a misheard
+# footswitch request mustn't be able to run commands or read the user's files.
+BUILT_INS = ("Bash", "PowerShell", "Edit", "Write", "MultiEdit", "NotebookEdit", "Read", "Glob", "Grep",
+             "WebFetch", "WebSearch", "Agent", "Task")
 
 SYSTEM_PROMPT = """You are inside the g3xn app, next to the user's Zoom G3Xn guitar pedal.
 They are holding a guitar, often talking through a push-to-talk footswitch, so keep replies
@@ -58,7 +62,7 @@ class Chat:
         claude: the command to run (default: find_claude()); a list runs as is (tests)."""
         self.daemon_url, self.emit = daemon_url, emit
         self.claude = claude
-        self.cwd = cwd or os.path.expanduser("~")
+        self.cwd = cwd          # None: the chat's own empty folder (no project settings get picked up)
         self.session = None          # Claude Code's session id, to resume or open in a terminal
         self.messages = []           # [{"role": "user"|"claude", "text", "tools": [...]}]
         self.busy = False
@@ -116,10 +120,11 @@ class Chat:
         since a session can't be written by two processes)."""
         self.stop()
         cmd = self.terminal_command()
+        home = self.cwd or os.path.expanduser("~")       # the user's own session, with their tools
         if os.name == "nt":
-            subprocess.Popen(["cmd", "/c", "start", "g3xn - Claude Code"] + cmd, cwd=self.cwd, env=self._env())
+            subprocess.Popen(["cmd", "/c", "start", "g3xn - Claude Code"] + cmd, cwd=home, env=self._env())
         else:
-            subprocess.Popen(cmd, cwd=self.cwd, env=self._env(), start_new_session=True)
+            subprocess.Popen(cmd, cwd=home, env=self._env(), start_new_session=True)
         return {"session": self.session, "command": cmd}
 
     def info(self):
@@ -144,7 +149,8 @@ class Chat:
             raise ChatError("Claude Code isn't installed on this computer (or set G3XN_CLAUDE to it)")
         config, prompt = self._files()
         headless = [] if interactive else ["-p", "--input-format", "stream-json", "--output-format", "stream-json",
-                                           "--verbose", "--include-partial-messages", "--permission-prompts", "none"]
+                                           "--verbose", "--include-partial-messages", "--permission-prompts", "none",
+                                           "--disallowedTools", ",".join(BUILT_INS)]
         return base + headless + ["--mcp-config", config, "--strict-mcp-config",
                                   "--allowedTools", TOOL_PREFIX + "*",
                                   "--append-system-prompt-file", prompt]
@@ -176,7 +182,7 @@ class Chat:
             cmd += ["--resume", self.session]
         flags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
         errors = tempfile.TemporaryFile()               # what it says when it fails
-        self._proc = subprocess.Popen(cmd, cwd=self.cwd, env=self._env(), stdin=subprocess.PIPE,
+        self._proc = subprocess.Popen(cmd, cwd=self.cwd or self._folder, env=self._env(), stdin=subprocess.PIPE,
                                       stdout=subprocess.PIPE, stderr=errors,
                                       text=True, encoding="utf-8", bufsize=1, creationflags=flags)
         threading.Thread(target=self._read, args=(self._proc, errors), name="g3xn-chat", daemon=True).start()

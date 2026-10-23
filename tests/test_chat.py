@@ -71,6 +71,8 @@ class ChatTest(unittest.TestCase):
         self.assertIn("--strict-mcp-config", argv)
         self.assertEqual(argv[argv.index("--allowedTools") + 1], "mcp__g3xn__*")
         self.assertEqual(argv[argv.index("--permission-prompts") + 1], "none")
+        self.assertIn("Bash", argv[argv.index("--disallowedTools") + 1].split(","))
+        self.assertIn("Read", argv[argv.index("--disallowedTools") + 1].split(","))
         with open(argv[argv.index("--mcp-config") + 1]) as f:
             config = json.load(f)["mcpServers"]["g3xn"]
         self.assertEqual(config["env"], {"G3XN_DAEMON": "http://127.0.0.1:9"})
