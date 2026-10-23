@@ -89,6 +89,7 @@ class PedalWorker(threading.Thread):
         self._stopping = threading.Event()
         self._next_watch = 0.0
         self._live_dirty = None
+        self._loaded = None                 # the edit buffer last time it was looked at (see _poll_current)
 
     # --- called from the web server ---
 
@@ -205,6 +206,12 @@ class PedalWorker(threading.Thread):
 
     def _poll_current(self):
         self._set_current(self.pedal.current())
+        # The pedal doesn't always say when its own footswitches turn an effect on or off (or a knob
+        # is turned on it): compare what it has loaded with last time, and send the live tone if it moved.
+        loaded = self.pedal.edit_buffer().encode()
+        if self._loaded is not None and loaded != self._loaded:
+            self._live_dirty = self._live_dirty or time.time()
+        self._loaded = loaded
 
     def _set_current(self, slot):
         if slot != self.current:
