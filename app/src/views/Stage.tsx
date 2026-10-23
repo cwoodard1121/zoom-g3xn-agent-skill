@@ -9,23 +9,12 @@ import { fillLyrics, lyricsMessage } from "../lyrics";
 import { usePedal } from "../pedal";
 
 const SEGMENTS = Array.from({ length: 15 }, (_, i) => i - 7);
-const REHEARSE_KEY = "g3xn.rehearse";
-
-// Rehearse mode: the recording, to play along with. A search, since a gig only knows titles.
+// The recording, to play along with. A search, since a gig only knows titles.
 const PLAYERS = {
   youtube: { label: "YouTube", url: (q: string) => `https://www.youtube.com/results?search_query=${encodeURIComponent(q)}` },
   spotify: { label: "Spotify", url: (q: string) => `https://open.spotify.com/search/${encodeURIComponent(q)}` },
 };
 type Player = keyof typeof PLAYERS;
-
-function remembered(): Player | null {
-  try {
-    const v = localStorage.getItem(REHEARSE_KEY);
-    return v === "youtube" || v === "spotify" ? v : null;
-  } catch {
-    return null;
-  }
-}
 
 export function Stage() {
   const { gigs, status, names, tuner, live, act, say } = usePedal();
@@ -40,15 +29,6 @@ export function Stage() {
     }
     setFinding(false);
     if (r) say(lyricsMessage(r.found, r.missing), !r.found && r.missing.length > 0);
-  };
-  const [rehearse, setRehearseState] = useState<Player | null>(remembered);
-  const setRehearse = (p: Player | null) => {
-    setRehearseState(p);
-    try {
-      localStorage.setItem(REHEARSE_KEY, p ?? "");
-    } catch {
-      // storage blocked: on until the page closes
-    }
   };
   const stageRef = useRef<HTMLElement>(null);
 
@@ -71,22 +51,15 @@ export function Stage() {
     const artist = (gig!.patches.find((p) => p.song === s.song) ?? gig!.patches[i])?.artist;
     return [s.song, artist].filter(Boolean).join(" ");
   };
-  const play = (i: number, p: Player | null = rehearse) => {
+  const play = (i: number, p: Player) => {
     const s = slots[i];
-    if (s && p) window.open(PLAYERS[p].url(search(s, i)), "g3xn-rehearse");
+    if (s) window.open(PLAYERS[p].url(search(s, i)), "g3xn-rehearse");
   };
   const goTo = (i: number) => {
     const s = slots[i];
     if (!s) return;
     act(() => api.select(s.slot));
   };
-  // Rehearsing: when the set moves on (from here or a stomp on the pedal), that song's recording comes up.
-  const shownIndex = useRef(index);
-  useEffect(() => {
-    if (index === shownIndex.current) return;
-    shownIndex.current = index;
-    if (index >= 0) play(index);
-  });
 
   const stepRef = useRef((_d: number) => {});
   stepRef.current = (d: number) => goTo(index < 0 ? 0 : Math.min(slots.length - 1, Math.max(0, index + d)));
@@ -184,25 +157,20 @@ export function Stage() {
           ) : null}
         </div>
 
-        {rehearse && <p className="stage-rehearsing">Rehearse mode: each song opens on {PLAYERS[rehearse].label} as you go to it.</p>}
         <div className="stage-controls">
           <button className="stage-step" onClick={() => stepRef.current(-1)} disabled={index <= 0}>Previous</button>
           <button className="stage-step primary" onClick={() => stepRef.current(1)} disabled={index >= slots.length - 1}>
             {song ? "Next" : "Start"}
           </button>
           <span className="stage-spacer" />
-          <span className="stage-rehearse" role="group" aria-label="Rehearse with the recording">
+          <span className="stage-rehearse" role="group" aria-label="Play the recording">
             {(Object.keys(PLAYERS) as Player[]).map((p) => (
               <button
                 key={p}
                 className="button"
-                aria-pressed={rehearse === p}
-                title={rehearse === p ? `Rehearsing: each song opens on ${PLAYERS[p].label}. Click to stop.` : `Rehearse: open each song on ${PLAYERS[p].label}`}
-                onClick={() => {
-                  const next = rehearse === p ? null : p;
-                  setRehearse(next);
-                  if (next && index >= 0) play(index, next);
-                }}
+                disabled={index < 0}
+                title={`Open this song on ${PLAYERS[p].label}`}
+                onClick={() => play(index, p)}
               >
                 {PLAYERS[p].label}
               </button>
