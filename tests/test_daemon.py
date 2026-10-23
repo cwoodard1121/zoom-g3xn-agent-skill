@@ -135,6 +135,16 @@ class DaemonTest(unittest.TestCase):
         self.assertEqual(code, 409)
         self.assertIn("same effects", msg)
 
+    def test_stomp_sets_never_toggles(self):
+        self.call("POST", "/api/patches/1/select")                  # MINE: TS Drive, on
+        self.assertFalse(self.call("POST", "/api/stomp", {"effect": "ts drive", "on": False})["chain"][0]["on"])
+        self.assertFalse(self.call("POST", "/api/stomp", {"effect": "TS", "on": False})["chain"][0]["on"])
+        self.assertTrue(self.call("POST", "/api/stomp", {"effect": 1, "on": True})["chain"][0]["on"])
+        self.assertIn("TS Drive", self.error("POST", "/api/stomp", {"effect": "Octave", "on": True})[1])
+        self.assertEqual(self.error("POST", "/api/stomp", {"effect": 4, "on": True})[0], 400)
+        self.assertIn("moved on", self.call("POST", "/api/stomp", {"effect": 1, "on": False, "slot": 2})["skipped"])
+        self.assertTrue(self.call("GET", "/api/live")["chain"][0]["on"])     # left alone
+
     def test_saved_gigs(self):
         gig = {"name": "Friday Set", "start_slot": 120, "patches": [
             {"song": "Sultans", "tone": TONE, "notes": "capo off"}, {"song": "Mine", "from_slot": 1}]}
@@ -148,6 +158,8 @@ class DaemonTest(unittest.TestCase):
         self.assertEqual(listed["active"], gid)
         loaded = self.call("GET", "/api/setlists/%s" % gid)["loaded"]
         self.assertEqual([(s["song"], s["slot"]) for s in loaded["slots"]], [("Sultans", 120), ("Mine", 121)])
+        self.assertEqual([[(c["effect"], c["on"]) for c in s["chain"]] for s in loaded["slots"]],
+                         [[("TS Drive", True), ("FD TWNR", True), ("Delay", True)], [("TS Drive", True)]])
         names = {p["slot"]: p["name"] for p in self.call("GET", "/api/patches")["patches"]}
         self.assertEqual((names[120], names[121]), ("DAEMON", "MINE"))
         self.call("PUT", "/api/setlists/%s" % gid, dict(saved, name="Friday Late"))    # an edit from an old copy

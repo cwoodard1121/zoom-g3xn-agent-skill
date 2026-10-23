@@ -14,7 +14,7 @@ Each entry is a tone (tone JSON), a copy of a slot already on the pedal
 (`from_slot`), or a .json/.zptc/.zg3xn file. An entry may set "slot" to pin
 it; otherwise entries fill consecutive slots from start_slot. Entries may
 also carry "artist", "notes", "tempo", "key", "pickup", "tuning", "chords" and "lyrics"
-for the stage view.
+for the stage view, and "cues": effects to switch during the song, a line each ("1:05 Octave on").
 
 GigLibrary keeps gigs as JSON files (the app's saved setlists). A gig that
 has been loaded keeps a snapshot of exactly what went into each slot, so
@@ -328,11 +328,23 @@ class GigLibrary:
 
 
 def shown(gig):
-    """A saved gig without the patch data in its snapshot (for showing, not restoring)."""
+    """A saved gig without the patch data in its snapshot (for showing, not restoring). Instead each
+    loaded slot lists its effects as loaded, on or off ("chain"), so a song's cues can put them back."""
     loaded = gig.get("loaded")
     if loaded:
-        loaded = dict(loaded, slots=[{k: v for k, v in s.items() if k != "data"} for s in loaded["slots"]])
+        loaded = dict(loaded, slots=[_shown_slot(s) for s in loaded["slots"]])
     return dict(gig, loaded=loaded)
+
+
+def _shown_slot(s):
+    out = {k: v for k, v in s.items() if k != "data"}
+    if s.get("data"):
+        try:
+            chain = Patch.decode(base64.b64decode(s["data"])).chain
+            out["chain"] = [{"effect": c.name, "on": c.enabled} for c in chain]
+        except Exception:                 # a damaged snapshot still shows, just without effects
+            pass
+    return out
 
 
 def public(steps):

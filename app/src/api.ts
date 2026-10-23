@@ -86,6 +86,7 @@ export interface GigEntry {
   key?: string;
   pickup?: string; // the guitar's pickup selector for the song: "Bridge", "Neck", "2"…
   tuning?: string; // "Eb", "Drop D", "D A D G B E"… (none is standard): see tuning.ts
+  cues?: string; // effects to switch as the song goes, a line each: "1:05 Octave on" (see cues.ts)
   chords?: string; // the song's chords by section, one section a line: "Verse: Dm C Bb A"
   lyrics?: string;
   synced?: string; // the lyrics with a [mm:ss.xx] time per line (from LRCLIB), for scrolling
@@ -116,7 +117,12 @@ export interface Gig {
   name: string;
   start_slot: number;
   patches: GigEntry[];
-  loaded?: { time: number; backup: string; slots: { song: string; slot: number; patch: string }[] };
+  loaded?: {
+    time: number;
+    backup: string;
+    // chain: the patch's effects as the gig loaded it, on or off
+    slots: { song: string; slot: number; patch: string; chain?: { effect: string; on: boolean }[] }[];
+  };
 }
 
 export interface GigSummary {
@@ -240,6 +246,10 @@ export const api = {
     call<{ saved: string; slot: number; kept?: string }>("POST", `/api/patches/${slot}/save`, { name, replace }),
   effect: (name: string) => call<EffectInfo>("GET", `/api/effects/${encodeURIComponent(name)}`),
   tuner: (on: boolean) => call<{ tuner: boolean }>("POST", "/api/tuner", { on }),
+  /** Set one effect of the patch that's playing on or off (a chain number from 1, or a name).
+   * With `slot`, only while the pedal is still on that slot. */
+  stomp: (effect: number | string, on: boolean, slot?: number) =>
+    call<Tone & { skipped?: string }>("POST", "/api/stomp", { effect, on, slot }),
   release: () => call<Status>("POST", "/api/release"),
   chat: () => call<ChatInfo>("GET", "/api/chat"),
   chatSend: (text: string) => call<{ sent: string }>("POST", "/api/chat", { text }),

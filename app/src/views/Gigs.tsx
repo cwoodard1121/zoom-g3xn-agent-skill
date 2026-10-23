@@ -288,6 +288,14 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
                   onChange={(e) => setEntry(i, { ...entry, chords: e.target.value || undefined })}
                 />
                 <textarea
+                  className="song-cues"
+                  aria-label={`Cues for ${entry.song || `song ${i + 1}`}`}
+                  placeholder={"Cues: effects to switch as the song goes, a line each:\n1:05 Octave on\n2:30 Delay off"}
+                  rows={3}
+                  value={entry.cues ?? ""}
+                  onChange={(e) => setEntry(i, { ...entry, cues: e.target.value || undefined })}
+                />
+                <textarea
                   aria-label={`Lyrics for ${entry.song || `song ${i + 1}`}`}
                   placeholder="Paste or type the words. They scroll under the song on the stage view."
                   rows={10}

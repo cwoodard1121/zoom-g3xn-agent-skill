@@ -6,14 +6,21 @@
 // where the browser has them and motion is welcome; otherwise it just changes).
 // Between songs in different tunings a RETUNE banner says which strings go where, and lights each
 // one as the tuner holds it in tune.
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+// Tapping in (songclock.ts) starts the song clock: the words follow it, and so do the song's cues,
+// which switch its effects at set points. The effects are buttons too, and while recording cues,
+// each press becomes one at that point in the song.
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { api } from "../api";
 import type { Gig, GigEntry } from "../api";
 import type React from "react";
-import { Lyrics } from "../components/Lyrics";
+import { ClockBar, Lyrics } from "../components/Lyrics";
+import { addCue, effectIndex, parseCues } from "../cues";
+import type { Cue } from "../cues";
 import { fillLyrics, lyricsMessage } from "../lyrics";
 import { usePedal } from "../pedal";
+import { mmss, useSongClock, useSongTime } from "../songclock";
+import type { SongClock } from "../songclock";
 import { sameTuning, tuningOf } from "../tuning";
 import type { Tuning } from "../tuning";
 
@@ -84,9 +91,11 @@ export function Stage() {
     const s = slots[i];
     if (s) window.open(PLAYERS[p].url(search(s, i)), "g3xn-rehearse");
   };
-  const goTo = (i: number) => {
+  const clock = useSongClock(info);
+  const goTo = async (i: number) => {
     const s = slots[i];
     if (!s) return;
+    await putBackCues();
     act(() => api.select(s.slot));
   };
 
@@ -160,6 +169,71 @@ export function Stage() {
     const id = window.setTimeout(() => finishRef.current(), 1500);
     return () => window.clearTimeout(id);
   }, [allTuned]);
+
+  // Cues. Each effect a cue names is on or off as the last cue passed says, and before any has
+  // passed, as the gig loaded it: so jumping back undoes cues, and a song starts the way it was
+  // loaded even though autosave kept last time's changes in the slot. Only a cue coming due
+  // switches anything; an effect stomped by hand stays stomped.
+  const cues = useMemo(() => parseCues(info?.cues), [info?.cues]);
+  const cueRun = useRef<{ slot: number; arrived: boolean[]; sent: Map<number, boolean> } | null>(null);
+  useEffect(() => {
+    cueRun.current = null;                                  // a new song: it starts from scratch
+  }, [song?.slot]);
+  const cueNow = useRef({ cues, loadedChain: song ? slots[index]?.chain : undefined, live, song, clock });
+  cueNow.current = { cues, loadedChain: song ? slots[index]?.chain : undefined, live, song, clock };
+  const cueStarts = (i: number) => {
+    const { loadedChain, live } = cueNow.current;
+    const loaded = loadedChain?.[i];
+    return loaded && loaded.effect === live?.chain[i]?.effect ? loaded.on : cueRun.current!.arrived[i];
+  };
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      const { cues, live, song, clock } = cueNow.current;
+      if (!song || !live || live.slot !== song.slot || !cues.length) return;
+      if (cueRun.current?.slot !== song.slot) {
+        cueRun.current = { slot: song.slot, arrived: live.chain.map((c) => c.on), sent: new Map(live.chain.map((c, i) => [i, c.on])) };
+      }
+      const run = cueRun.current;
+      const t = clock.time();
+      const want = new Map<number, boolean>();
+      for (const cue of cues) {
+        const i = effectIndex(live.chain, cue.effect);
+        if (i < 0) continue;
+        if (!want.has(i)) want.set(i, cueStarts(i));
+        if (cue.at <= t) want.set(i, cue.on);
+      }
+      for (const [i, on] of want) {
+        if (run.sent.get(i) === on) continue;
+        run.sent.set(i, on);
+        act(() => api.stomp(i + 1, on, run.slot));          // never the next song's patch
+      }
+    }, 250);
+    return () => window.clearInterval(id);
+  }, []);
+  // Leaving the song from here: put its effects back first, so the slot is as loaded for next time
+  // (moving on from the pedal can't wait for this; the song puts itself right when it comes up).
+  const putBackCues = async () => {
+    const run = cueRun.current;
+    const { live } = cueNow.current;
+    if (!run || live?.slot !== run.slot) return;
+    for (const [i, on] of run.sent) {
+      if (on !== cueStarts(i)) await act(() => api.stomp(i + 1, cueStarts(i), run.slot));
+    }
+    cueRun.current = null;
+  };
+
+  // Recording cues: pressing an effect on the stage adds a cue for it at that point in the song.
+  const [recording, setRecording] = useState(false);
+  const pressEffect = (i: number) => {
+    const fx = live?.chain[i];
+    if (!fx || !gig || !info) return;
+    if (recording && clock.time() > 0) {
+      const next = { ...gig, patches: gig.patches.map((p) => (p === info ? { ...p, cues: addCue(p.cues, clock.time(), fx.effect, !fx.on) } : p)) };
+      setGig(next);
+      act(() => api.saveGig(next));
+    }
+    act(() => api.stomp(i + 1, !fx.on));
+  };
 
   if (!gig || !slots.length) {
     return (
@@ -247,15 +321,34 @@ export function Stage() {
               {tuning.name !== "Standard" && <span className="stage-fact">Tuning <b>{tuning.name}</b></span>}
             </div>
             {live && live.slot === song.slot && live.chain.length > 0 && (
-              <ul className="stage-stomps" aria-label="Effects in this patch" key={song.slot} style={{ viewTransitionName: "stage-stomps" }}>
-                {live.chain.map((c, i) => (
-                  <li key={i} className={c.on ? "on" : ""} style={{ "--i": i } as React.CSSProperties}>
-                    <span className="stage-stomp-led" aria-hidden="true" />
-                    {c.effect}
-                    <span className="visually-hidden">{c.on ? " on" : " off"}</span>
-                  </li>
-                ))}
-              </ul>
+              <div className="stage-effects" style={{ viewTransitionName: "stage-stomps" }}>
+                <ul className="stage-stomps" aria-label="Effects in this patch" key={song.slot}>
+                  {live.chain.map((c, i) => (
+                    <li key={i} className={c.on ? "on" : ""} style={{ "--i": i } as React.CSSProperties}>
+                      <button
+                        className="stage-stomp"
+                        aria-pressed={c.on}
+                        title={recording ? `Turn ${c.effect} ${c.on ? "off" : "on"} and make it a cue here` : `Turn ${c.effect} ${c.on ? "off" : "on"}`}
+                        onClick={() => pressEffect(i)}
+                      >
+                        <span className="stage-stomp-led" aria-hidden="true" />
+                        {c.effect}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                <div className="stage-cues">
+                  <button
+                    className={`button cue-record${recording ? " on" : ""}`}
+                    aria-pressed={recording}
+                    onClick={() => setRecording(!recording)}
+                    title="While this is on, pressing an effect adds a cue for it at that point in the song"
+                  >
+                    {recording ? "Recording cues" : "Record cues"}
+                  </button>
+                  <NextCue cues={cues} clock={clock} recording={recording} />
+                </div>
+              </div>
             )}
             {info?.notes && <p className="stage-notes" style={{ viewTransitionName: "stage-notes" }}>{info.notes}</p>}
             {info?.chords && (
@@ -325,16 +418,21 @@ export function Stage() {
           </button>
         </div>
 
-        {info?.lyrics ? (
-          <Lyrics entry={info} />
-        ) : song ? (
-          <p className="stage-no-lyrics" style={{ viewTransitionName: "stage-words" }}>
-            No lyrics for this song yet.{" "}
-            <button className="button" disabled={finding} onClick={findLyrics}>
-              {finding ? "Finding lyrics…" : "Find lyrics for the set"}
-            </button>
-          </p>
-        ) : null}
+        {song && info && (
+          <div className="stage-lyrics-wrap" style={{ viewTransitionName: "stage-words" }}>
+            <ClockBar entry={info} clock={clock} />
+            {info.lyrics ? (
+              <Lyrics entry={info} clock={clock} />
+            ) : (
+              <p className="stage-no-lyrics">
+                No lyrics for this song yet.{" "}
+                <button className="button" disabled={finding} onClick={findLyrics}>
+                  {finding ? "Finding lyrics…" : "Find lyrics for the set"}
+                </button>
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       <ol className="setlist" aria-label="Setlist">
@@ -354,5 +452,22 @@ export function Stage() {
         ))}
       </ol>
     </section>
+  );
+}
+
+function NextCue({ cues, clock, recording }: { cues: Cue[]; clock: SongClock; recording: boolean }) {
+  const now = useSongTime(clock);
+  if (recording) {
+    return <p className="cue-next">{clock.time() > 0 ? `Press an effect to cue it at ${mmss(now)}` : "Tap in first, then press effects as the song goes"}</p>;
+  }
+  if (!cues.length) return null;
+  const next = cues.find((c) => c.at > now);
+  if (!next) return <p className="cue-next">No more cues</p>;
+  const wait = (next.at - now) / (clock.rate || 1);
+  return (
+    <p className="cue-next">
+      Next cue <b>{next.effect} {next.on ? "on" : "off"}</b> at {mmss(next.at)}
+      {clock.running && <> · in <b className="cue-count">{mmss(wait)}</b></>}
+    </p>
   );
 }

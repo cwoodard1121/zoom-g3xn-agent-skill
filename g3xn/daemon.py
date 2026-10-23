@@ -32,6 +32,7 @@ import socket
 import tempfile
 import threading
 import time
+from typing import Optional, Union
 
 import uvicorn
 from fastapi import Body, FastAPI, Request, Response, WebSocket, WebSocketDisconnect
@@ -323,6 +324,12 @@ class BackupRequest(BaseModel):
 
 class TunerRequest(BaseModel):
     on: bool = True
+
+
+class StompRequest(BaseModel):
+    effect: Union[int, str]   # its number in the chain (1 = first) or its name
+    on: bool
+    slot: Optional[int] = None  # only if the pedal is still on this slot (a song's cue, not the next song's)
 
 
 class RestoreRequest(BaseModel):
@@ -646,6 +653,22 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
         except LyricsError as e:
             return JSONResponse({"error": str(e)}, status_code=502)
         return dict(hit, found=True) if hit else {"found": False, "song": song}
+
+    @app.post("/api/stomp", tags=["pedal"])
+    async def stomp(req: StompRequest):
+        """Turn one effect of the patch that's playing on or off, the way its footswitch does (with
+        autosave on, the slot keeps it). It sets the state asked for; it never toggles, so asking
+        twice is harmless. Like the footswitches, it still works while the app's edits are locked."""
+        def go(p):
+            if req.slot is not None and p.current() != req.slot:
+                return {"skipped": "the pedal has moved on from slot %d" % req.slot}
+            fx = _effect_in(p.edit_buffer().chain, req.effect)
+            if fx.enabled != req.on:
+                p.stomp(fx.position, req.on)
+            view = service.live_view(p)
+            hub.emit({"type": "live", "tone": view})
+            return view
+        return await run("turning %s %s" % (req.effect, "on" if req.on else "off"), go)
 
     # --- backups ---
 
@@ -1109,6 +1132,22 @@ def add_pedal_options(ap):
     ap.add_argument("--scratch", type=int, default=150, help="slot used for auditions (default 150)")
     ap.add_argument("--sim", nargs="?", const="", metavar="BACKUP",
                     help="use a virtual pedal, loaded from a backup folder (default data/pedal_dump if present)")
+
+
+def _effect_in(chain, which):
+    """The effect in `chain` that `which` names: a number (1 = first) or a name ("octave" finds OctFuzz
+    if nothing is called just that)."""
+    if isinstance(which, int) or str(which).strip().isdigit():
+        n = int(which)
+        if not 1 <= n <= len(chain):
+            raise ValueError("this patch has %d effects; there's no effect %d" % (len(chain), n))
+        return chain[n - 1]
+    want = str(which).strip().lower()
+    for match in (lambda name: name == want, lambda name: name.startswith(want), lambda name: want in name):
+        found = [fx for fx in chain if match(fx.name.lower())]
+        if found:
+            return found[0]
+    raise ValueError("this patch has no %s (it has %s)" % (which, ", ".join(fx.name for fx in chain)))
 
 
 def pedal_factory(args):
