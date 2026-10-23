@@ -1,5 +1,5 @@
-// The song's words on the stage view, scrolling roughly with the band. The clock starts on the
-// first tap (or Scroll); tapping along sets the band's real tempo, and the words run that much
+// The song's words on the stage view, scrolling roughly with the band. The clock starts after a
+// bar of taps (or on Scroll); tapping along sets the band's real tempo, and the words run that much
 // faster or slower than the recording. With timed lyrics the line being sung lights up.
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { GigEntry } from "../api";
@@ -7,6 +7,7 @@ import { length, lines, tapped } from "../lyrics";
 import { usePedal } from "../pedal";
 
 const TAP_RESET_MS = 2500; // a gap this long starts a new count
+const BAR = 4; // taps before the words start: one bar of 4/4
 
 export function Lyrics({ entry }: { entry: GigEntry }) {
   const all = useMemo(() => lines(entry), [entry]);
@@ -42,12 +43,15 @@ export function Lyrics({ entry }: { entry: GigEntry }) {
   const { pedalTempo } = usePedal();
   const [pedalBpm, setPedalBpm] = useState<number | null>(null);
   const seenTempo = useRef(pedalTempo?.at);
+  const pedalTaps = useRef(0);       // taps on the pedal in this count (it reports from the second tap on)
   useEffect(() => {
     if (!pedalTempo || pedalTempo.at === seenTempo.current) return;
+    const gap = pedalTempo.at - (seenTempo.current ?? 0);
     seenTempo.current = pedalTempo.at;
+    pedalTaps.current = gap > TAP_RESET_MS ? 2 : pedalTaps.current + 1;
     setPedalBpm(pedalTempo.bpm);
     const rate = entry.tempo ? pedalTempo.bpm / entry.tempo : clock.current.rate;
-    setClock({ running: true, rate });
+    setClock({ rate, running: clock.current.running || pedalTaps.current >= BAR });
   });
   useEffect(() => setPedalBpm(null), [entry.song]);
 
@@ -58,8 +62,7 @@ export function Lyrics({ entry }: { entry: GigEntry }) {
     setTaps(fresh);
     const live = tapped(fresh);
     const rate = live && entry.tempo ? live / entry.tempo : clock.current.rate;
-    if (!clock.current.running) setClock({ running: true, rate });     // the first tap starts it
-    else setClock({ rate });
+    setClock({ rate, running: clock.current.running || fresh.length >= BAR });   // a bar of taps starts it
   };
 
   // "T" taps, from anywhere on the stage.
@@ -109,7 +112,7 @@ export function Lyrics({ entry }: { entry: GigEntry }) {
   return (
     <div className="stage-lyrics-wrap">
       <div className="lyrics-bar">
-        <button className="button lyrics-tap" onClick={tap} title="Tap along with the band (or press T). The first tap starts the words.">
+        <button className="button lyrics-tap" onClick={tap} title="Tap along with the band (or press T). A bar of taps starts the words.">
           Tap
         </button>
         <span className="lyrics-tempo">
