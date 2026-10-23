@@ -292,7 +292,7 @@ class Pedal:
         made on the pedal, edit echoes, tuner readings. A list of dicts with a "type".
         (Requests drain the input first, so read these between requests.)"""
         out = []
-        edit_echo = bytes(P.msg(P.EDIT, P.EDIT_PARAM, 1))
+        edit_echo = bytes(P.msg(P.EDIT, P.EDIT_PARAM))       # then 1 for an edit echo, 0 for a setting (a tap tempo)
         for m in self.inport.iter_pending():
             if os.environ.get("G3XN_LOG_MIDI"):                 # finding out what the pedal says, e.g. on a tap
                 with open(os.environ["G3XN_LOG_MIDI"], "a") as f:
@@ -305,7 +305,7 @@ class Pedal:
                 self._note = P.tuner_note(m.value)
             elif m.type == "control_change" and m.control == P.TUNER_CENTS_CC:
                 out.append({"type": "tuner", "note": self._note, "meter": m.value - 8})
-            elif m.type == "sysex" and bytes(m.data).startswith(edit_echo):
+            elif m.type == "sysex" and bytes(m.data).startswith(edit_echo) and len(m.data) >= 13 and m.data[5] in (0, 1):
                 d = m.data
                 out.append({"type": "edit", "target": d[6], "param": d[7], "value": P.from_u35(d[8:13])})
         return out
