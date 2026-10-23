@@ -4,6 +4,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../api";
 import type { Gig, GigEntry } from "../api";
+import { Lyrics } from "../components/Lyrics";
 import { fillLyrics, lyricsMessage } from "../lyrics";
 import { usePedal } from "../pedal";
 
@@ -222,9 +223,7 @@ export function Stage() {
         </div>
 
         {info?.lyrics ? (
-          <section className="stage-lyrics" aria-label={`Lyrics for ${song?.song}`} tabIndex={0}>
-            {info.lyrics}
-          </section>
+          <Lyrics entry={info} />
         ) : song ? (
           <p className="stage-no-lyrics">
             No lyrics for this song yet.{" "}

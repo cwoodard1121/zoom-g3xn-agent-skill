@@ -290,7 +290,7 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
         >
           Add a song
         </button>
-        <button className="button" disabled={finding || g.patches.every((e) => e.lyrics || !e.song.trim())} onClick={() => findLyrics()}>
+        <button className="button" disabled={finding || g.patches.every((e) => (e.lyrics && e.duration !== undefined) || !e.song.trim())} onClick={() => findLyrics()}>
           {finding ? "Finding lyrics…" : "Find lyrics for every song"}
         </button>
       </div>

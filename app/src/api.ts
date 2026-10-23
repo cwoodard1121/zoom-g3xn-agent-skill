@@ -86,6 +86,8 @@ export interface GigEntry {
   key?: string;
   pickup?: string; // the guitar's pickup selector for the song: "Bridge", "Neck", "2"…
   lyrics?: string;
+  synced?: string; // the lyrics with a [mm:ss.xx] time per line (from LRCLIB), for scrolling
+  duration?: number; // the recording's length in seconds
 }
 
 export interface LyricsHit {
@@ -93,6 +95,8 @@ export interface LyricsHit {
   song: string;
   artist?: string;
   lyrics?: string;
+  synced?: string;
+  duration?: number;
   source?: string;
 }
 

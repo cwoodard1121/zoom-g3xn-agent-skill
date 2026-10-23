@@ -1,6 +1,9 @@
 """Song lyrics for the stage view, looked up on LRCLIB (lrclib.net: free, no key).
 
-    find("Sultans of Swing", "Dire Straits") -> {"song", "artist", "lyrics", "source"} or None
+    find("Sultans of Swing", "Dire Straits") -> {"song", "artist", "lyrics", "synced", "duration", "source"} or None
+
+"synced" is the same words with a [mm:ss.xx] time on each line, when LRCLIB has it, and
+"duration" the recording's length in seconds: the stage view scrolls the words with them.
 
 The words are fetched for the user's own gig file; nothing is kept here.
 """
@@ -27,7 +30,8 @@ def find(song, artist=None, timeout=10):
     for hit in hits:
         if hit.get("plainLyrics") and not hit.get("instrumental"):
             return {"song": hit.get("trackName") or song, "artist": hit.get("artistName") or artist,
-                    "lyrics": hit["plainLyrics"].strip(), "source": "LRCLIB"}
+                    "lyrics": hit["plainLyrics"].strip(), "synced": (hit.get("syncedLyrics") or "").strip() or None,
+                    "duration": hit.get("duration"), "source": "LRCLIB"}
     return None
 
 
