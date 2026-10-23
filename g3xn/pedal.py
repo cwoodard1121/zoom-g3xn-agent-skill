@@ -280,7 +280,7 @@ class Pedal:
                 if m.type != "control_change":
                     continue
                 if m.control == P.TUNER_NOTE_CC:
-                    note = P.TUNER_NOTES[m.value - 1] if 1 <= m.value <= 12 else None
+                    note = P.tuner_note(m.value)
                 elif m.control == P.TUNER_CENTS_CC:
                     yield {"note": note, "meter": m.value - 8}
             time.sleep(0.005)
@@ -299,7 +299,7 @@ class Pedal:
             elif m.type == "program_change":
                 out.append({"type": "patch", "slot": self._bank * self.bank_size + m.program + 1})
             elif m.type == "control_change" and m.control == P.TUNER_NOTE_CC:
-                self._note = P.TUNER_NOTES[m.value - 1] if 1 <= m.value <= 12 else None
+                self._note = P.tuner_note(m.value)
             elif m.type == "control_change" and m.control == P.TUNER_CENTS_CC:
                 out.append({"type": "tuner", "note": self._note, "meter": m.value - 8})
             elif m.type == "sysex" and bytes(m.data).startswith(edit_echo):

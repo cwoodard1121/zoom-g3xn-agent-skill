@@ -19,6 +19,13 @@ class Protocol(unittest.TestCase):
         data = b"PTCF" + bytes(100)
         self.assertTrue(P.verify_checksum(data, P.checksum(data)))
 
+    def test_tuner_notes(self):
+        # Checked on the real pedal: an open low E string sends 7.
+        self.assertEqual(P.tuner_note(7), "E")
+        self.assertEqual(P.tuner_note(12), "A")
+        self.assertIsNone(P.tuner_note(0))
+        self.assertEqual([P.tuner_note(P.tuner_value(n)) for n in P.TUNER_NOTES], P.TUNER_NOTES)
+
 
 class Catalog(unittest.TestCase):
     def test_lookup(self):

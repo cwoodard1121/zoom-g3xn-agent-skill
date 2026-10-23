@@ -67,6 +67,16 @@ TUNER_CENTS_CC = 99
 TUNER_NOTES = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"]
 
 
+def tuner_note(value):
+    """The note in a tuner CC 98 value: 1 is A#, up to 12 for A (anything else: no note)."""
+    return TUNER_NOTES[value % 12] if 1 <= value <= 12 else None
+
+
+def tuner_value(note):
+    """The CC 98 value the pedal sends for a note (the inverse of tuner_note)."""
+    return TUNER_NOTES.index(note) or 12
+
+
 def msg(*body):
     """Inner SysEx bytes for a pedal command."""
     return list(ZOOM) + [b for part in body for b in (part if isinstance(part, (list, tuple, bytes)) else [part])]

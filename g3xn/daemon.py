@@ -598,7 +598,7 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
         """Back up every slot, then write the gig to the pedal."""
         refuse_if_locked()
         return await run("loading a gig", lambda p: service.load_gig(p, gig),
-                         touches=lambda r: [s["slot"] for s in r["written"]])
+                         touches=lambda r: [s["slot"] for s in r["written"] if not s.get("in_place")])
 
     @app.get("/api/gigs/export", tags=["gigs"])
     async def export_gig(first_slot: int, last_slot: int, name: str = "Exported gig"):
@@ -653,7 +653,7 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
         refuse_if_locked()
         gig = _gig_or_404(gig_id)
         result = await run("loading %s" % gig.get("name", "the gig"), lambda p: service.load_saved_gig(p, gigs, gig_id),
-                           touches=lambda r: [s["slot"] for s in r["written"]])
+                           touches=lambda r: [s["slot"] for s in r["written"] if not s.get("in_place")])
         state["active_gig"] = gig_id
         hub.emit(gigs_event())
         return result

@@ -195,7 +195,7 @@ class VirtualPedal:
             return
         cents = round(2 * math.sin(time.time() * 3))
         self._outbox.extend([mido.Message("control_change", control=P.TUNER_NOTE_CC,
-                                          value=P.TUNER_NOTES.index(self.tuner_note) + 1),
+                                          value=P.tuner_value(self.tuner_note)),
                              mido.Message("control_change", control=P.TUNER_CENTS_CC, value=8 + cents)])
 
     # --- plumbing ---

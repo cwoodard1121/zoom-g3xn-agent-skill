@@ -59,9 +59,11 @@ def plan(pedal, gig):
             raise ValueError("entry %d (%s): %s" % (i, patch.name, "; ".join(problems)))
         current = pedal.read(target).name
         own = ours.get(target) == current
+        # A song whose patch is already in its slot (from_slot is the slot itself) is left as it is.
+        in_place = entry.get("from_slot") == target and "tone" not in entry and "file" not in entry
         steps.append({"order": i, "song": entry.get("song") or patch.name, "slot": target, "patch": patch.name,
-                      "replaces": current, "replaces_own": own, "overwrites_real_patch": current != "Empty" and not own,
-                      "_patch": patch})
+                      "replaces": current, "replaces_own": own, "in_place": in_place,
+                      "overwrites_real_patch": current != "Empty" and not own and not in_place, "_patch": patch})
         slot = target + 1
     return steps
 
@@ -72,9 +74,10 @@ def write(pedal, gig, backup_dir=None):
     backup_dir = backup_dir or os.path.join(os.path.expanduser("~"), "g3xn-backups",
                                             datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S"))
     pedal.backup(backup_dir)
-    if pedal.current() in {s["slot"] for s in steps}:
+    writes = [s for s in steps if not s["in_place"]]
+    if pedal.current() in {s["slot"] for s in writes}:
         pedal.select(pedal.scratch)
-    for s in steps:
+    for s in writes:
         pedal.write(s["slot"], s["_patch"])
     pedal.select(steps[0]["slot"])
     return steps, backup_dir
