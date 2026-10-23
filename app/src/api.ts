@@ -172,6 +172,7 @@ export type PedalEvent =
   | { type: "current"; slot: number; name: string | null }
   | { type: "live"; tone: Tone }
   | { type: "tuner"; note: string | null; meter: number }
+  | { type: "tempo"; bpm: number }
   | ({ type: "history" } & HistorySummary)
   | { type: "gigs"; gigs: GigSummary[]; active: string | null }
   | ChatEvent

@@ -4,6 +4,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { GigEntry } from "../api";
 import { length, lines, tapped } from "../lyrics";
+import { usePedal } from "../pedal";
 
 const TAP_RESET_MS = 2500; // a gap this long starts a new count
 
@@ -37,7 +38,20 @@ export function Lyrics({ entry }: { entry: GigEntry }) {
     box.current?.scrollTo({ top: 0 });
   }, [entry.song]);
 
-  const bpm = tapped(taps);
+  // A tempo tapped on the pedal itself (hold FS3, then tap it) counts like taps here.
+  const { pedalTempo } = usePedal();
+  const [pedalBpm, setPedalBpm] = useState<number | null>(null);
+  const seenTempo = useRef(pedalTempo?.at);
+  useEffect(() => {
+    if (!pedalTempo || pedalTempo.at === seenTempo.current) return;
+    seenTempo.current = pedalTempo.at;
+    setPedalBpm(pedalTempo.bpm);
+    const rate = entry.tempo ? pedalTempo.bpm / entry.tempo : clock.current.rate;
+    setClock({ running: true, rate });
+  });
+  useEffect(() => setPedalBpm(null), [entry.song]);
+
+  const bpm = tapped(taps) ?? pedalBpm;
   const tap = () => {
     const t = performance.now();
     const fresh = taps.length && t - taps[taps.length - 1] > TAP_RESET_MS ? [t] : [...taps, t];

@@ -39,6 +39,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+from . import protocol as P
 from . import service
 from . import gig as gig_files
 from .gig import GigLibrary, shown as shown_gig
@@ -194,6 +195,8 @@ class PedalWorker(threading.Thread):
                 elif ev["type"] == "patch":
                     self._set_current(ev["slot"])
                 elif ev["type"] == "edit":
+                    if (ev["target"], ev["param"]) == (P.TARGET_SETTINGS, P.SETTING_TEMPO):
+                        self.emit({"type": "tempo", "bpm": ev["value"]})     # tapped on the pedal
                     self._live_dirty = self._live_dirty or time.time()
             if self._live_dirty and time.time() - self._live_dirty > 0.15:
                 self._live_dirty = None

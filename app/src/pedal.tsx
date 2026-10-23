@@ -10,6 +10,8 @@ interface State {
   names: Record<number, string>;
   live: Tone | null;
   tuner: { note: string | null; meter: number } | null;
+  /** The tempo last tapped on the pedal (its own tap tempo), and when. */
+  pedalTempo: { bpm: number; at: number } | null;
   history: HistorySummary;
   gigs: { list: GigSummary[]; active: string | null };
   chat: { messages: ChatMessage[]; busy: boolean; available: boolean };
@@ -68,6 +70,8 @@ function reduce(s: State, a: Action): State {
       return { ...s, live: a.tone };
     case "tuner":
       return { ...s, tuner: { note: a.note, meter: a.meter } };
+    case "tempo":
+      return { ...s, pedalTempo: { bpm: a.bpm, at: Date.now() } };
     case "history":
       return { ...s, history: { position: a.position, entries: a.entries } };
     case "gigs":
@@ -125,7 +129,7 @@ const PedalContext = createContext<Pedal | null>(null);
 
 export function PedalProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reduce, {
-    linked: false, status: null, names: {}, live: null, tuner: null, history: { position: -1, entries: [] },
+    linked: false, status: null, names: {}, live: null, tuner: null, pedalTempo: null, history: { position: -1, entries: [] },
     gigs: { list: [], active: null },
     chat: { messages: [], busy: false, available: true },
     talk: { state: "idle", mic: "laptop", input: null, inputs: [], installed: false, heard: null, problem: null },

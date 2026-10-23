@@ -294,6 +294,9 @@ class Pedal:
         out = []
         edit_echo = bytes(P.msg(P.EDIT, P.EDIT_PARAM, 1))
         for m in self.inport.iter_pending():
+            if os.environ.get("G3XN_LOG_MIDI"):                 # finding out what the pedal says, e.g. on a tap
+                with open(os.environ["G3XN_LOG_MIDI"], "a") as f:
+                    f.write("%.3f %s\n" % (time.time(), m.hex() if m.type == "sysex" else m))
             if m.type == "control_change" and m.control == 32:
                 self._bank = m.value
             elif m.type == "program_change":
