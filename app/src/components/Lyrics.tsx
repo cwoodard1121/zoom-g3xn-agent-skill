@@ -1,13 +1,15 @@
-// The song's words on the stage view, scrolling roughly with the band. The clock starts after a
-// bar of taps (or on Scroll); tapping along sets the band's real tempo, and the words run that much
-// faster or slower than the recording. With timed lyrics the line being sung lights up.
+// The song's words on the stage view, scrolling roughly with the band. A bar of taps (in the app
+// or on the pedal) sets the band's tempo and starts a two-bar count-off on screen; the words start
+// with the song, then run that much faster or slower than the recording. Scroll starts them at once.
+// With timed lyrics the line being sung lights up.
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { GigEntry } from "../api";
 import { length, lines, tapped } from "../lyrics";
 import { usePedal } from "../pedal";
 
 const TAP_RESET_MS = 2500; // a gap this long starts a new count
-const BAR = 4; // taps before the words start: one bar of 4/4
+const BAR = 4; // taps that start the count-off: one bar of 4/4
+const COUNT_BEATS = 8; // the count-off: two bars, from the downbeat after the taps
 
 export function Lyrics({ entry }: { entry: GigEntry }) {
   const all = useMemo(() => lines(entry), [entry]);
@@ -15,7 +17,7 @@ export function Lyrics({ entry }: { entry: GigEntry }) {
   const total = length(entry, all);
 
   // Song time = base + (now - since) * rate while running.
-  const clock = useRef({ base: 0, since: 0, rate: 1, running: false });
+  const clock = useRef({ base: 0, since: 0, rate: 1, running: false, beat: 0.5 });   // beat: in song seconds
   const [running, setRunning] = useState(false);
   const [taps, setTaps] = useState<number[]>([]);
   const [now, setNow] = useState(0);
@@ -32,7 +34,7 @@ export function Lyrics({ entry }: { entry: GigEntry }) {
 
   // A new song: back to the top, stopped.
   useEffect(() => {
-    clock.current = { base: 0, since: 0, rate: 1, running: false };
+    clock.current = { base: 0, since: 0, rate: 1, running: false, beat: 0.5 };
     setRunning(false);
     setTaps([]);
     setNow(0);
@@ -51,7 +53,8 @@ export function Lyrics({ entry }: { entry: GigEntry }) {
     pedalTaps.current = gap > TAP_RESET_MS ? 2 : pedalTaps.current + 1;
     setPedalBpm(pedalTempo.bpm);
     const rate = entry.tempo ? pedalTempo.bpm / entry.tempo : clock.current.rate;
-    setClock({ rate, running: clock.current.running || pedalTaps.current >= BAR });
+    if (!clock.current.running && pedalTaps.current >= BAR) countOff(rate, pedalTempo.bpm);
+    else setClock({ rate });
   });
   useEffect(() => setPedalBpm(null), [entry.song]);
 
@@ -62,8 +65,16 @@ export function Lyrics({ entry }: { entry: GigEntry }) {
     setTaps(fresh);
     const live = tapped(fresh);
     const rate = live && entry.tempo ? live / entry.tempo : clock.current.rate;
-    setClock({ rate, running: clock.current.running || fresh.length >= BAR });   // a bar of taps starts it
+    if (!clock.current.running && fresh.length >= BAR) countOff(rate, live);   // a bar of taps starts the count
+    else setClock({ rate });
   };
+
+  // Two bars counted on screen, starting a beat after the last tap; the words start with the song.
+  function countOff(rate: number, live: number | null) {
+    const beat = 60 / (entry.tempo || live || 120);
+    setClock({ rate, beat, running: true, base: -(COUNT_BEATS + 1) * beat });
+    setNow(clock.current.base);
+  }
 
   // "T" taps, from anywhere on the stage.
   const tapRef = useRef(tap);
@@ -82,7 +93,7 @@ export function Lyrics({ entry }: { entry: GigEntry }) {
   // Tick while running.
   useEffect(() => {
     if (!running) return;
-    const id = window.setInterval(() => setNow(songTime()), 200);
+    const id = window.setInterval(() => setNow(songTime()), 100);
     return () => window.clearInterval(id);
   }, [running]);
 
@@ -108,17 +119,26 @@ export function Lyrics({ entry }: { entry: GigEntry }) {
   };
 
   const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+  // During the count-off: which beat of which bar (null before the first one, and after).
+  const counted = now < 0 ? COUNT_BEATS + 1 - Math.ceil(-now / clock.current.beat) : null;
+  const count = counted !== null && counted >= 1 ? { bar: Math.ceil(counted / 4), beat: ((counted - 1) % 4) + 1 } : null;
 
   return (
     <div className="stage-lyrics-wrap">
       <div className="lyrics-bar">
-        <button className="button lyrics-tap" onClick={tap} title="Tap along with the band (or press T). A bar of taps starts the words.">
+        <button className="button lyrics-tap" onClick={tap} title="Tap a bar along with the band (or press T): two bars are counted off, then the words start with the song.">
           Tap
         </button>
         <span className="lyrics-tempo">
           {bpm ? <><b>{bpm}</b> BPM{entry.tempo ? ` · album ${entry.tempo}` : ""}</> : entry.tempo ? <>album <b>{entry.tempo}</b> BPM</> : "tap for tempo"}
         </span>
-        <span className="lyrics-time">{mmss(now)} / {mmss(total / (clock.current.rate || 1))}</span>
+        {now < 0 ? (
+          <span className="lyrics-count" aria-live="off">
+            {count ? <>Count-off <b>{count.bar}</b> bar · beat <b>{count.beat}</b></> : "Count-off…"}
+          </span>
+        ) : (
+          <span className="lyrics-time">{mmss(now)} / {mmss(total / (clock.current.rate || 1))}</span>
+        )}
         <span className="stage-spacer" />
         <button className="button" aria-pressed={running} onClick={() => setClock({ running: !running })}>
           {running ? "Pause" : now > 0 ? "Resume" : "Scroll"}

@@ -827,6 +827,8 @@ select { cursor: pointer; }
 .lyrics-tempo { font: 400 22px/1 var(--readout); color: var(--vfd-dim); }
 .lyrics-tempo b { font-weight: 400; font-size: 30px; color: var(--vfd); }
 .lyrics-time { font: 400 20px/1 var(--readout); color: var(--vfd-dim); }
+.lyrics-count { font: 400 22px/1 var(--readout); color: var(--vfd-dim); }
+.lyrics-count b { font-weight: 400; font-size: 38px; color: var(--vfd-bright); text-shadow: 0 0 10px var(--vfd-glow); }
 .stage-lyrics {
   position: relative; padding: 18px 22px; max-height: 46vh; overflow: auto;
   font-size: clamp(19px, 1.7vw, 24px); line-height: 1.55; color: #e3b45a;
