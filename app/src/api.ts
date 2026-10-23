@@ -111,6 +111,45 @@ export interface PlanStep {
   overwrites_real_patch: boolean;
 }
 
+export interface ChatTool {
+  name: string;
+  input: Record<string, unknown>;
+}
+
+export interface ChatMessage {
+  role: "user" | "claude";
+  text: string;
+  tools?: ChatTool[];
+  error?: string;
+}
+
+export interface ChatInfo {
+  busy: boolean;
+  session: string | null;
+  messages: ChatMessage[];
+  available: boolean;
+}
+
+export type TalkState = "idle" | "listening" | "transcribing" | "heard";
+
+export interface TalkInfo {
+  state: TalkState;
+  mic: "laptop" | "phone";
+  input: string | null;
+  inputs: string[];
+  installed: boolean;
+}
+
+export type ChatEvent =
+  | { type: "chat"; kind: "user"; text: string }
+  | { type: "chat"; kind: "text"; delta: string }
+  | ({ type: "chat"; kind: "tool" } & ChatTool)
+  | { type: "chat"; kind: "done"; text: string }
+  | { type: "chat"; kind: "error"; text: string }
+  | { type: "chat"; kind: "new" };
+
+export type TalkEvent = { type: "talk"; state: TalkState; mic?: TalkInfo["mic"]; text?: string; problem?: string } & Partial<TalkInfo>;
+
 export type PedalEvent =
   | ({ type: "status" } & Status)
   | { type: "patches"; patches: PatchName[] }
@@ -119,7 +158,10 @@ export type PedalEvent =
   | { type: "live"; tone: Tone }
   | { type: "tuner"; note: string | null; meter: number }
   | ({ type: "history" } & HistorySummary)
-  | { type: "gigs"; gigs: GigSummary[]; active: string | null };
+  | { type: "gigs"; gigs: GigSummary[]; active: string | null }
+  | ChatEvent
+  | TalkEvent
+  | { type: "footswitch" | "remote" | "midi" | "lock" };
 
 export interface TweakChange {
   effect: number; // 1-based chain number
@@ -166,6 +208,19 @@ export const api = {
   effect: (name: string) => call<EffectInfo>("GET", `/api/effects/${encodeURIComponent(name)}`),
   tuner: (on: boolean) => call<{ tuner: boolean }>("POST", "/api/tuner", { on }),
   release: () => call<Status>("POST", "/api/release"),
+  chat: () => call<ChatInfo>("GET", "/api/chat"),
+  chatSend: (text: string) => call<{ sent: string }>("POST", "/api/chat", { text }),
+  chatStop: () => call<ChatInfo>("POST", "/api/chat/stop"),
+  chatNew: () => call<ChatInfo>("POST", "/api/chat/new"),
+  chatTerminal: () => call<{ session: string | null }>("POST", "/api/chat/terminal"),
+  talk: () => call<TalkInfo>("GET", "/api/talk"),
+  talkSet: (req: { pressed?: boolean; mic?: TalkInfo["mic"]; input?: string }) => call<TalkInfo>("POST", "/api/talk", req),
+  talkAudio: async (audio: Blob) => {
+    const res = await fetch("/api/talk/audio", { method: "POST", body: audio, headers: { "Content-Type": audio.type || "application/octet-stream" } });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new ApiError(data.error ?? `The daemon answered ${res.status}`);
+    return data as { text: string | null };
+  },
   connect: () => call<Status>("POST", "/api/connect"),
 };
 

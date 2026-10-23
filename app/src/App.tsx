@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "./api";
+import { ClaudeStrip } from "./components/ClaudeStrip";
+import { TalkSheet } from "./components/Talk";
 import { PedalProvider, usePedal } from "./pedal";
 import { Gigs } from "./views/Gigs";
 import { Library } from "./views/Library";
@@ -44,6 +46,8 @@ function Shell() {
         {view === "stage" && <Stage />}
         {view === "tuner" && <Tuner />}
       </main>
+      {view !== "stage" && <ClaudeStrip />}
+      <TalkSheet />
       <Toasts />
     </div>
   );

@@ -2,7 +2,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { api, ApiError, subscribe } from "./api";
-import type { GigSummary, HistorySummary, PedalEvent, Status, Tone } from "./api";
+import type { ChatInfo, ChatMessage, GigSummary, HistorySummary, PedalEvent, Status, TalkInfo, TalkState, Tone } from "./api";
 
 interface State {
   linked: boolean; // WebSocket to the daemon is open
@@ -12,9 +12,42 @@ interface State {
   tuner: { note: string | null; meter: number } | null;
   history: HistorySummary;
   gigs: { list: GigSummary[]; active: string | null };
+  chat: { messages: ChatMessage[]; busy: boolean; available: boolean };
+  /** Push to talk: the microphone settings, and what's being heard right now. */
+  talk: TalkInfo & { heard: string | null; problem: string | null };
 }
 
-type Action = PedalEvent | { type: "linked"; open: boolean } | { type: "live-read"; tone: Tone | null };
+type Action =
+  | PedalEvent
+  | { type: "linked"; open: boolean }
+  | { type: "live-read"; tone: Tone | null }
+  | { type: "chat-read"; info: ChatInfo }
+  | { type: "talk-read"; info: TalkInfo };
+
+/** The conversation with one more event applied: Claude's reply is the last message. */
+function chatWith(chat: State["chat"], a: Extract<PedalEvent, { type: "chat" }>): State["chat"] {
+  const messages = [...chat.messages];
+  const reply = messages[messages.length - 1]?.role === "claude" ? { ...messages[messages.length - 1] } : null;
+  const put = (m: ChatMessage) => (messages[messages.length - 1] = m);
+  switch (a.kind) {
+    case "user":
+      return { ...chat, busy: true, messages: [...messages, { role: "user", text: a.text }, { role: "claude", text: "", tools: [] }] };
+    case "text":
+      if (reply) put({ ...reply, text: reply.text + a.delta });
+      return { ...chat, messages };
+    case "tool":
+      if (reply) put({ ...reply, tools: [...(reply.tools ?? []), { name: a.name, input: a.input }] });
+      return { ...chat, messages };
+    case "done":
+      if (reply && !reply.text) put({ ...reply, text: a.text });
+      return { ...chat, busy: false, messages };
+    case "error":
+      if (reply) put({ ...reply, error: a.text });
+      return { ...chat, busy: false, messages };
+    case "new":
+      return { ...chat, busy: false, messages: [] };
+  }
+}
 
 function reduce(s: State, a: Action): State {
   switch (a.type) {
@@ -39,6 +72,28 @@ function reduce(s: State, a: Action): State {
       return { ...s, history: { position: a.position, entries: a.entries } };
     case "gigs":
       return { ...s, gigs: { list: a.gigs, active: a.active } };
+    case "chat":
+      return { ...s, chat: chatWith(s.chat, a) };
+    case "chat-read":
+      return { ...s, chat: { messages: a.info.messages, busy: a.info.busy, available: a.info.available } };
+    case "talk-read":
+      return { ...s, talk: { ...s.talk, ...a.info } };
+    case "talk": {
+      const { type: _type, text, problem, ...info } = a;
+      const state = a.state as TalkState;
+      return {
+        ...s,
+        talk: {
+          ...s.talk,
+          ...info,
+          state,
+          heard: state === "listening" ? null : text ?? s.talk.heard,
+          problem: state === "listening" ? null : problem ?? (state === "idle" ? s.talk.problem : null),
+        },
+      };
+    }
+    default:
+      return s;
   }
 }
 
@@ -72,12 +127,20 @@ export function PedalProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reduce, {
     linked: false, status: null, names: {}, live: null, tuner: null, history: { position: -1, entries: [] },
     gigs: { list: [], active: null },
+    chat: { messages: [], busy: false, available: true },
+    talk: { state: "idle", mic: "laptop", input: null, inputs: [], installed: false, heard: null, problem: null },
   });
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [copyOf, setCopyOf] = useState<CopyOf | null>(null);
   const nextToast = useRef(1);
 
   useEffect(() => subscribe((e) => dispatch(e), (open) => dispatch({ type: "linked", open })), []);
+  // The conversation and microphone so far, read again whenever the link comes back.
+  useEffect(() => {
+    if (!state.linked) return;
+    api.chat().then((info) => dispatch({ type: "chat-read", info }), () => {});
+    api.talk().then((info) => dispatch({ type: "talk-read", info }), () => {});
+  }, [state.linked]);
 
   const say = useCallback((text: string, error = false) => {
     const id = nextToast.current++;

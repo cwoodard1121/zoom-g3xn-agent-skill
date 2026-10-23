@@ -51,7 +51,9 @@ def _pedal(direct, method, path, body=None, needs_pedal=True):
             reply = json.loads(err.read() or b"{}")
             return {"error": reply.get("error") or str(reply.get("detail") or err)}
         except urllib.error.URLError:
-            pass                                            # stale daemon.json: no daemon running
+            if os.environ.get("G3XN_DAEMON"):               # started by that daemon: never go round it
+                return {"error": "the g3xn app isn't running any more"}
+            # stale daemon.json: no daemon running
     try:
         if not needs_pedal:
             return direct(None)
@@ -62,6 +64,9 @@ def _pedal(direct, method, path, body=None, needs_pedal=True):
 
 
 def _daemon_url():
+    """G3XN_DAEMON (set by the app for its own Claude chat), else the running daemon's file."""
+    if os.environ.get("G3XN_DAEMON"):
+        return os.environ["G3XN_DAEMON"]
     try:
         with open(DAEMON_FILE) as f:
             return json.load(f)["url"]

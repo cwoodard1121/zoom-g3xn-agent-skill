@@ -42,11 +42,13 @@ from pydantic import BaseModel
 from . import service
 from . import gig as gig_files
 from .gig import GigLibrary, shown as shown_gig
+from .chat import Chat, ChatError
 from .footswitch import Footswitches
 from .history import History
 from .remote import COOKIE, Remote
 from .remote import DEFAULT_PORT as REMOTE_PORT
 from .pedal import Pedal, PedalError
+from .voice import Talk
 
 DEFAULT_PORT = 8370
 DISCOVERY_FILE = os.path.join(os.path.expanduser("~"), ".g3xn", "daemon.json")
@@ -338,15 +340,27 @@ class TunerReadRequest(BaseModel):
     seconds: float = 8.0
 
 
+class ChatRequest(BaseModel):
+    text: str
+
+
+class TalkRequest(BaseModel):
+    pressed: bool | None = None   # the app's hold-to-talk button: down (true) and up (false)
+    mic: str | None = None        # laptop or phone
+    input: str | None = None      # which of this computer's microphones ("" = the system default)
+
+
 def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, gigs_folder=None,
-               remote=None, remote_on=False, footswitches=None):
+               remote=None, remote_on=False, footswitches=None, chat=None, talk=None):
     """announce: write ~/.g3xn/daemon.json so g3xn-mcp finds this daemon.
     history_file: where the time machine keeps its versions (None = memory only).
     gigs_folder: where saved gigs live (None = a temporary folder).
     remote: the phone remote (a remote.Remote; default: one that forgets phones on exit);
     remote_on: start it listening on the network straight away.
     footswitches: MIDI controllers driving the pedal (a footswitch.Footswitches; default: one that
-    forgets its bindings on exit)."""
+    forgets its bindings on exit).
+    chat: Claude in the app (a chat.Chat; default: the user's Claude Code, on this daemon's tools).
+    talk: push to talk (a voice.Talk; default: the laptop microphone, words to the chat)."""
     remote = remote or Remote()
     footswitches = footswitches or Footswitches()
     if remote.port == port:
@@ -355,6 +369,8 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
     worker = PedalWorker(make_pedal, hub.emit)
     history = History(history_file)
     gigs = GigLibrary(gigs_folder or tempfile.mkdtemp(prefix="g3xn-gigs-"))
+    chat = chat or Chat("http://127.0.0.1:%d" % port, hub.emit)
+    talk = talk or Talk(hub.emit, chat.send)
 
     @contextlib.asynccontextmanager
     async def lifespan(app):
@@ -373,6 +389,7 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
             if announce:
                 _remove_discovery()
             await asyncio.to_thread(remote.stop)
+            await asyncio.to_thread(chat.close)
             await asyncio.to_thread(footswitches.stop)
             await asyncio.to_thread(worker.stop)
 
@@ -798,6 +815,7 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
         action = binding["action"]
         hub.emit({"type": "footswitch", "action": action, "pressed": pressed})
         if action["do"] == "talk":
+            talk.press() if pressed else talk.release()
             return
         job = worker.submit(action["do"].replace("_", " "), lambda p: footswitch_job(p, action))
         job.add_done_callback(footswitch_done)
@@ -827,6 +845,70 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
         if target != here:
             service.select_patch(p, target)
         return {}
+
+    # --- Claude, and push to talk ---
+
+    @app.get("/api/chat", tags=["claude"])
+    async def chat_info():
+        """The conversation with Claude so far, and whether it's answering now."""
+        return chat.info()
+
+    @app.post("/api/chat", tags=["claude"])
+    async def chat_send(req: ChatRequest):
+        """Say something to Claude. The answer arrives as `chat` events on /api/events."""
+        try:
+            await asyncio.to_thread(chat.send, req.text)
+        except ChatError as err:
+            raise ValueError(str(err)) from err
+        return {"sent": req.text}
+
+    @app.post("/api/chat/stop", tags=["claude"])
+    async def chat_stop():
+        await asyncio.to_thread(chat.stop)
+        return chat.info()
+
+    @app.post("/api/chat/new", tags=["claude"])
+    async def chat_new():
+        await asyncio.to_thread(chat.new)
+        return chat.info()
+
+    @app.post("/api/chat/terminal", tags=["claude"])
+    async def chat_terminal(request: Request):
+        """Carry on this conversation in a Claude Code terminal on this computer."""
+        if _arrived_on(request.scope, remote.port):
+            raise PermissionError("open Claude Code from the computer")
+        try:
+            return await asyncio.to_thread(chat.open_terminal)
+        except ChatError as err:
+            raise ValueError(str(err)) from err
+
+    @app.get("/api/talk", tags=["claude"])
+    async def talk_info():
+        """Push to talk: which microphone, and what it's doing."""
+        return talk.info()
+
+    @app.post("/api/talk", tags=["claude"])
+    async def talk_switch(req: TalkRequest):
+        """Pick the microphone (`mic`: laptop or phone; `input`: which of this computer's), or press
+        and release the app's talk button (`pressed`)."""
+        if req.mic is not None:
+            talk.set_mic(req.mic)
+        if req.input is not None:
+            talk.set_input(req.input or None)
+        if req.mic is not None or req.input is not None:
+            hub.emit(dict(talk.info(), type="talk"))
+        if req.pressed is not None:
+            await asyncio.to_thread(talk.press if req.pressed else talk.release)
+        return talk.info()
+
+    @app.post("/api/talk/audio", tags=["claude"])
+    async def talk_audio(request: Request):
+        """A recording (webm, ogg, wav...) from the phone or the app: turned into words, then sent
+        to Claude. Returns the words."""
+        data = await request.body()
+        if len(data) > 20 * 1024 * 1024:
+            raise ValueError("that recording is too long")
+        return {"text": await asyncio.to_thread(talk.audio, data)}
 
     def footswitch_done(job):
         if job.exception():
@@ -902,10 +984,11 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
 
 
 def start_in_thread(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, gigs_folder=None,
-                    remote=None, footswitches=None):
+                    remote=None, footswitches=None, chat=None, talk=None):
     """Run the daemon on a background thread (for the desktop window and tests).
     Returns (url, stop) once it is serving."""
-    app = create_app(make_pedal, port, announce, history_file, gigs_folder, remote, footswitches=footswitches)
+    app = create_app(make_pedal, port, announce, history_file, gigs_folder, remote, footswitches=footswitches,
+                     chat=chat, talk=talk)
     server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning"))
     thread = threading.Thread(target=server.run, name="g3xn-daemon", daemon=True)
     thread.start()
@@ -978,7 +1061,7 @@ def main(argv=None):
     real = args.sim is None
     app = create_app(pedal_factory(args), args.port, announce=real, history_file=HISTORY_FILE if real else None,
                      gigs_folder=GIGS_FOLDER if real else None,
-                     remote=Remote(REMOTE_FILE if real else None, port=args.remote_port), remote_on=args.remote,
+                     remote=Remote(REMOTE_FILE if real else None, port=args.remote_port, use_tailscale=real), remote_on=args.remote,
                      footswitches=Footswitches(MIDI_FILE if real else None))
     print("g3xn daemon on http://127.0.0.1:%d (API docs at /docs)%s" % (args.port, "" if os.path.isdir(UI_DIR) else
           "; build the app with: cd app && npm install && npm run build"))

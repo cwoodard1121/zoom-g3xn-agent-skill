@@ -5,8 +5,11 @@ It is off until it's turned on from this computer (POST /api/remote, or
 the computer, and gets a cookie that works until the phone is forgotten.
 Everything else on the network gets nothing but the page that asks for the code.
 
-It's plain HTTP: on a shared network (venue Wi-Fi) someone listening in could
-copy a phone's cookie. On stage, a phone hotspot is the safer network.
+It's plain HTTP on the local network: on a shared network (venue Wi-Fi) someone
+listening in could copy a phone's cookie. On stage, a phone hotspot is the safer
+network. With Tailscale on the computer and the phone, the remote is also reachable
+from anywhere at the computer's tailnet address, and over HTTPS (see tailscale.py),
+which phones need before they let a page use the microphone.
 """
 import hashlib
 import ipaddress
@@ -19,6 +22,8 @@ import time
 import uuid
 
 import uvicorn
+
+from . import tailscale
 
 COOKIE = "g3xn_remote"
 DEFAULT_PORT = 8372
@@ -33,10 +38,15 @@ class PairingRefused(PermissionError):
 class Remote:
     """Pairing codes, paired phones, and the network listener."""
 
-    def __init__(self, devices_file=None, port=DEFAULT_PORT, host="0.0.0.0"):
+    def __init__(self, devices_file=None, port=DEFAULT_PORT, host="0.0.0.0", use_tailscale=False):
         """devices_file: where paired phones are remembered (None = until the daemon stops).
-        host: the address to listen on; 0.0.0.0 is every network this computer is on."""
+        host: the address to listen on; 0.0.0.0 is every network this computer is on.
+        use_tailscale: also offer the remote over Tailscale, with HTTPS when the tailnet has it."""
         self.devices_file, self.port, self.host = devices_file, port, host
+        self.use_tailscale = use_tailscale
+        self.tailnet = None                 # tailscale.status() while the remote is on
+        self.https_url = None
+        self._serve = tailscale.Serve(port)
         self.devices = self._load()
         self.code = None
         self._server = None
@@ -93,6 +103,10 @@ class Remote:
         code = self.code if self.code and time.time() < self.code["expires"] else None
         out = {"on": self.on, "url": self.url if self.on else None,
                "devices": [_public(d) for d in self.devices]}
+        if self.on and self.tailnet:
+            out["tailscale"] = {"url": "http://%s:%d" % (self.tailnet["ip"], self.port) if self.tailnet["ip"] else None,
+                                "https_url": self.https_url if self._serve.on else None,
+                                "problem": self._serve.problem}
         if with_code:
             out.update(code=code["code"] if code else None, code_expires=code["expires"] if code else None)
         return out
@@ -102,10 +116,12 @@ class Remote:
     def refusal(self, path, headers, cookies):
         """None if a request that arrived on the network listener may go ahead, else (status, why)."""
         host = headers.get("host") or ""
-        if not _plausible_host(host.rsplit(":", 1)[0].strip("[]")):
+        name = host.rsplit(":", 1)[0].strip("[]")
+        tailnet_name = (self.tailnet or {}).get("name")
+        if not (_plausible_host(name) or (tailnet_name and name.lower() == tailnet_name.lower())):
             return 403, "unknown host"
         origin = headers.get("origin")
-        if origin and origin != "http://" + host:
+        if origin and origin not in ("http://" + host, "https://" + host, self.https_url):
             return 403, "g3xn only answers its own pages"
         if path.startswith("/api/remote"):
             return 403, "pairing is managed from the computer"
@@ -141,14 +157,19 @@ class Remote:
         self._server, self._thread = server, thread
         if not self.code:
             self.new_code()
+        if self.use_tailscale:
+            self.tailnet = tailscale.status()
+            self.https_url = self._serve.start(self.tailnet) if self.tailnet else None
 
     def stop(self):
         if not self.on:
             return
+        self._serve.stop()
         self._server.should_exit = True
         self._thread.join(timeout=10)
         self._server = self._thread = None
         self.code = None
+        self.tailnet = self.https_url = None
 
     # --- storage ---
 

@@ -15,6 +15,7 @@ dependencies = ["mido>=1.3", "python-rtmidi>=1.5"]
 mcp = ["mcp>=1.2"]             # the g3xn-mcp server for Claude Code / Claude Desktop
 tools = ["pyelftools>=0.31"]   # only needed to rebuild the effect catalog from .ZD2 files
 app = ["fastapi>=0.115", "uvicorn>=0.30", "websockets>=13", "pywebview>=5"]   # g3xn-daemon and the g3xn-app window
+voice = ["faster-whisper>=1.0", "sounddevice>=0.4", "numpy>=1.24"]   # push to talk: speech to text on this computer
 
 [project.scripts]
 g3xn = "g3xn.cli:main"
