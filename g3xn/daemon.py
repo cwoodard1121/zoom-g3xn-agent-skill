@@ -45,7 +45,9 @@ from . import gig as gig_files
 from .gig import GigLibrary, shown as shown_gig
 from .chat import Chat, ChatError
 from .footswitch import Footswitches
+from .backups import Backups, write as write_backup
 from .history import History
+from .patch import Patch
 from .lyrics import LyricsError
 from . import lyrics as lyric_search
 from .remote import COOKIE, Remote
@@ -74,10 +76,11 @@ class NotConnected(PedalError):
 class PedalWorker(threading.Thread):
     """Runs pedal actions one at a time and watches the pedal in between."""
 
-    def __init__(self, make_pedal, emit):
+    def __init__(self, make_pedal, emit, backups=None):
         super().__init__(name="pedal", daemon=True)
         self.make_pedal = make_pedal      # () -> Pedal (not yet open)
         self.emit = emit                  # (event dict) -> None, thread-safe
+        self.backups = backups            # a backups.Backups: keep every slot each time the pedal connects
         self.jobs = queue.Queue()
         self.pedal = None
         self.connection = "connecting"    # connected / disconnected / released
@@ -178,12 +181,21 @@ class PedalWorker(threading.Thread):
             self._close("disconnected")
 
     def _read_names(self):
-        count = self.pedal.patch_count
+        count, raw = self.pedal.patch_count, {}
         for n in range(1, count + 1):
             if n % 15 == 1:
                 self._busy("reading your patches %d/%d" % (n, count))
-            self.names[n] = self.pedal.read(n).name
+            raw[n] = self.pedal.read_raw(n)
+            self.names[n] = Patch.decode(raw[n]).name
         self._busy(None)
+        if self.backups:                  # they're all read anyway: keep them, if anything changed
+            try:
+                folder = self.backups.auto(raw)
+            except OSError as err:
+                self.emit({"type": "backup", "problem": "couldn't save the automatic backup: %s" % err})
+            else:
+                if folder:
+                    self.emit({"type": "backup", "folder": folder})
         self.emit({"type": "patches", "patches": [{"slot": n, "name": self.names[n]} for n in range(1, count + 1)]})
 
     def _watch(self):
@@ -313,6 +325,11 @@ class TunerRequest(BaseModel):
     on: bool = True
 
 
+class RestoreRequest(BaseModel):
+    backup: str               # its name, as GET /api/backups lists it
+    slot: int
+
+
 class LockRequest(BaseModel):
     on: bool = True
 
@@ -363,7 +380,7 @@ class TalkRequest(BaseModel):
 
 
 def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, gigs_folder=None,
-               remote=None, remote_on=False, footswitches=None, chat=None, talk=None):
+               remote=None, remote_on=False, footswitches=None, chat=None, talk=None, backups_folder=None):
     """announce: write ~/.g3xn/daemon.json so g3xn-mcp finds this daemon.
     history_file: where the time machine keeps its versions (None = memory only).
     gigs_folder: where saved gigs live (None = a temporary folder).
@@ -372,13 +389,16 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
     footswitches: MIDI controllers driving the pedal (a footswitch.Footswitches; default: one that
     forgets its bindings on exit).
     chat: Claude in the app (a chat.Chat; default: the user's Claude Code, on this daemon's tools).
-    talk: push to talk (a voice.Talk; default: the laptop microphone, words to the chat)."""
+    talk: push to talk (a voice.Talk; default: the laptop microphone, words to the chat).
+    backups_folder: where whole-pedal backups are listed from, and where one is kept each time the
+    pedal connects (None = no automatic backups, none listed)."""
     remote = remote or Remote()
     footswitches = footswitches or Footswitches()
     if remote.port == port:
         raise ValueError("the phone remote needs a port of its own (both are %d)" % port)
     hub = EventHub()
-    worker = PedalWorker(make_pedal, hub.emit)
+    backups = Backups(backups_folder) if backups_folder else None
+    worker = PedalWorker(make_pedal, hub.emit, backups)
     history = History(history_file)
     gigs = GigLibrary(gigs_folder or tempfile.mkdtemp(prefix="g3xn-gigs-"))
     chat = chat or Chat("http://127.0.0.1:%d" % port, hub.emit)
@@ -626,6 +646,36 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
         except LyricsError as e:
             return JSONResponse({"error": str(e)}, status_code=502)
         return dict(hit, found=True) if hit else {"found": False, "song": song}
+
+    # --- backups ---
+
+    @app.get("/api/backups", tags=["backups"])
+    async def list_backups():
+        """Every whole-pedal backup, newest first, each with what changed since the one before."""
+        return {"backups": await asyncio.to_thread(backups.history) if backups else [], "folder": backups and backups.root}
+
+    @app.post("/api/backups/restore", tags=["backups"])
+    async def restore_from_backup(req: RestoreRequest):
+        """Put one slot back the way a backup has it. What the slot holds now is saved first
+        (in <backups>/replaced/<time>/)."""
+        if not backups:
+            raise PedalError("this daemon keeps no backups")
+        refuse_if_locked([req.slot])
+        data = backups.slot(req.backup, req.slot)
+
+        def put_back(p):
+            now = p.read_raw(req.slot)
+            folder = os.path.join(backups.root, "replaced", time.strftime("%Y-%m-%d_%H%M%S"))
+            write_backup(folder, {req.slot: now})
+            here = p.current()
+            if here == req.slot:
+                p.select(p.scratch)       # a write to the slot the pedal is on is lost
+            p.write(req.slot, data)
+            if here == req.slot:
+                p.select(here)
+            return {"slot": req.slot, "patch": Patch.decode(data).name, "saved_current": folder}
+
+        return await run("putting slot %d back" % req.slot, put_back, touches=[req.slot])
 
     # --- saved gigs (the app's setlists) ---
 
@@ -1005,11 +1055,11 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
 
 
 def start_in_thread(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, gigs_folder=None,
-                    remote=None, footswitches=None, chat=None, talk=None):
+                    remote=None, footswitches=None, chat=None, talk=None, backups_folder=None):
     """Run the daemon on a background thread (for the desktop window and tests).
     Returns (url, stop) once it is serving."""
     app = create_app(make_pedal, port, announce, history_file, gigs_folder, remote, footswitches=footswitches,
-                     chat=chat, talk=talk)
+                     chat=chat, talk=talk, backups_folder=backups_folder)
     server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning"))
     thread = threading.Thread(target=server.run, name="g3xn-daemon", daemon=True)
     thread.start()
@@ -1081,7 +1131,7 @@ def main(argv=None):
 
     real = args.sim is None
     app = create_app(pedal_factory(args), args.port, announce=real, history_file=HISTORY_FILE if real else None,
-                     gigs_folder=GIGS_FOLDER if real else None,
+                     gigs_folder=GIGS_FOLDER if real else None, backups_folder=service.BACKUP_ROOT if real else None,
                      remote=Remote(REMOTE_FILE if real else None, port=args.remote_port, use_tailscale=real), remote_on=args.remote,
                      footswitches=Footswitches(MIDI_FILE if real else None))
     print("g3xn daemon on http://127.0.0.1:%d (API docs at /docs)%s" % (args.port, "" if os.path.isdir(UI_DIR) else

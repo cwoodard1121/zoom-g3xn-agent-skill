@@ -202,6 +202,57 @@ class DaemonTest(unittest.TestCase):
 
 
 @unittest.skipIf(start_in_thread is None, "pip install g3xn[app] to test the daemon")
+class BackupTest(unittest.TestCase):
+    """A backup each time the pedal connects (only when something changed), and putting one slot back."""
+
+    def test_backup_on_connect_and_put_back(self):
+        import tempfile
+        root = tempfile.mkdtemp(prefix="g3xn-test-backups-")
+        device = VirtualPedal()
+        url, stop = start_daemon(device, backups_folder=root)
+        try:
+            listed = get_json(url + "/api/backups")["backups"]
+            self.assertEqual(len(listed), 1)
+            first = listed[0]
+            self.assertTrue(first["auto"] and first["first"])
+            self.assertEqual(first["slots"], 150)
+            name7 = get_json(url + "/api/patches/7")["name"]
+
+            # Write over slot 7, then reconnect: a second backup, showing what changed.
+            self.assertEqual(request(url + "/api/patches/7", "PUT", {"tone": dict(TONE, name="CHANGED"), "replace": True})[0], 200)
+        finally:
+            stop()
+        time.sleep(1.1)                  # backups are named to the second
+        url, stop = start_daemon(device, backups_folder=root)
+        try:
+            listed = get_json(url + "/api/backups")["backups"]
+            self.assertEqual(len(listed), 2)
+            self.assertEqual(listed[0]["changed"], [{"slot": 7, "was": name7, "now": "CHANGED"}])
+
+            # Put slot 7 back from the first backup; what it held is kept.
+            status, body, _ = request(url + "/api/backups/restore", "POST", {"backup": first["name"], "slot": 7})
+            self.assertEqual((status, body["patch"]), (200, name7))
+            self.assertEqual(get_json(url + "/api/patches/7")["name"], name7)
+            import os
+            self.assertTrue(any(f.startswith("007_CHANGED") for f in os.listdir(body["saved_current"])))
+            self.assertEqual(request(url + "/api/backups/restore", "POST", {"backup": "../etc", "slot": 7})[0], 400)
+        finally:
+            stop()
+        time.sleep(1.1)
+        url, stop = start_daemon(device, backups_folder=root)     # back to how the first one had it, so
+        try:                                                       # a third: nothing changed is skipped,
+            self.assertEqual(len(get_json(url + "/api/backups")["backups"]), 3)    # but this did change
+        finally:
+            stop()
+        time.sleep(1.1)
+        url, stop = start_daemon(device, backups_folder=root)
+        try:
+            self.assertEqual(len(get_json(url + "/api/backups")["backups"]), 3)    # unchanged: no new one
+        finally:
+            stop()
+
+
+@unittest.skipIf(start_in_thread is None, "pip install g3xn[app] to test the daemon")
 class RemoteTest(unittest.TestCase):
     """The phone remote. It listens on 127.0.0.1 here, so the tests never open a port on the network."""
 

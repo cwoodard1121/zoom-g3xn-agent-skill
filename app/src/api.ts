@@ -91,6 +91,15 @@ export interface GigEntry {
   duration?: number; // the recording's length in seconds
 }
 
+export interface Backup {
+  name: string; // "auto/2026-10-23_101500"
+  time: number; // seconds since 1970
+  auto: boolean; // kept when the pedal was plugged in
+  slots: number;
+  first: boolean; // the oldest one: nothing to compare with
+  changed: { slot: number; was: string | null; now: string | null }[]; // since the one before
+}
+
 export interface LyricsHit {
   found: boolean;
   song: string;
@@ -174,6 +183,7 @@ export type PedalEvent =
   | { type: "live"; tone: Tone }
   | { type: "tuner"; note: string | null; meter: number }
   | { type: "tempo"; bpm: number }
+  | { type: "backup"; folder?: string; problem?: string }
   | ({ type: "history" } & HistorySummary)
   | { type: "gigs"; gigs: GigSummary[]; active: string | null }
   | ChatEvent
@@ -213,6 +223,9 @@ export const api = {
   goTo: (entryId: number) => call<Tone>("POST", `/api/history/${entryId}/play`),
   effects: () => call<{ effects: EffectSummary[] }>("GET", "/api/effects"),
   gig: (id: string) => call<Gig>("GET", `/api/setlists/${id}`),
+  backups: () => call<{ backups: Backup[]; folder: string | null }>("GET", "/api/backups"),
+  restoreSlot: (backup: string, slot: number) =>
+    call<{ slot: number; patch: string; saved_current: string }>("POST", "/api/backups/restore", { backup, slot }),
   lyrics: (song: string, artist?: string) =>
     call<LyricsHit>("GET", `/api/lyrics?${new URLSearchParams({ song, artist: artist ?? "" })}`),
   saveGig: (gig: Gig) => call<Gig>("PUT", `/api/setlists/${gig.id ?? "new"}`, gig),

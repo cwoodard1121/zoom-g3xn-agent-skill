@@ -138,7 +138,17 @@ export function PedalProvider({ children }: { children: ReactNode }) {
   const [copyOf, setCopyOf] = useState<CopyOf | null>(null);
   const nextToast = useRef(1);
 
-  useEffect(() => subscribe((e) => dispatch(e), (open) => dispatch({ type: "linked", open })), []);
+  useEffect(
+    () =>
+      subscribe(
+        (e) => {
+          dispatch(e);
+          if (e.type === "backup") say(e.problem ? `Pedal not backed up: ${e.problem}` : "Pedal backed up: something changed since last time", !!e.problem);
+        },
+        (open) => dispatch({ type: "linked", open }),
+      ),
+    [],
+  );
   // The conversation and microphone so far, read again whenever the link comes back.
   useEffect(() => {
     if (!state.linked) return;

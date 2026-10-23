@@ -37,7 +37,8 @@ def main(argv=None):
                                            history_file=daemon.HISTORY_FILE if real else None,
                                            gigs_folder=daemon.GIGS_FOLDER if real else None,
                                            remote=daemon.Remote(daemon.REMOTE_FILE if real else None, use_tailscale=real),
-                                           footswitches=daemon.Footswitches(daemon.MIDI_FILE if real else None))
+                                           footswitches=daemon.Footswitches(daemon.MIDI_FILE if real else None),
+                                           backups_folder=daemon.service.BACKUP_ROOT if real else None)
     try:
         _show(url)
     finally:

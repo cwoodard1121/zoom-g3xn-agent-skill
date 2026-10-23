@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { api, effectInfo } from "../api";
 import type { Tone } from "../api";
+import { Backups } from "../components/Backups";
 import { Icon } from "../components/Icon";
 import { usePedal } from "../pedal";
 
@@ -11,6 +12,7 @@ export function Library({ onTry }: { onTry: () => void }) {
   const { names, status, act, setCopyOf } = usePedal();
   const [filter, setFilter] = useState("");
   const [picked, setPicked] = useState<number | null>(null);
+  const [backups, setBackups] = useState(false);
   const slots = Object.keys(names).map(Number).sort((a, b) => a - b);
   const empty = slots.filter((n) => names[n] === "Empty").length;
 
@@ -47,6 +49,9 @@ export function Library({ onTry }: { onTry: () => void }) {
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
         />
+        <button className="button" aria-pressed={backups} onClick={() => { setBackups(!backups); setPicked(null); }}>
+          Backups
+        </button>
       </div>
       <div className="library-body">
         <ol className="banks">
@@ -61,7 +66,7 @@ export function Library({ onTry }: { onTry: () => void }) {
                     n === status?.current_slot ? "is-current" : "",
                     n === picked ? "is-picked" : "",
                   ].join(" ")}
-                  onClick={() => setPicked(n)}
+                  onClick={() => { setPicked(n); setBackups(false); }}
                   aria-current={n === status?.current_slot ? "true" : undefined}
                 >
                   <span className="slot-number">{n}</span>
@@ -73,6 +78,7 @@ export function Library({ onTry }: { onTry: () => void }) {
           ))}
           {banks.length === 0 && <li className="empty">Nothing matches “{filter}”.</li>}
         </ol>
+        {backups && <Backups onClose={() => setBackups(false)} />}
         {picked !== null && (
           <PatchDetail
             key={picked}
