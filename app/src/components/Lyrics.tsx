@@ -97,6 +97,13 @@ export function Lyrics({ entry }: { entry: GigEntry }) {
     }
   }, [now, current, running, timed, total]);
 
+  // Click a line: the words carry on from there (and start, if they were stopped).
+  const jump = (i: number) => {
+    const at = all[i].time ?? (i / Math.max(1, all.length)) * total;
+    setClock({ base: Math.max(0, at - 0.2), running: true });
+    setNow(clock.current.base);
+  };
+
   const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 
   return (
@@ -127,7 +134,12 @@ export function Lyrics({ entry }: { entry: GigEntry }) {
       </div>
       <section ref={box} className={`stage-lyrics${timed ? " timed" : ""}`} aria-label={`Lyrics for ${entry.song}`} tabIndex={0}>
         {all.map((l, i) => (
-          <p key={i} className={`lyric${i === current ? " now" : ""}${current >= 0 && i < current ? " sung" : ""}`}>
+          <p
+            key={i}
+            className={`lyric${i === current ? " now" : ""}${current >= 0 && i < current ? " sung" : ""}`}
+            onClick={() => jump(i)}
+            title="Carry on from here"
+          >
             {l.text || " "}
           </p>
         ))}
