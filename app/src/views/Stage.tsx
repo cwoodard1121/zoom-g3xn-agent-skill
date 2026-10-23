@@ -72,7 +72,7 @@ export function Stage() {
   return (
     <section className="stage" ref={stageRef} aria-labelledby="stage-song">
       <div className="stage-now">
-        <p className="eyebrow">
+        <p className="stage-where">
           {gig.name} · {song ? `song ${index + 1} of ${slots.length}` : `${slots.length} songs`}
         </p>
         {song ? (
@@ -111,16 +111,16 @@ export function Stage() {
 
         <div className="stage-next">
           {next ? (
-            <p><span className="eyebrow">Next</span> {next.song} <span className="stage-next-slot">slot {next.slot}</span></p>
+            <p><span className="stage-next-label">Next</span> {next.song} <span className="stage-next-slot">slot {next.slot}</span></p>
           ) : song ? (
-            <p><span className="eyebrow">Next</span> That's the last song.</p>
+            <p><span className="stage-next-label">Next</span> That's the last song.</p>
           ) : null}
         </div>
 
         <div className="stage-controls">
-          <button className="stage-step" onClick={() => stepRef.current(-1)} disabled={index <= 0}>◀ Previous</button>
+          <button className="stage-step" onClick={() => stepRef.current(-1)} disabled={index <= 0}>Previous</button>
           <button className="stage-step primary" onClick={() => stepRef.current(1)} disabled={index >= slots.length - 1}>
-            {song ? "Next ▶" : "Start ▶"}
+            {song ? "Next" : "Start"}
           </button>
           <span className="stage-spacer" />
           <button className="button" aria-pressed={tunerOn} onClick={() => act(() => api.tuner(!tunerOn))}>

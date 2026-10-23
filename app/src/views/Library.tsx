@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { api, effectInfo } from "../api";
 import type { Tone } from "../api";
+import { Icon } from "../components/Icon";
 import { usePedal } from "../pedal";
 
 const BANK_SIZE = 3;
@@ -120,9 +121,11 @@ function PatchDetail({ slot, name, isCurrent, onSelect, onTry, onClose }: Detail
 
   return (
     <aside className="detail" aria-labelledby="detail-title">
-      <button className="detail-close" onClick={onClose} aria-label="Close">×</button>
-      <p className="eyebrow">Slot {slot}</p>
-      <h2 id="detail-title" className="detail-name">{name}</h2>
+      <button className="detail-close" onClick={onClose} aria-label="Close"><Icon name="close" size={20} /></button>
+      <div className="detail-head">
+        <span className="detail-slot vfd">{String(slot).padStart(3, "0")}</span>
+        <h2 id="detail-title" className="detail-name">{name}</h2>
+      </div>
       {name === "Empty" ? (
         <p className="detail-note">An empty slot. Keep a tone here from the Tone view.</p>
       ) : error ? (

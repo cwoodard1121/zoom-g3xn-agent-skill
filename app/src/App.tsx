@@ -27,12 +27,12 @@ export function App() {
 function Shell() {
   const [view, setView] = useHashView();
   return (
-    <div className="shell">
+    <div className={`shell view-${view}`}>
       <StatusBar />
       <nav className="rail" aria-label="Views">
-        <span className="wordmark" aria-hidden="true">g3xn</span>
         {VIEWS.map((v) => (
           <a key={v.id} href={`#${v.id}`} className="rail-link" aria-current={view === v.id ? "page" : undefined}>
+            <span className="rail-led" aria-hidden="true" />
             {v.label}
           </a>
         ))}
@@ -77,7 +77,7 @@ function StatusBar() {
     } else if (status.connection === "connected") {
       light = "ok";
       const fw = status.pedal.firmware ? ` · firmware ${status.pedal.firmware}` : "";
-      const which = status.pedal.virtual ? "Virtual pedal (not your G3Xn)" : `G3Xn connected${fw}`;
+      const which = status.pedal.virtual ? "Not your G3Xn" : `G3Xn connected${fw}`;
       text = `${which} · on slot ${status.current_slot}${status.current_name ? `, ${status.current_name}` : ""}`;
       action = { label: "Let go of the pedal", run: () => act(() => api.release(), () => "The pedal is free for ToneLib and other programs") };
     } else if (status.connection === "released") {
@@ -95,7 +95,9 @@ function StatusBar() {
   return (
     <header className={`status${status?.pedal.virtual ? " virtual" : ""}`} role="status">
       <span className={`status-light ${light}`} aria-hidden="true" />
-      <span className="status-text">{text}</span>
+      <span className="wordmark" aria-hidden="true">G3XN</span>
+      <span className="status-text vfd">{text}</span>
+      {status?.pedal.virtual && <span className="status-badge">Virtual pedal</span>}
       {action && (
         <button className="status-action" onClick={action.run}>
           {action.label}

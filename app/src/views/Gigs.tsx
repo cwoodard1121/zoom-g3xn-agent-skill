@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
 import type { Gig, GigEntry, PlanStep } from "../api";
+import { Icon } from "../components/Icon";
 import { usePedal } from "../pedal";
 
 const BLANK: Gig = { name: "New gig", start_slot: 100, patches: [] };
@@ -214,9 +215,9 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
               onChange={(e) => setEntry(i, { ...entry, notes: e.target.value || undefined })}
             />
             <span className="song-tools">
-              <button onClick={() => moveEntry(i, -1)} disabled={i === 0} aria-label={`Move song ${i + 1} up`}>↑</button>
-              <button onClick={() => moveEntry(i, 1)} disabled={i === g.patches.length - 1} aria-label={`Move song ${i + 1} down`}>↓</button>
-              <button onClick={() => update({ ...g, patches: g.patches.filter((_, j) => j !== i) })} aria-label={`Remove song ${i + 1}`}>×</button>
+              <button onClick={() => moveEntry(i, -1)} disabled={i === 0} aria-label={`Move song ${i + 1} up`}><Icon name="up" /></button>
+              <button onClick={() => moveEntry(i, 1)} disabled={i === g.patches.length - 1} aria-label={`Move song ${i + 1} down`}><Icon name="down" /></button>
+              <button onClick={() => update({ ...g, patches: g.patches.filter((_, j) => j !== i) })} aria-label={`Remove song ${i + 1}`}><Icon name="close" /></button>
             </span>
           </li>
         ))}

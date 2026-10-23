@@ -1,15 +1,16 @@
-// The tone playing now: its chain as a row of stompboxes you can tweak, rearrange and
-// add to, live. Tweaks only ever happen on the scratch slot: the first change to a stored
+// The tone playing now: its chain as a rack of units, top to bottom from input to output,
+// that you can tweak, rearrange and add to, live. Tweaks only ever happen on the scratch slot: the first change to a stored
 // patch copies it there, and the stored patch stays as it is until it's saved over.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, effectInfo } from "../api";
 import type { ChainEffect, EffectInfo, Tone, TweakChange } from "../api";
 import { ABSwitch } from "../components/ABSwitch";
 import { EffectBrowser, MAX_POSITIONS } from "../components/EffectBrowser";
-import { Enclosure } from "../components/Enclosure";
 import { HistoryPanel } from "../components/HistoryPanel";
+import { Icon } from "../components/Icon";
 import { Knob } from "../components/Knob";
 import { Macros } from "../components/Macros";
+import { RackUnit } from "../components/RackUnit";
 import { usePedal } from "../pedal";
 import { SaveDialog } from "./SaveDialog";
 
@@ -27,6 +28,7 @@ export function ToneView() {
   const [saving, setSaving] = useState<"new" | "over" | null>(null);
   const [panel, setPanel] = useState<Panel>(null);
   const [drag, setDrag] = useState<{ from: number; over: number | null } | null>(null);
+  const [opened, setOpened] = useState<number | null>(0); // the unit whose knobs are out
 
   const canUndo = onScratch && history.position > 0;
   const canRedo = onScratch && history.position < history.entries.length - 1;
@@ -74,33 +76,46 @@ export function ToneView() {
 
   return (
     <section className="tone" aria-labelledby="tone-name">
-      <div className="tone-head">
-        <div className="tone-title">
-          <p className="eyebrow">
+      <div className="master">
+        <div className="master-glass vfd">
+          <NameField key={`${slot}-${live.name}`} name={tone.name} onCommit={(name) => queue("name", { name })} />
+          <p className="master-state">
             {!onScratch
               ? `Slot ${slot} · as stored`
               : copyOf
                 ? `Copy of ${copyOf.name} on slot ${slot} · slot ${copyOf.slot} is untouched`
                 : `Trying out · slot ${slot}`}
           </p>
-          <NameField key={`${slot}-${live.name}`} name={tone.name} onCommit={(name) => queue("name", { name })} />
+          <div className="tone-meters">
+            <Meter label="DSP" value={tone.dsp_percent} max={100} text={`${Math.round(tone.dsp_percent)}%`} />
+            <Meter label="Positions" value={used} max={MAX_POSITIONS} text={`${used} of ${MAX_POSITIONS}`} />
+          </div>
         </div>
-        <div className="tone-meters">
-          <Meter label="DSP" value={tone.dsp_percent} max={100} text={`${Math.round(tone.dsp_percent)}%`} />
-          <Meter label="Positions" value={used} max={MAX_POSITIONS} text={`${used} of ${MAX_POSITIONS}`} />
-        </div>
-        <div className="tone-volume">
+        <div className="master-knobs">
           <Knob
-            label="Patch volume"
+            label="Volume"
             value={tone.volume}
             max={MAX_VOLUME}
             text={String(tone.volume)}
+            hint="Patch volume"
             onChange={(v) => queue("volume", { volume: v })}
+          />
+          <Macros
+            tone={tone}
+            infos={infos}
+            onMove={(m) =>
+              queueMany([
+                ...m.knobs.map((k) => [`k:${k.index + 1}:${k.knob}`, { change: { effect: k.index + 1, knob: k.knob, value: k.value } }] as const),
+                ...(m.volume !== undefined ? [["volume", { volume: m.volume }] as const] : []),
+              ])
+            }
           />
         </div>
       </div>
 
-      <div className="toolbar" role="toolbar" aria-label="Tone tools">
+      <div className="rail-row" role="toolbar" aria-label="Tone tools">
+        <span className="rail-label">In</span>
+        <span className="rail-line" aria-hidden="true" />
         <div className="toolbar-group">
           <button className="button" disabled={!canUndo} onClick={() => act(() => api.undo())} title="Ctrl+Z">Undo</button>
           <button className="button" disabled={!canRedo} onClick={() => act(() => api.redo())} title="Ctrl+Shift+Z">Redo</button>
@@ -110,9 +125,6 @@ export function ToneView() {
         </div>
         {onScratch && <ABSwitch tone={tone} />}
         <div className="toolbar-group">
-          <button className="button" disabled={used >= MAX_POSITIONS} onClick={() => setPanel({ kind: "add" })}>
-            Add an effect
-          </button>
           <button
             className="button"
             onClick={() => {
@@ -125,25 +137,11 @@ export function ToneView() {
         </div>
       </div>
 
-      <Macros
-        tone={tone}
-        infos={infos}
-        onMove={(m) =>
-          queueMany([
-            ...m.knobs.map((k) => [`k:${k.index + 1}:${k.knob}`, { change: { effect: k.index + 1, knob: k.knob, value: k.value } }] as const),
-            ...(m.volume !== undefined ? [["volume", { volume: m.volume }] as const] : []),
-          ])
-        }
-      />
-
-      <div className="board" role="list" aria-label="Effect chain, in signal order">
-        {tone.chain.length === 0 && (
-          <p className="board-empty">No effects yet. Add one to start.</p>
-        )}
+      <div className="rack" role="list" aria-label="Effect chain, in signal order">
         {tone.chain.map((fx, i) => (
           <div
             role="listitem"
-            className={`board-slot${drag?.over === i && drag.from !== i ? " drop-here" : ""}${drag?.from === i ? " dragging" : ""}`}
+            className={`rack-slot${drag?.over === i && drag.from !== i ? " drop-here" : ""}${drag?.from === i ? " dragging" : ""}`}
             key={`${i}-${fx.effect}`}
             draggable
             onDragStart={(e) => {
@@ -162,32 +160,43 @@ export function ToneView() {
             }}
             onDragEnd={() => setDrag(null)}
           >
-            <Enclosure
+            <RackUnit
               fx={fx}
               info={infos[fx.effect]}
-              editable
+              open={opened === i}
+              onOpen={() => setOpened(opened === i ? null : i)}
               onKnob={(knob, value) => queue(`k:${i + 1}:${knob}`, { change: { effect: i + 1, knob, value } })}
               onToggle={(on) => queue(`on:${i + 1}`, { change: { effect: i + 1, on } })}
               actions={{
-                onMoveLeft: i > 0 ? () => move(i, i - 1) : undefined,
-                onMoveRight: i < tone.chain.length - 1 ? () => move(i, i + 1) : undefined,
+                onMoveUp: i > 0 ? () => move(i, i - 1) : undefined,
+                onMoveDown: i < tone.chain.length - 1 ? () => move(i, i + 1) : undefined,
                 onSwap: () => setPanel({ kind: "swap", index: i }),
                 onRemove: () => setChain(tone.chain.filter((_, j) => j !== i), `Removed ${fx.effect}`),
               }}
             />
           </div>
         ))}
-        {used < MAX_POSITIONS && (
-          <div role="listitem" className="board-slot">
-            <button className="enclosure-ghost" onClick={() => setPanel({ kind: "add" })}>
-              <span aria-hidden="true">+</span>
-              Add an effect
-            </button>
+        {Array.from({ length: Math.max(0, MAX_POSITIONS - used) }, (_, i) => (
+          <div role="listitem" className="rack-slot" key={`blank-${i}`}>
+            <div className="unit blank">
+              <div className="unit-face">
+                <span className="vents" aria-hidden="true" />
+                {i === 0 ? (
+                  <button className="blank-add" onClick={() => setPanel({ kind: "add" })}>
+                    <Icon name="plus" /> {tone.chain.length ? "Add an effect" : "Add the first effect"}
+                  </button>
+                ) : (
+                  <span className="visually-hidden">Free position</span>
+                )}
+              </div>
+            </div>
           </div>
-        )}
+        ))}
       </div>
 
-      <div className="tone-actions">
+      <div className="rail-row tone-actions">
+        <span className="rail-label">Out</span>
+        <span className="rail-line" aria-hidden="true" />
         {onScratch && copyOf && (
           <button className="button primary" onClick={() => setSaving("over")}>Save over {copyOf.name}…</button>
         )}
@@ -198,7 +207,7 @@ export function ToneView() {
         )}
         <span className="tone-hint">
           {onScratch
-            ? "Drag a knob up or down, or scroll on it. Click a footswitch to turn an effect on or off. Drag a pedal to move it."
+            ? "Open a unit to turn its knobs: drag up or down, scroll, or use the arrow keys. Drag a unit to move it."
             : `Change anything and the pedal switches to a copy on slot ${status.scratch_slot}. ${tone.name} on slot ${slot} stays as it is until you save over it.`}
         </span>
       </div>
@@ -228,7 +237,7 @@ function NoTone() {
   else if (status?.connection === "released") text = "The pedal is free for other programs. Take it back from the bar above.";
   return (
     <section className="tone">
-      <p className="empty">{text}</p>
+      <p className="empty vfd">{text}</p>
     </section>
   );
 }

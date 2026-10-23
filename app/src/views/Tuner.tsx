@@ -24,7 +24,6 @@ export function Tuner() {
 
   return (
     <section className="tuner" aria-labelledby="tuner-note">
-      <p className="eyebrow">{connected ? "Tuner on" : "Tuner"}</p>
       <div id="tuner-note" className={`tuner-note${meter === 0 ? " in-tune" : ""}`} aria-live="polite">
         {connected ? tuner?.note ?? "–" : "–"}
       </div>
