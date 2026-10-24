@@ -32,6 +32,7 @@ acted on once.
 faster-whisper and sounddevice are the `voice` extra; the speech model (about 145 MB
 for base.en) downloads from Hugging Face the first time it's used.
 """
+import collections
 import io
 import queue
 import re
@@ -387,12 +388,14 @@ class WakeListener:
     FRAME = 480             # 30 ms at 16 kHz
     LONGEST = 6.0           # seconds: a stretch this long is heard anyway (the band never stops)
     GAP = 0.6               # seconds of quiet that end a stretch
-    ABOVE = 10.0            # dB over the room's quiet that counts as loud
+    ABOVE = 10.0            # dB over the room's usual level that counts as speech
+    ROOM = 5.0              # seconds of levels the room's usual level is taken from
 
     def __init__(self, talk, device=None, transcribe=None):
         self.talk, self.device = talk, device
         self.transcribe = transcribe or talk.transcribe
         self.floor = -60.0
+        self._levels = collections.deque(maxlen=int(self.ROOM * SAMPLE_RATE / self.FRAME))
         self._run, self._quiet, self._pre = [], 0, []
         self._jobs = queue.Queue(maxsize=1)     # one stretch waiting at most: if busy, drop it
         self._stream = None
@@ -423,9 +426,12 @@ class WakeListener:
         if self.talk.state != "idle":                         # someone's holding the switch
             return
         level = 10 * numpy.log10(float(numpy.mean(frame * frame)) + 1e-12)
+        # The room's usual level: low in the last few seconds' levels, so the band bleeding into a
+        # mic on you becomes the baseline, and your voice, close to it, stands out above it.
+        if self._levels:
+            self.floor = float(numpy.percentile(self._levels, 30))
+        self._levels.append(level)
         loud = level > self.floor + self.ABOVE
-        if not loud:                                             # the room's quiet, slowly
-            self.floor += (level - self.floor) * (0.02 if level > self.floor else 0.2)
         if self._run or loud:
             self._run.append(frame)
             self._quiet = 0 if loud else self._quiet + 1

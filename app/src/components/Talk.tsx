@@ -168,6 +168,8 @@ function usePhoneWake(on: boolean) {
         const node = ctx.createScriptProcessor(2048, 1, 1);
         const block = 2048 / rate;
         let floor = -60;
+        const levels: number[] = []; // the last 5 s: the room's usual level is low in them
+        const room = Math.ceil(5 / block);
         let run: Float32Array[] = [];
         let pre: Float32Array[] = [];
         let quiet = 0;
@@ -195,8 +197,10 @@ function usePhoneWake(on: boolean) {
           let sum = 0;
           for (let i = 0; i < x.length; i++) sum += x[i] * x[i];
           const level = 10 * Math.log10(sum / x.length + 1e-12);
+          if (levels.length) floor = [...levels].sort((a, b) => a - b)[Math.floor(levels.length * 0.3)];
+          levels.push(level);
+          if (levels.length > room) levels.shift();
           const loud = level > floor + 10;
-          if (!loud) floor += (level - floor) * (level > floor ? 0.02 : 0.2);
           if (!run.length && !loud) {
             pre = [...pre, x].slice(-Math.ceil(0.3 / block));
             return;

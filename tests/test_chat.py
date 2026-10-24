@@ -261,6 +261,21 @@ class WakeTest(unittest.TestCase):
             self.events.until(lambda e: e.get("state") == "heard", timeout=0.5)
         self.assertEqual(self.sent, ["two bars behind"])
 
+    def test_a_mic_on_you_hears_you_over_the_band(self):
+        import numpy
+        from g3xn.voice import WakeListener
+        ears = WakeListener(self.talk, transcribe=lambda audio: "")      # not started: just the cutting
+        rng = numpy.random.default_rng(1)
+        frames = lambda seconds, loudness: [rng.normal(0, loudness, ears.FRAME).astype("float32")
+                                            for _ in range(int(seconds * SAMPLE_RATE / ears.FRAME))]
+        for f in frames(8, 0.03):                  # the band, bleeding in, for a while
+            ears.feed(f)
+        self.assertTrue(ears._jobs.empty())        # the band alone isn't speech
+        for f in frames(1, 0.3) + frames(2, 0.03):  # you, close to the mic, then the band again
+            ears.feed(f)
+        stretch, _ = ears._jobs.get_nowait()
+        self.assertLess(len(stretch) / SAMPLE_RATE, 2.5)   # you, not 6 s of band
+
     def test_off_stops_listening(self):
         self.listen()
         self.talk.wake(False)
