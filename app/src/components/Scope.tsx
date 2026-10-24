@@ -1,6 +1,8 @@
 // What the guitar sounds like right now, on VFD glass: a spectrum of amber segments with peaks that
 // hang and fall, and the level. It listens to an audio input of this computer (the G3Xn's own USB
 // audio, or an interface); the browser asks once for permission. Nothing is recorded or sent.
+// While it listens, the level of the playing (not the silences) goes to `onLevel` a few times a
+// second, so the recap can say which patches sit louder or quieter than the rest of the set.
 import { useEffect, useRef, useState } from "react";
 
 const BANDS = 40;
@@ -33,7 +35,9 @@ async function listen(deviceId: string | null): Promise<Input> {
   };
 }
 
-export function Scope() {
+const PLAYING = -50; // dB: quieter than this is the guitar resting, not playing
+
+export function Scope({ onLevel }: { onLevel?: (db: number) => void }) {
   const [on, setOn] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   const [inputs, setInputs] = useState<MediaDeviceInfo[]>([]);
@@ -46,6 +50,8 @@ export function Scope() {
   });
   const canvas = useRef<HTMLCanvasElement>(null);
   const level = useRef<HTMLSpanElement>(null);
+  const report = useRef(onLevel);
+  report.current = onLevel;
 
   useEffect(() => {
     if (!on) return;
@@ -76,6 +82,7 @@ export function Scope() {
       const nyquist = analyser.context.sampleRate / 2;
       const edges = Array.from({ length: BANDS + 1 }, (_, i) => LOW * Math.pow(HIGH / LOW, i / BANDS));
       const peaks = new Array(BANDS).fill(0);
+      let lastReport = 0;
       const held = new Array(BANDS).fill(0);
       const css = getComputedStyle(c);
       const lit = css.getPropertyValue("--vfd").trim() || "#ffb000";
@@ -128,6 +135,11 @@ export function Scope() {
         for (const s of wave) sum += s * s;
         const db = 20 * Math.log10(Math.sqrt(sum / wave.length) || 1e-6);
         if (level.current) level.current.textContent = db < -80 ? "–∞" : `${db.toFixed(0)} dB`;
+        const now = performance.now();
+        if (db > PLAYING && now - lastReport > 250) {
+          lastReport = now;
+          report.current?.(db);
+        }
         frame = requestAnimationFrame(tick);
       };
       frame = requestAnimationFrame(tick);

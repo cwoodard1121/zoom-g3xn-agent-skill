@@ -443,7 +443,6 @@ export function Stage() {
               </div>
             )}
             {info?.notes && <p className="stage-notes" style={{ viewTransitionName: "stage-notes" }}>{info.notes}</p>}
-            <Scope />
             {info?.chords && (
               <dl className="stage-chords" aria-label="Chords" style={{ viewTransitionName: "stage-chords" }}>
                 {info.chords.split("\n").filter((l) => l.trim()).map((l, i) => {
@@ -484,41 +483,15 @@ export function Stage() {
             {song ? "Next" : "Start"}
           </button>
           <span className="stage-spacer" />
-          <span className="stage-rehearse" role="group" aria-label="Play the recording">
-            {(Object.keys(PLAYERS) as Player[]).map((p) => (
-              <button
-                key={p}
-                className="button"
-                disabled={index < 0}
-                title={`Open this song on ${PLAYERS[p].label}`}
-                onClick={() => play(index, p)}
-              >
-                {PLAYERS[p].label}
-              </button>
-            ))}
-          </span>
           <TalkButton />
-          <button className="button" onClick={() => setRecap(true)} title="Tempo against the record, and patches changed on the pedal (with the button that puts them back)">
-            Recap
-          </button>
           <button className="button" aria-pressed={tunerOn} onClick={() => act(() => api.tuner(!tunerOn))}>
             Tuner
-          </button>
-          <button
-            className="button"
-            onClick={() => {
-              if (document.fullscreenElement) document.exitFullscreen();
-              else stageRef.current?.requestFullscreen().catch(() => {});
-            }}
-          >
-            Full screen
           </button>
         </div>
 
         {song && info && (
           <div className="stage-lyrics-wrap" style={{ viewTransitionName: "stage-words" }}>
             <ClockBar entry={info} clock={clock} />
-            <GhostBand entry={info} clock={clock} />
             <SongMap parts={parts} total={total} clock={clock} cues={cues} notes={notes} />
             <StageNote notes={notes} clock={clock} />
             {heard && (
@@ -542,22 +515,56 @@ export function Stage() {
       </div>
 
       {recap && <Recap gig={gig} played={played} onClose={() => setRecap(false)} />}
-      <ol className="setlist" aria-label="Setlist">
-        {slots.map((s, i) => (
-          <li key={s.slot}>
-            <button
-              className={`setlist-song${index >= 0 && i < index ? " played" : ""}`}
-              aria-current={i === index ? "true" : undefined}
-              style={i === index ? { viewTransitionName: "setlist-now" } : undefined}
-              onClick={() => goTo(i)}
-            >
-              <span className="setlist-n">{i + 1}</span>
-              <span className="setlist-title" style={i === incoming ? { viewTransitionName: "stage-song" } : undefined}>{s.song}</span>
-              <span className="setlist-slot">{s.slot}</span>
+      {/* Beside the song: the set, then what's for rehearsing, then the desk's own tools. */}
+      <aside className="stage-side">
+        <ol className="setlist" aria-label="Setlist">
+          {slots.map((s, i) => (
+            <li key={s.slot}>
+              <button
+                className={`setlist-song${index >= 0 && i < index ? " played" : ""}`}
+                aria-current={i === index ? "true" : undefined}
+                style={i === index ? { viewTransitionName: "setlist-now" } : undefined}
+                onClick={() => goTo(i)}
+              >
+                <span className="setlist-n">{i + 1}</span>
+                <span className="setlist-title" style={i === incoming ? { viewTransitionName: "stage-song" } : undefined}>{s.song}</span>
+                <span className="setlist-slot">{s.slot}</span>
+              </button>
+            </li>
+          ))}
+        </ol>
+        {song && info && (
+          <section className="side-panel" aria-label="Rehearse">
+            <h2 className="side-title">Rehearse</h2>
+            <GhostBand entry={info} clock={clock} />
+            <span className="stage-rehearse" role="group" aria-label="Open the recording">
+              {(Object.keys(PLAYERS) as Player[]).map((p) => (
+                <button key={p} className="button" title={`Open this song on ${PLAYERS[p].label}`} onClick={() => play(index, p)}>
+                  {PLAYERS[p].label}
+                </button>
+              ))}
+            </span>
+          </section>
+        )}
+        <section className="side-panel" aria-label="Tools">
+          <h2 className="side-title">Desk</h2>
+          <div className="side-tools">
+            <button className="button" onClick={() => setRecap(true)} title="Tempo against the record, and patches changed on the pedal (with the button that puts them back)">
+              Recap
             </button>
-          </li>
-        ))}
-      </ol>
+            <button
+              className="button"
+              onClick={() => {
+                if (document.fullscreenElement) document.exitFullscreen();
+                else stageRef.current?.requestFullscreen().catch(() => {});
+              }}
+            >
+              Full screen
+            </button>
+          </div>
+          <Scope onLevel={(db) => setPlayed((p) => p.map((x, i) => (i === p.length - 1 ? { ...x, levels: [...(x.levels ?? []).slice(-400), db] } : x)))} />
+        </section>
+    </aside>
     </section>
   );
 }

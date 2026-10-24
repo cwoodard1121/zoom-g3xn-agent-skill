@@ -10,6 +10,7 @@ export interface Played {
   song: string;
   album?: number; // the record's tempo
   tempos: number[]; // the band's, each time it was tapped
+  levels?: number[]; // dB of the playing, heard by the scope
 }
 
 export function Recap({ gig, played, onClose }: { gig: Gig; played: Played[]; onClose: () => void }) {
@@ -30,6 +31,11 @@ export function Recap({ gig, played, onClose }: { gig: Gig; played: Played[]; on
   };
 
   const tapped = played.filter((p) => p.tempos.length);
+  // Loudness: each song's middle level against the set's middle, when the scope heard it.
+  const loud = (p: Played) => (p.levels && p.levels.length >= 8 ? median(p.levels) : null);
+  const heard = played.map(loud).filter((x): x is number => x !== null);
+  const setLevel = heard.length >= 2 ? median(heard) : null;
+  const off = played.filter((p) => setLevel !== null && loud(p) !== null && Math.abs(loud(p)! - setLevel) >= 3);
   const drift = (p: Played) => (p.album ? (avg(p.tempos) - p.album) / p.album : 0);
   const fastest = tapped.length ? tapped.reduce((a, b) => (drift(b) > drift(a) ? b : a)) : null;
 
@@ -52,6 +58,7 @@ export function Recap({ gig, played, onClose }: { gig: Gig; played: Played[]; on
             </p>
           )}
           <p><b>{changed === null ? "…" : changed.length}</b><span>patches changed on the pedal</span></p>
+          {setLevel !== null && <p><b>{off.length}</b><span>{off.length === 1 ? "song stands out" : "songs stand out"} in level</span></p>}
         </div>
 
         {played.length > 0 && (
@@ -60,7 +67,14 @@ export function Recap({ gig, played, onClose }: { gig: Gig; played: Played[]; on
               const d = drift(p);
               return (
                 <li key={i}>
-                  <span className="recap-song">{p.song}</span>
+                  <span className="recap-song">
+                    {p.song}
+                    {setLevel !== null && loud(p) !== null && Math.abs(loud(p)! - setLevel) >= 3 && (
+                      <span className="recap-level" title="Against the rest of the set, as the scope heard it: the patch level could even it out">
+                        {loud(p)! > setLevel ? "+" : "−"}{Math.abs(loud(p)! - setLevel).toFixed(0)} dB
+                      </span>
+                    )}
+                  </span>
                   {p.tempos.length ? (
                     <>
                       <span className="recap-tempo"><b>{Math.round(avg(p.tempos))}</b>{p.album ? ` / ${p.album}` : ""} BPM</span>
@@ -104,5 +118,6 @@ export function Recap({ gig, played, onClose }: { gig: Gig; played: Played[]; on
   );
 }
 
+const median = (xs: number[]) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)];
 const avg = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
 const fmt = (d: number) => `${d >= 0 ? "+" : "−"}${Math.abs(d * 100).toFixed(1)}%`;

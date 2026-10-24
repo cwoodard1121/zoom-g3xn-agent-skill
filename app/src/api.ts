@@ -300,7 +300,8 @@ export const api = {
     return data as { text: string | null };
   },
   connect: () => call<Status>("POST", "/api/connect"),
-  track: (key: string) => call<TrackInfo>("GET", `/api/tracks/${key}`),
+  /** A song's recording, or null (from the list, so a song without one isn't a failed request). */
+  track: async (key: string) => (await call<{ tracks: TrackInfo[] }>("GET", "/api/tracks")).tracks.find((t) => t.key === key) ?? null,
   trackUrl: (key: string, added?: number) => `/api/tracks/${key}/audio${added ? `?v=${Math.round(added)}` : ""}`,
   putTrack: async (key: string, file: File) => {
     const res = await fetch(`/api/tracks/${key}?name=${encodeURIComponent(file.name)}`, {

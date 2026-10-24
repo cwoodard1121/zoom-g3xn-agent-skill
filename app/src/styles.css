@@ -1360,6 +1360,7 @@ select { cursor: pointer; }
 .recap-songs { list-style: none; margin: 0; padding: 0; counter-reset: song; }
 .recap-songs li { display: grid; grid-template-columns: minmax(0, 1fr) 150px 170px; align-items: center; gap: 14px; padding: 8px 0; border-top: 1px solid #1d1505; counter-increment: song; }
 .recap-song { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 17px; color: #f0c46a; }
+.recap-level { margin-left: 10px; padding: 2px 6px; font: 400 15px/1 var(--readout); color: #ff8a6b; border: 1px solid #5a1a10; vertical-align: 2px; }
 .recap-song::before { content: counter(song); display: inline-block; width: 2.2ch; font: 400 18px/1 var(--readout); color: var(--vfd-dim); }
 .recap-tempo { font: 400 18px/1 var(--readout); color: var(--vfd-dim); }
 .recap-tempo b { font-weight: 400; font-size: 24px; color: var(--vfd); }
@@ -1401,3 +1402,32 @@ select { cursor: pointer; }
 .shape .button.primary { background: var(--vfd); color: var(--glass); border-color: #000; }
 .shape-note { margin: 10px 0 0; font-size: 13px; color: var(--plate-dim); }
 @media (max-width: 640px) { .shape-list li { grid-template-columns: 30px minmax(0, 1fr) auto; } .shape-facts { display: none; } }
+
+/* ---------- stage, beside the song: the set, rehearsing, the desk ---------- */
+.stage-side { display: grid; gap: 14px; position: sticky; top: 8px; max-height: calc(100vh - 24px); overflow: auto; scrollbar-width: none; }
+.stage-side .setlist { margin-top: 0; }
+.side-panel { padding: 12px 12px 14px; background: #0b0905; border: 1px solid #2a1d00; display: grid; gap: 10px; }
+.side-title { margin: 0; font: 400 9px/1 var(--engraved); letter-spacing: 0.26em; text-transform: uppercase; color: var(--vfd-dim); }
+.side-tools { display: flex; flex-wrap: wrap; gap: 6px; }
+.side-panel .stage-rehearse { display: flex; gap: 6px; }
+.side-panel .stage-rehearse .button, .side-tools .button { flex: 1; }
+.side-panel .scope { margin-top: 0; }
+.side-panel .scope-bar .button { flex: 1; }
+.side-panel .scope-glass { height: 84px; padding: 6px; }
+.side-panel .scope-input { max-width: 100%; flex: 1 1 100%; }
+/* The ghost band, stacked to fit the column. */
+.side-panel .ghost { display: grid; grid-template-columns: 1fr auto; gap: 8px 10px; margin: 0; padding: 0; border: none; background: none; box-shadow: none; }
+.side-panel .ghost-label { display: none; }
+.side-panel .ghost-play { grid-column: 1 / -1; min-height: 52px; font: 400 12px/1 var(--engraved); letter-spacing: 0.2em; text-transform: uppercase; }
+.side-panel .ghost.on .ghost-play { color: var(--go); border-color: #1b5a2c; background: #04140a; box-shadow: 0 0 18px rgba(94, 224, 122, 0.15); }
+.side-panel .ghost-field { grid-column: 1 / -1; display: grid; grid-template-columns: 62px 1fr auto; }
+.side-panel .ghost-field input[type="range"] { width: 100%; }
+.side-panel .ghost-file { grid-column: 1; align-self: center; }
+.side-panel .ghost > .button:not(.ghost-play) { grid-column: 2; min-height: 34px; padding: 4px 10px; font-size: 12px; }
+.side-panel .ghost:not(:has(.ghost-play)) .ghost-file { white-space: normal; }
+
+/* The song's own controls: stepping through the set, talking, the tuner. */
+.stage-controls { flex-wrap: wrap; }
+.stage-controls .talk-button { min-height: 52px; padding: 0 18px; }
+.stage-controls .talk-button.live { color: #ffb3a6; border-color: #ff3b1f; box-shadow: 0 0 18px rgba(255, 59, 31, 0.35); }
+@media (max-width: 760px) { .stage-side { position: static; max-height: none; } }
