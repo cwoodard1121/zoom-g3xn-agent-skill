@@ -2,7 +2,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { api, ApiError, subscribe } from "./api";
-import type { ChatInfo, ChatMessage, GigSummary, Guitars, HistorySummary, PedalEvent, Status, TalkInfo, TalkState, Tone } from "./api";
+import type { ChatInfo, ChatMessage, GigSummary, Guitars, HistorySummary, PedalEvent, StageMove, Status, TalkInfo, TalkState, Tone } from "./api";
 
 interface State {
   linked: boolean; // WebSocket to the daemon is open
@@ -25,6 +25,8 @@ interface State {
   /** Words for the stage. `since`: when they started being said (performance.now()); `exact`
    * when that's from the words themselves, not from when the switch went down. */
   stageHeard: { text: string; n: number; since: number | null; exact: boolean } | null;
+  /** The last move for the stage from outside it (the API, Claude's stage tool). */
+  stageMove: { move: StageMove; n: number; since: number | null } | null;
 }
 
 type Action =
@@ -98,6 +100,10 @@ function reduce(s: State, a: Action): State {
       return { ...s, chat: { messages: a.info.messages, busy: a.info.busy, available: a.info.available } };
     case "talk-read":
       return { ...s, talk: { ...s.talk, ...a.info } };
+    case "stage": {
+      const { type: _type, n, ...move } = a;
+      return { ...s, stageMove: { move, n, since: typeof move.ago === "number" ? performance.now() - move.ago * 1000 : null } };
+    }
     case "talk": {
       const { type: _type, text, problem, to, n, ago, ...info } = a;
       const state = a.state as TalkState;
@@ -158,6 +164,7 @@ export function PedalProvider({ children }: { children: ReactNode }) {
     chat: { messages: [], busy: false, available: true },
     talk: { state: "idle", mic: "laptop", input: null, inputs: [], installed: false, heard: null, problem: null, since: null },
     stageHeard: null,
+    stageMove: null,
     remoteSeen: 0,
     guitars: { slots: {}, names: [] },
   });

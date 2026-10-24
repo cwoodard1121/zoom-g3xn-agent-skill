@@ -175,6 +175,27 @@ def write_tone(tone: dict, slot: int, replace: bool = False) -> dict:
 
 
 @server.tool()
+def stage(song: str | None = None, line: str | None = None, part: str | None = None, at: float | None = None,
+          nudge: float | None = None, action: str | None = None, live: bool = True) -> dict:
+    """Move the g3xn app's stage view (the gig song on screen and where its words are), or with
+    nothing given, say where it is now.
+
+    When the user says where the band is or where to go ("we're at 'way on down south' in
+    Sultans", "skip to the solo", "next song", "you're two bars behind", "stop the words"), use
+    this, not the tone tools. song: a title or part of one ("sultans"), or the song's number in
+    the set (1 = first). line: a bit of the words. part: "chorus", "second verse", "last chorus",
+    "solo". at: seconds into the song. nudge: bars, + when the band is ahead of the words, -
+    when behind. action: "pause", "go" or "top". live: it's where the band is right now (allow
+    for the time since it was said); false for "skip to" / "go to".
+    The app must be running with Stage open."""
+    move = {k: v for k, v in dict(song=song, line=line, part=part, at=at, nudge=nudge, action=action).items() if v is not None}
+    no_app = lambda _: {"error": "the g3xn app isn't running: open it, with Stage showing"}
+    if not move:
+        return _pedal(no_app, "GET", "/api/stage", needs_pedal=False)
+    return _pedal(no_app, "POST", "/api/stage", dict(move, live=live), needs_pedal=False)
+
+
+@server.tool()
 def guitar(slot: int | None = None, name: str | None = None) -> dict:
     """Which guitar a tone is for ("Strat", "Les Paul"...), kept by slot (the pedal can't store it).
     With slot and name: name it (name "" forgets it). Without: every slot's guitar and the guitars

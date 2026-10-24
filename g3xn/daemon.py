@@ -388,6 +388,17 @@ class ChatRequest(BaseModel):
     text: str
 
 
+class StageRequest(BaseModel):
+    """Where the stage should be. Any of these; `song` first, then the rest in that song."""
+    song: Union[str, int, None] = None   # a title (or part of one: "sultans") or the set's song number (1 = first)
+    line: str | None = None             # a bit of the words: "way on down south"
+    part: str | None = None             # "chorus", "second verse", "last chorus", "solo"
+    at: float | None = None             # seconds into the song
+    nudge: float | None = None          # bars: + moves the words on (the band is ahead), - back
+    action: str | None = None           # "pause", "go" or "top"
+    live: bool = True                   # it's where the band is now: allow for the time since it was said
+
+
 class TalkRequest(BaseModel):
     pressed: bool | None = None   # the app's hold-to-talk button: down (true) and up (false)
     mic: str | None = None        # laptop or phone
@@ -1082,6 +1093,40 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
         if req.pressed is not None:
             await asyncio.to_thread(talk.press if req.pressed else talk.release)
         return talk.info()
+
+    # --- the stage view, driven from anywhere (the phone, Claude, a script) ---
+
+    stage_now = {"state": None, "seen": 0.0, "n": 0}
+
+    @app.get("/api/stage", tags=["stage"])
+    async def stage_where():
+        """Where the app's stage view is: the song, how far in, the part and line of the words."""
+        fresh = time.monotonic() - stage_now["seen"] < 10
+        return {"open": talk.to_stage(), "state": stage_now["state"] if fresh else None}
+
+    @app.post("/api/stage", tags=["stage"])
+    async def stage_move(req: StageRequest):
+        """Move the stage view: switch song, jump to a line or part of the words, a time, nudge
+        them by bars, pause or carry on. The open stage view does it; with `live`, it allows for
+        the time since the last words were said (so "we're at ..." lands where they were)."""
+        move = req.model_dump(exclude_none=True)
+        if set(move) <= {"live"}:
+            raise ValueError("say where: a song, line, part, at, nudge or action")
+        if req.action not in (None, "pause", "go", "top"):
+            raise ValueError("action is pause, go or top")
+        if not talk.to_stage():
+            raise ValueError("the stage isn't open: open Stage in the g3xn app")
+        if req.live and talk.said_at and time.monotonic() - talk.said_at < 60:
+            move["ago"] = round(time.monotonic() - talk.said_at, 2)
+        stage_now["n"] += 1
+        hub.emit(dict(move, type="stage", n=stage_now["n"]))
+        return {"sent": move}
+
+    @app.post("/api/stage/state", tags=["stage"])
+    async def stage_state(state: dict = Body(...)):
+        """The stage view saying where it is (every couple of seconds while it's open)."""
+        stage_now["state"], stage_now["seen"] = state, time.monotonic()
+        return {"ok": True}
 
     @app.post("/api/talk/audio", tags=["claude"])
     async def talk_audio(request: Request, wake: bool = False, ago: float | None = None):

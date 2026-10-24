@@ -168,6 +168,19 @@ class DaemonTest(unittest.TestCase):
         self.assertIsNone(self.call("GET", "/api/setlists")["active"])
         self.assertEqual(self.error("GET", "/api/setlists/%s" % gid)[0], 400)
 
+    def test_the_stage_moves_from_anywhere(self):
+        self.call("POST", "/api/talk", {"stage": False})
+        self.assertIn("isn't open", self.error("POST", "/api/stage", {"line": "way on down"})[1])
+        self.call("POST", "/api/talk", {"stage": True})
+        self.addCleanup(self.call, "POST", "/api/talk", {"stage": False})
+        self.assertIn("say where", self.error("POST", "/api/stage", {"live": True})[1])
+        self.assertIn("pause, go or top", self.error("POST", "/api/stage", {"action": "dance"})[1])
+        sent = self.call("POST", "/api/stage", {"song": "sultans", "line": "way on down", "live": False})["sent"]
+        self.assertEqual(sent, {"song": "sultans", "line": "way on down", "live": False})
+        self.call("POST", "/api/stage/state", {"song": "Sultans of Swing", "at": 61.5, "line": "way on down"})
+        where = self.call("GET", "/api/stage")
+        self.assertEqual((where["open"], where["state"]["at"]), (True, 61.5))
+
     def test_guitars_follow_their_songs(self):
         self.assertEqual(self.call("PUT", "/api/guitars/1", {"guitar": "  Les   Paul "})["slots"], {"1": "Les Paul"})
         gig = {"name": "Guitars", "start_slot": 130, "patches": [

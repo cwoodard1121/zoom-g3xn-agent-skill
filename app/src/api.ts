@@ -109,6 +109,19 @@ export const trackKey = (e: { song: string; artist?: string }) =>
     ? `${e.artist ?? ""} ${e.song}`.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80)
     : "";
 
+/** Where the stage should go (POST /api/stage, the stage MCP tool): `song` first, then the rest
+ * in that song. `nudge` is in bars; `ago`: seconds since it was said (live moves). */
+export interface StageMove {
+  song?: string | number;
+  line?: string;
+  part?: string;
+  at?: number;
+  nudge?: number;
+  action?: "pause" | "go" | "top";
+  live?: boolean;
+  ago?: number;
+}
+
 /** Which guitar each slot's tone is for, and every guitar named so far (most used first). */
 export interface Guitars {
   slots: Record<string, string>;
@@ -243,6 +256,7 @@ export type PedalEvent =
   | { type: "tempo"; bpm: number }
   | { type: "backup"; folder?: string; problem?: string }
   | ({ type: "guitars" } & Guitars)
+  | ({ type: "stage"; n: number } & StageMove)
   | ({ type: "history" } & HistorySummary)
   | { type: "gigs"; gigs: GigSummary[]; active: string | null }
   | ChatEvent
@@ -337,6 +351,8 @@ export const api = {
     return data as TrackInfo;
   },
   guitars: () => call<Guitars>("GET", "/api/guitars"),
+  stage: (move: StageMove) => call<{ sent: StageMove }>("POST", "/api/stage", move),
+  stageState: (state: Record<string, unknown>) => call<{ ok: boolean }>("POST", "/api/stage/state", state),
   setGuitar: (slot: number, guitar: string) => call<Guitars>("PUT", `/api/guitars/${slot}`, { guitar }),
   remote: () => call<RemoteInfo>("GET", "/api/remote"),
   /** A phone pairing itself with the code shown on the computer (the daemon sets its cookie). */

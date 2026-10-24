@@ -30,7 +30,7 @@ import { fillLyrics, length, lines, lyricsMessage } from "../lyrics";
 import { usePedal } from "../pedal";
 import { mmss, useSongClock, useSongTime } from "../songclock";
 import type { SongClock } from "../songclock";
-import { partsOf, understand } from "../songmap";
+import { lineFor, partAt, partsOf, songNamed, splitSong, understand, wherePhrase } from "../songmap";
 import { sameTuning, tuningOf } from "../tuning";
 import type { Tuning } from "../tuning";
 
@@ -43,7 +43,7 @@ const PLAYERS = {
 type Player = keyof typeof PLAYERS;
 
 export function Stage() {
-  const { gigs, status, names, tuner, live, act, say, stageHeard, talk, guitars } = usePedal();
+  const { gigs, status, names, tuner, live, act, say, stageHeard, stageMove, talk, guitars } = usePedal();
   const [gig, setGig] = useState<Gig | null>(null);
   const [finding, setFinding] = useState(false);
   const findLyrics = async () => {
@@ -137,35 +137,108 @@ export function Stage() {
     const n = Math.round((Math.abs(by) / (4 * clock.beat)) * 2) / 2;
     return `${by > 0 ? "on" : "back"} ${n === 0.5 ? "half a bar" : `${n} bar${n === 1 ? "" : "s"}`}`;
   };
+  // A move: from words said here, the stage API or Claude's stage tool. `song` first (once that
+  // song is up, the rest is done in it), then: words to make sense of, a line, a part, a time, a
+  // nudge (seconds) or pause / go / top. Says what it did, or null when it couldn't.
+  type Move = { song?: number; text?: string; line?: string; part?: string; at?: number; nudge?: number; action?: "pause" | "go" | "top"; live: boolean };
+  const pending = useRef<{ song: number; move: Move; since: number | null; exact: boolean } | null>(null);
+  const moveRef = useRef((_m: Move, _since: number | null, _exact: boolean): string | null => null);
+  moveRef.current = (m, since, exact) => {
+    if (m.song !== undefined && m.song !== index) {
+      if (!slots[m.song]) return null;
+      const { song: _song, ...rest } = m;
+      pending.current = Object.keys(rest).filter((k) => rest[k as keyof typeof rest] !== undefined).length > 1 ? { song: m.song, move: rest, since, exact } : null;
+      goTo(m.song);
+      return `→ ${slots[m.song].song}`;
+    }
+    // "We're at the chorus" was true when they started saying it: the song has moved on since,
+    // by however long hearing it and working it out took. Without the words' own time, they're
+    // taken to start talking 0.4 s after the switch went down.
+    const late = () => (m.live && since !== null ? Math.max(0, (performance.now() - since) / 1000 - (exact ? 0 : 0.4)) * (clock.rate || 1) : 0);
+    const jump = (at: number, said: string) => {
+      clock.jump(at + late());
+      return said;
+    };
+    const where = { now: clock.time(), beat: clock.beat, parts, lines: allLines, total };
+    if (m.action === "pause") {
+      if (clock.running) clock.toggle();
+      return "Paused";
+    }
+    if (m.action === "go") {
+      if (!clock.running) clock.toggle();
+      return "Carrying on";
+    }
+    if (m.action === "top") {
+      clock.reset();
+      return "From the top";
+    }
+    if (m.nudge !== undefined) {
+      clock.nudge(m.nudge);
+      return bars(m.nudge);
+    }
+    if (m.at !== undefined) return jump(Math.max(0, m.at), mmss(m.at));
+    if (m.line !== undefined) {
+      const hit = info ? lineFor(m.line, allLines, where.now, total) : null;
+      return hit ? jump(hit.at, `“${hit.text}”`) : null;
+    }
+    const text = m.part ?? m.text;
+    if (text === undefined) return m.song !== undefined ? slots[m.song]?.song ?? null : null;
+    if (!info) return null;
+    // Words: what songmap makes of them ("chorus", "two bars behind", a line), else "we're at X"
+    // with X a part or a bit of a line.
+    const wp = wherePhrase(text);
+    const h = understand(text, where) ?? (wp ? understand(wp.what, where) : null);
+    if (h?.do === "jump") return jump(h.at, h.said);
+    if (h?.do === "nudge") {
+      clock.nudge(h.by);
+      return bars(h.by);
+    }
+    if (h) return moveRef.current({ action: h.do, live: false }, since, exact);
+    const hit = lineFor(wp?.what ?? text, allLines, where.now, total);
+    return hit ? jump(hit.at, `“${hit.text}”`) : null;
+  };
+  // Once the song asked for is up, the rest of the move.
+  useEffect(() => {
+    const p = pending.current;
+    if (!p || p.song !== index || !info) return;
+    pending.current = null;
+    const did = moveRef.current(p.move, p.since, p.exact);
+    setHeard((x) => ({ text: x?.text ?? "", did: did ?? "Couldn't find that in this song", n: (x?.n ?? 0) + 1 }));
+  }, [index, info]);
+
   const hearRef = useRef((_text: string, _since: number | null, _exact: boolean) => {});
   hearRef.current = (text, since, exact) => {
-    const h = info ? understand(text, { now: clock.time(), beat: clock.beat, parts, lines: allLines, total }) : null;
-    let did: string | null = null;
-    if (!h) {
-      // Only one open stage passes it on, or Claude would hear it from the phone too.
-      if (["127.0.0.1", "localhost"].includes(location.hostname)) act(() => api.chatSend(text));
-    } else if (h.do === "jump") {
-      // "We're at the chorus" was true when they started saying it: the song has moved on since,
-      // by however long hearing it and working it out took. Without the words' own time, they're
-      // taken to start talking 0.4 s after the switch went down.
-      const late = h.live && since !== null ? Math.max(0, (performance.now() - since) / 1000 - (exact ? 0 : 0.4)) * (clock.rate || 1) : 0;
-      clock.jump(h.at + late);
-      did = h.said;
-    } else if (h.do === "nudge") {
-      clock.nudge(h.by);
-      did = bars(h.by);
-    } else if (h.do === "pause") {
-      if (clock.running) clock.toggle();
-      did = "Paused";
-    } else if (h.do === "go") {
-      if (!clock.running) clock.toggle();
-      did = "Carrying on";
-    } else {
-      clock.reset();
-      did = "From the top";
-    }
-    setHeard((x) => ({ text, did, n: (x?.n ?? 0) + 1 }));
+    const titles = slots.map((x) => x.song);
+    const s = text.toLowerCase();
+    const live = !/\b(skip|jump|go to|back to|take me|start (at|from)|from the)\b/.test(s);
+    const step = /\b(next song|skip (this )?song)\b/.test(s) ? 1 : /\b(previous song|last song|song before|go back a song)\b/.test(s) ? -1 : 0;
+    const { song, rest } = step ? { song: Math.max(0, Math.min(slots.length - 1, index + step)), rest: "" } : splitSong(text, titles);
+    const did = moveRef.current({ song, text: rest || undefined, live }, since, exact);
+    // Talk about where the song is stays here, even when it can't be found; the rest goes to
+    // Claude. Only one open stage passes it on, or Claude would hear it from the phone too.
+    const placeTalk = song !== undefined || wherePhrase(rest) !== null;
+    if (did === null && !placeTalk && ["127.0.0.1", "localhost"].includes(location.hostname)) act(() => api.chatSend(text));
+    setHeard((x) => ({ text, did: did ?? (placeTalk ? "Couldn't find that" : null), n: (x?.n ?? 0) + 1 }));
   };
+  // Moves from outside: the stage API and Claude's stage tool.
+  const seenMove = useRef(stageMove?.n);
+  useEffect(() => {
+    if (!stageMove || stageMove.n === seenMove.current) return;
+    seenMove.current = stageMove.n;
+    const { move } = stageMove;
+    const song = move.song === undefined ? undefined : songNamed(move.song, slots.map((x) => x.song));
+    const label = [move.song, move.line && `“${move.line}”`, move.part, move.at !== undefined && mmss(move.at), move.action].filter(Boolean).join(" · ");
+    if (song === -1) {
+      setHeard((x) => ({ text: label, did: `No song called ${move.song} in this gig`, n: (x?.n ?? 0) + 1 }));
+      return;
+    }
+    const did = moveRef.current(
+      { song, line: move.line, part: move.part, at: move.at, nudge: move.nudge === undefined ? undefined : move.nudge * 4 * clock.beat, action: move.action, live: move.live ?? true },
+      stageMove.since,
+      true,
+    );
+    setHeard((x) => ({ text: label, did: did ?? "Couldn't find that", n: (x?.n ?? 0) + 1 }));
+  }, [stageMove]);
   const seenHeard = useRef(stageHeard?.n);
   useEffect(() => {
     if (!stageHeard || stageHeard.n === seenHeard.current) return;
@@ -186,6 +259,25 @@ export function Stage() {
       window.clearInterval(id);
       api.talkSet({ stage: false }).catch(() => {});
     };
+  }, []);
+
+  // Where this view is, for GET /api/stage (so Claude's stage tool can say).
+  const whereRef = useRef((): Record<string, unknown> => ({}));
+  whereRef.current = () => {
+    const now = clock.time();
+    const line = allLines.filter((l) => l.time !== null && l.time <= now).pop();
+    return {
+      song: song?.song ?? null, number: index + 1, of: slots.length, next: next?.song ?? null,
+      at: Math.round(now * 10) / 10, running: clock.running, bpm: clock.bpm ?? info?.tempo ?? null,
+      part: parts.length ? partAt(parts, now)?.label ?? null : null, line: line?.text ?? null,
+      songs: slots.map((x) => x.song),
+    };
+  };
+  useEffect(() => {
+    const tell = () => api.stageState(whereRef.current()).catch(() => {});
+    tell();
+    const id = window.setInterval(tell, 2000);
+    return () => window.clearInterval(id);
   }, []);
 
   const stepRef = useRef((_d: number) => {});

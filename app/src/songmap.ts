@@ -248,3 +248,111 @@ export function followLine(heard: string, w: Where, window = 25): number | null 
   });
   return best ? (best as { at: number }).at : null;
 }
+
+// --- songs and lines by name: "we're at 'way on down south' in Sultans", and the stage API ---
+
+/** The same word, allowing for speech-to-text slips ("sultan"/"sultans", "south"/"souths"). */
+const alike = (a: string, b: string) =>
+  a === b || (a.length >= 4 && b.length >= 4 && (a.startsWith(b) || b.startsWith(a) || oneOff(a, b)));
+function oneOff(a: string, b: string) {
+  if (Math.abs(a.length - b.length) > 1) return false;
+  let i = 0;
+  let j = 0;
+  let diff = 0;
+  while (i < a.length && j < b.length) {
+    if (a[i] === b[j]) {
+      i++;
+      j++;
+      continue;
+    }
+    if (++diff > 1) return false;
+    if (a.length > b.length) i++;
+    else if (b.length > a.length) j++;
+    else {
+      i++;
+      j++;
+    }
+  }
+  return diff + (a.length - i) + (b.length - j) <= 1;
+}
+const SMALL = new Set("the a an of and in on to at song".split(" "));
+
+/** Which song of the set a name means (its index), or -1: "sultans" is "Sultans of Swing"; a
+ * number is its place in the set (1 = first). */
+export function songNamed(name: string | number, titles: string[]): number {
+  const text = String(name).trim();
+  if (/^\d+$/.test(text)) {
+    const n = Number(text) - 1;
+    return n >= 0 && n < titles.length ? n : -1;
+  }
+  const want = words(text).filter((w) => !SMALL.has(w));
+  if (!want.length) return -1;
+  let best = -1;
+  let bestScore = 0;
+  titles.forEach((title, i) => {
+    const tw = words(title).filter((w) => !SMALL.has(w));
+    const hits = want.filter((w) => tw.some((x) => alike(w, x))).length;
+    const score = hits === want.length ? 1 + hits / Math.max(1, tw.length) : 0; // all of it, and most of the title
+    if (score > bestScore) [best, bestScore] = [i, score];
+  });
+  return best;
+}
+
+/** "we're at way on down south in sultans": the song named at the end (if one of the set is),
+ * and the rest. "switch to sultans", "play sultans": just the song. */
+export function splitSong(text: string, titles: string[]): { song?: number; rest: string } {
+  const ws = words(text);
+  const s = ws.join(" ");
+  const sw = /^(?:(?:ok|okay|so|now) )?(?:switch(?: songs?)? to|go to|skip to|jump to|on to|onto|play|start|were (?:doing|playing)|we are (?:doing|playing)|next up is|now) (.+)$/.exec(s);
+  if (sw && words(sw[1]).length <= 6) {
+    const song = songNamed(sw[1], titles);
+    if (song >= 0) return { song, rest: "" };
+  }
+  for (let k = 1; k < ws.length - 1; k++) {
+    if (!["in", "of", "from", "during"].includes(ws[k])) continue;
+    const tail = ws.slice(k + 1);
+    if (tail.length > 6) continue;
+    const song = songNamed(tail.join(" "), titles);
+    if (song >= 0) return { song, rest: ws.slice(0, k).join(" ") };
+  }
+  return { rest: s };
+}
+
+/** "we're at X", "skip to the line X", "on X": X, and whether it's where the band is now (live)
+ * rather than a place to go. Null when it isn't about where we are. */
+export function wherePhrase(text: string): { what: string; live: boolean } | null {
+  const s = words(text).join(" ");
+  const at = /^(?:(?:ok|okay|so|and) )?(?:(?:were|we re|we are|im|i m|i am|its|it s|the band is|the bands|were now|we are now) )?(?:at|on|in|up to|onto|into|past|just past) (?:the (?:line|bit|part|words?) )?(.+)$/.exec(s);
+  if (at) return { what: at[1], live: true };
+  const go = /^(?:(?:ok|okay|so|and) )?(?:skip|jump|go|take me|take us|start|go back|back|move|scroll|bring it|bring the words)(?: back| ahead| forward)? (?:to|at|from) (?:the (?:line|bit|part|words?) )?(.+)$/.exec(s);
+  if (go) return { what: go[1], live: false };
+  return null;
+}
+
+/** The line of the words a bit of them was from (the closest match; the nearest one to `now`
+ * when it comes back), allowing for slips and for the bit running into the next line. */
+export function lineFor(bit: string, ls: Line[], now: number, total: number): { at: number; text: string } | null {
+  const all = words(bit);
+  const fw = all.filter((w) => !SMALL.has(w)).length >= 2 ? all.filter((w) => !SMALL.has(w)) : all;
+  if (fw.length < 2 && !(fw.length === 1 && fw[0].length >= 5)) return null;
+  const lw = ls.map((l) => words(l.text));
+  let found: { score: number; at: number; text: string }[] = [];
+  ls.forEach((l, i) => {
+    if (!lw[i].length) return;
+    const at = l.time ?? (i / Math.max(1, ls.length)) * total;
+    const hitsIn = (line: string[]) => fw.filter((w) => line.some((x) => alike(w, x))).length;
+    const one = hitsIn(lw[i]);
+    const next = lw[i + 1] ? hitsIn(lw[i + 1]) : 0;
+    // The bit running on into the next line counts only when it's really in both.
+    const span = one && next && one < fw.length && next < fw.length ? hitsIn([...lw[i], ...lw[i + 1]]) : 0;
+    for (const [hits, penalty] of [[one, 0], [span, 0.1]]) {
+      const score = hits / fw.length - penalty;
+      if (score >= 0.6 && (hits >= 2 || fw.length === 1)) found.push({ score, at, text: l.text });
+    }
+  });
+  if (!found.length) return null;
+  const best = Math.max(...found.map((f) => f.score));
+  found = found.filter((f) => f.score >= best - 0.05);
+  const hit = found.reduce((a, b) => (Math.abs(b.at - now) < Math.abs(a.at - now) ? b : a));
+  return { at: Math.max(0, hit.at - 0.2), text: hit.text };
+}

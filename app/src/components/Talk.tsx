@@ -208,12 +208,12 @@ function usePhoneWake(on: boolean) {
           run.push(x);
           quiet = loud ? 0 : quiet + 1;
           const secs = run.length * block;
-          if (quiet * block < 0.6 && secs < 6) return;
+          if (quiet * block < 0.45 && secs < 6) return; // 0.45 s of quiet: you've stopped talking
           const all = [...pre, ...run];
           run = [];
           pre = [];
           quiet = 0;
-          if (secs - 0.6 < 0.3) return;
+          if (secs - 0.45 < 0.3) return;
           const audio = wav(all, rate);
           const seconds = all.length * block;
           if (busy) waiting = { audio, seconds, ended: performance.now() }; // the latest one waits

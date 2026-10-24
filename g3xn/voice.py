@@ -44,7 +44,8 @@ MICS = ("laptop", "phone")
 MODEL = "base.en"
 SHORTEST = 0.3              # seconds; a tap shorter than this is ignored
 PHONE_WAIT = 20.0           # seconds to wait for a phone's recording after the switch comes up
-STAGE_HOLD = 20.0           # seconds the stage keeps the words after it last said it's open
+STAGE_HOLD = 75.0           # seconds the stage keeps the words after it last said it's open (a
+                            # hidden window's timers can be slowed to once a minute)
 # "Hey Claude": how speech-to-text tends to write it, and what's said after it.
 WAKE = re.compile(r"\b(?:hey|hi|hay|ok|okay|yo)\W+(?:claude|claud|clod|cloud|clyde|clawed|klaud)\b\W*(.*)$", re.I)
 AWAKE = 6.0                 # seconds after a bare "Hey Claude" to say the rest
@@ -169,6 +170,7 @@ class Talk:
         self._began = 0.0                   # when the switch went down (time.monotonic())
         self._awake_until = 0.0             # a bare "Hey Claude" waits for the rest until then
         self._last = ("", 0.0)              # the last words acted on hands free, and when
+        self.said_at = 0.0                  # when the last words heard started being said (time.monotonic())
         self._stage_until = 0.0
         self._said = 0
         self._working = False
@@ -352,6 +354,7 @@ class Talk:
     def _heard(self, text, ago=None):
         """ago: seconds since they started saying it."""
         more = {} if ago is None else {"ago": round(max(0.0, ago), 2)}
+        self.said_at = time.monotonic() - (ago or 0.0)
         if self.to_stage():
             self._said += 1
             self._set("heard", text=text, to="stage", n=self._said, **more)
@@ -387,7 +390,7 @@ class WakeListener:
 
     FRAME = 480             # 30 ms at 16 kHz
     LONGEST = 6.0           # seconds: a stretch this long is heard anyway (the band never stops)
-    GAP = 0.6               # seconds of quiet that end a stretch
+    GAP = 0.45              # seconds of quiet that end a stretch (the wait after you stop talking)
     ABOVE = 10.0            # dB over the room's usual level that counts as speech
     ROOM = 5.0              # seconds of levels the room's usual level is taken from
 
