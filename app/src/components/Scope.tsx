@@ -1,6 +1,7 @@
 // What the guitar sounds like right now, on VFD glass: a spectrum of amber segments with peaks that
-// hang and fall, and the level. It listens to an audio input of this computer (the G3Xn's own USB
-// audio, or an interface); the browser asks once for permission. Nothing is recorded or sent.
+// hang and fall, and the level. It listens to an audio input of this computer: the G3Xn sends no
+// sound over USB, so that's a mic near the amp, or the pedal's output into an audio interface. The
+// browser asks once for permission. Nothing is recorded or sent.
 // While it listens, the level of the playing (not the silences) goes to `onLevel` a few times a
 // second, so the recap can say which patches sit louder or quieter than the rest of the set.
 import { useEffect, useRef, useState } from "react";
@@ -165,7 +166,7 @@ export function Scope({ onLevel }: { onLevel?: (db: number) => void }) {
   return (
     <div className={`scope${on ? " on" : ""}`}>
       <div className="scope-bar">
-        <button className="button" aria-pressed={on} onClick={() => setOn(!on)} title="Show what the guitar sounds like, from an audio input">
+        <button className="button" aria-pressed={on} onClick={() => setOn(!on)} title="Show what the guitar sounds like: a mic near the amp, or the pedal's output into an audio interface">
           Scope
         </button>
         {on && inputs.length > 1 && (
