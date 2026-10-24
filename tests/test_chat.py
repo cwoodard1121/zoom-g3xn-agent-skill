@@ -172,6 +172,102 @@ class TalkTest(unittest.TestCase):
             self.talk().set_mic("bluetooth")
 
 
+class Ears:
+    """A WakeListener's start and stop, without a microphone."""
+
+    def __init__(self, listener):
+        self.listener = listener
+
+    def start(self):
+        self.listener._thread.start()
+
+    def stop(self):
+        self.listener.stop()
+
+
+class WakeTest(unittest.TestCase):
+    def setUp(self):
+        self.events, self.sent = Events(), []
+        self.said = queue.Queue()          # what each loud stretch "says", in order
+        self.talk = Talk(self.events, self.sent.append, recorder=FakeMic(), transcribe=lambda audio: "")
+
+    def listen(self):
+        from g3xn.voice import WakeListener
+        self.ears = WakeListener(self.talk, transcribe=lambda audio: self.said.get(timeout=5))
+        self.talk.wake(True, Ears(self.ears))
+        self.addCleanup(self.talk.wake, False)
+
+    def speak(self, words, seconds=1.0):
+        """Quiet, then `seconds` of loud, then quiet: one stretch that turns into `words`."""
+        import numpy
+        self.said.put(words)
+        frame = self.ears.FRAME
+        quiet = numpy.full(frame, 0.001, "float32")
+        loud = numpy.full(frame, 0.3, "float32")
+        for f in [quiet] * 20 + [loud] * int(seconds * SAMPLE_RATE / frame) + [quiet] * 30:
+            self.ears.feed(f)
+        for _ in range(100):                       # heard before the next (a busy listener drops it)
+            if self.said.empty() and self.ears._jobs.empty():
+                break
+            time.sleep(0.02)
+
+    def heard(self):
+        return self.events.until(lambda e: e.get("state") == "heard")[-1]
+
+    def test_hey_claude_and_what_follows_go_on_like_held_talk(self):
+        self.listen()
+        self.assertTrue(self.talk.info()["wake"])
+        self.speak("Hey, Claude, less fizzy.")
+        said = self.heard()
+        self.assertEqual(said["text"], "less fizzy")
+        self.assertGreater(said["ago"], 0.9)          # it started a second or more ago
+        self.events.until(lambda e: e.get("state") == "idle")
+        self.assertEqual(self.sent, ["less fizzy"])
+
+    def test_a_bare_hey_claude_waits_for_the_rest(self):
+        self.listen()
+        self.talk.stage(True)
+        self.speak("Okay Cloud.")
+        self.assertTrue(self.events.until(lambda e: e.get("state") == "listening")[-1]["wake"])
+        self.speak("we're in the chorus")
+        said = self.heard()
+        self.assertEqual((said["text"], said["to"]), ("we're in the chorus", "stage"))
+
+    def test_talk_not_for_it_is_dropped(self):
+        self.listen()
+        self.speak("so then he said the chorus was too loud")
+        self.speak("hey claude turn the delay off")
+        self.assertEqual(self.heard()["text"], "turn the delay off")
+        self.assertEqual(self.sent, ["turn the delay off"])
+
+    def test_the_time_counts_from_the_first_word_after_hey_claude(self):
+        class Words:                               # speech-to-text with word times
+            def words(self, audio):
+                return [("Hey", 0.3), (" Claude,", 0.5), (" we're", 1.5), (" at", 1.7), (" the", 1.8), (" chorus.", 1.9)]
+        self.talk.stage(True)
+        self.talk.transcribe = Words()
+        self.talk.wake_audio(b"wav", ago=4.0)     # recorded 4 s before it got here
+        said = self.heard()
+        self.assertEqual(said["text"], "we're at the chorus")
+        self.assertAlmostEqual(said["ago"], 2.5, delta=0.1)      # 4 s ago, 1.5 s in
+
+    def test_heard_by_the_phone_and_this_computer_its_done_once(self):
+        self.listen()
+        self.speak("hey claude two bars behind")
+        self.talk.transcribe = lambda audio: "Hey Claude, two bars behind."
+        self.assertEqual(self.talk.wake_audio(b"webm", ago=1.0), "Hey Claude, two bars behind.")
+        self.heard()
+        with self.assertRaises(AssertionError):
+            self.events.until(lambda e: e.get("state") == "heard", timeout=0.5)
+        self.assertEqual(self.sent, ["two bars behind"])
+
+    def test_off_stops_listening(self):
+        self.listen()
+        self.talk.wake(False)
+        self.assertFalse(self.talk.info()["wake"])
+        self.assertFalse(self.ears._thread.is_alive() and not self.ears._stopped)
+
+
 try:
     from test_daemon import get_json, start_daemon
     from g3xn.sim import VirtualPedal

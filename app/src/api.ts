@@ -211,6 +211,7 @@ export interface TalkInfo {
   input: string | null;
   inputs: string[];
   installed: boolean;
+  wake?: boolean; // this computer's mic is listening for "Hey Claude"
 }
 
 export type ChatEvent =
@@ -229,6 +230,7 @@ export type TalkEvent = {
   problem?: string;
   to?: "stage"; // the stage view takes these words (n counts them)
   n?: number;
+  ago?: number; // seconds since the words started being said (heard words)
 } & Partial<TalkInfo>;
 
 export type PedalEvent =
@@ -309,10 +311,15 @@ export const api = {
   talk: () => call<TalkInfo>("GET", "/api/talk"),
   /** The talk button (`pressed`), the mic, the stage view being open (`stage`: words go to it), or
    * words typed instead of said (`say`). */
-  talkSet: (req: { pressed?: boolean; mic?: TalkInfo["mic"]; input?: string; stage?: boolean; say?: string }) =>
+  talkSet: (req: { pressed?: boolean; mic?: TalkInfo["mic"]; input?: string; stage?: boolean; say?: string; wake?: boolean }) =>
     call<TalkInfo>("POST", "/api/talk", req),
-  talkAudio: async (audio: Blob) => {
-    const res = await fetch("/api/talk/audio", { method: "POST", body: audio, headers: { "Content-Type": audio.type || "application/octet-stream" } });
+  /** A recording to turn into words. `ago`: seconds since it started; `wake`: heard hands free
+   * (only "Hey Claude..." counts). */
+  talkAudio: async (audio: Blob, opts: { ago?: number; wake?: boolean } = {}) => {
+    const q = new URLSearchParams();
+    if (opts.ago !== undefined) q.set("ago", opts.ago.toFixed(3));
+    if (opts.wake) q.set("wake", "true");
+    const res = await fetch(`/api/talk/audio${q.size ? `?${q}` : ""}`, { method: "POST", body: audio, headers: { "Content-Type": audio.type || "application/octet-stream" } });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new ApiError(data.error ?? `The daemon answered ${res.status}`);
     return data as { text: string | null };

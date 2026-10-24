@@ -394,6 +394,7 @@ class TalkRequest(BaseModel):
     input: str | None = None      # which of this computer's microphones ("" = the system default)
     stage: bool | None = None     # the stage view is open (sent every few seconds) or closed
     say: str | None = None        # words typed instead of spoken
+    wake: bool | None = None      # hands free: listen all the time for "Hey Claude"
 
 
 def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, gigs_folder=None,
@@ -1070,6 +1071,8 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
             talk.stage(req.stage)
         if req.say is not None:
             await asyncio.to_thread(talk.said, req.say)
+        if req.wake is not None:
+            await asyncio.to_thread(talk.wake, req.wake)
         if req.mic is not None:
             talk.set_mic(req.mic)
         if req.input is not None:
@@ -1081,13 +1084,20 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
         return talk.info()
 
     @app.post("/api/talk/audio", tags=["claude"])
-    async def talk_audio(request: Request):
+    async def talk_audio(request: Request, wake: bool = False, ago: float | None = None):
         """A recording (webm, ogg, wav...) from the phone or the app: turned into words, then sent
-        to Claude. Returns the words."""
+        to Claude (or the stage). `ago`: seconds since the recording started, when it was sent.
+        `wake`: heard hands free, so only "Hey Claude..." (or the rest after one) counts. Returns
+        the words."""
+        arriving = time.monotonic()
         data = await request.body()
         if len(data) > 20 * 1024 * 1024:
             raise ValueError("that recording is too long")
-        return {"text": await asyncio.to_thread(talk.audio, data)}
+        if ago is not None:
+            ago += time.monotonic() - arriving             # and the time it took to get here
+        if wake:
+            return {"text": await asyncio.to_thread(talk.wake_audio, data, ago)}
+        return {"text": await asyncio.to_thread(talk.audio, data, ago)}
 
     def footswitch_done(job):
         if job.exception():

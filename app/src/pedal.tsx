@@ -22,7 +22,9 @@ interface State {
   /** Counts the phone remote's changes (a phone paired, the remote turned on), to read it again. */
   remoteSeen: number;
   /** The last words meant for the stage view ("chorus", "two bars behind"), counted. */
-  stageHeard: { text: string; n: number; since: number | null } | null;
+  /** Words for the stage. `since`: when they started being said (performance.now()); `exact`
+   * when that's from the words themselves, not from when the switch went down. */
+  stageHeard: { text: string; n: number; since: number | null; exact: boolean } | null;
 }
 
 type Action =
@@ -97,11 +99,13 @@ function reduce(s: State, a: Action): State {
     case "talk-read":
       return { ...s, talk: { ...s.talk, ...a.info } };
     case "talk": {
-      const { type: _type, text, problem, to, n, ...info } = a;
+      const { type: _type, text, problem, to, n, ago, ...info } = a;
       const state = a.state as TalkState;
-      // `since`: when the talking started (performance.now()), so the stage can allow for the delay.
-      const since = state === "listening" ? performance.now() : s.talk.since;
-      if (to === "stage" && text && n) return { ...s, stageHeard: { text, n, since }, talk: { ...s.talk, state, heard: text, problem: null, since } };
+      // `since`: when the talking started (performance.now()), so the stage can allow for the delay:
+      // from the words' own time (`ago`) when there is one, else from when the switch went down.
+      const exact = typeof ago === "number";
+      const since = exact ? performance.now() - ago * 1000 : state === "listening" ? performance.now() : s.talk.since;
+      if (to === "stage" && text && n) return { ...s, stageHeard: { text, n, since, exact }, talk: { ...s.talk, state, heard: text, problem: null, since } };
       return {
         ...s,
         talk: {

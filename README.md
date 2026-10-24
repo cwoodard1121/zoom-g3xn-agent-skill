@@ -219,7 +219,7 @@ Patch format notes live at the top of [`g3xn/patch.py`](g3xn/patch.py).
 ## Roadmap
 
 - ~~**Agent plugin**~~: done (see *Use it with Claude*)
-- **Desktop app**: tone editor as a rack (A/B, history, macros), patch library, gigs and stage view, tuner, and Claude built in: type a change or hold a footswitch and say it (speech-to-text runs on your computer: `pip install g3xn[voice]`). Gig tools, the phone remote (local network or Tailscale, pair with a code) and MIDI footswitches are in the daemon, with screens to come. Next: lyrics on stage. Plan: [`docs/APP_PLAN.md`](docs/APP_PLAN.md)
+- **Desktop app**: tone editor as a rack (A/B, history, macros), patch library, gigs and stage view, tuner, and Claude built in: type a change, hold a footswitch and say it, or go hands free with "Hey Claude, …" ("Hey Claude, we're at the chorus" puts the stage where you said it, allowing for the time it took to hear). The computer's mic and a phone's (over https) both listen; speech-to-text runs on your computer: `pip install g3xn[voice]`. Gig tools, the phone remote (local network or Tailscale, pair with a code) and MIDI footswitches are in the daemon, with screens to come. Next: lyrics on stage. Plan: [`docs/APP_PLAN.md`](docs/APP_PLAN.md)
 
 ## Credits
 

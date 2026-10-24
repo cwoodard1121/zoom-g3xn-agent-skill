@@ -23,7 +23,7 @@ import { Recap } from "../components/Recap";
 import type { Played } from "../components/Recap";
 import { Scope } from "../components/Scope";
 import { SongMap, StageNote } from "../components/SongMap";
-import { TalkButton } from "../components/Talk";
+import { TalkButton, WakeButton } from "../components/Talk";
 import { addCue, effectIndex, parseCues, parseNotes } from "../cues";
 import type { Cue } from "../cues";
 import { fillLyrics, length, lines, lyricsMessage } from "../lyrics";
@@ -137,16 +137,18 @@ export function Stage() {
     const n = Math.round((Math.abs(by) / (4 * clock.beat)) * 2) / 2;
     return `${by > 0 ? "on" : "back"} ${n === 0.5 ? "half a bar" : `${n} bar${n === 1 ? "" : "s"}`}`;
   };
-  const hearRef = useRef((_text: string, _since: number | null) => {});
-  hearRef.current = (text, since) => {
+  const hearRef = useRef((_text: string, _since: number | null, _exact: boolean) => {});
+  hearRef.current = (text, since, exact) => {
     const h = info ? understand(text, { now: clock.time(), beat: clock.beat, parts, lines: allLines, total }) : null;
     let did: string | null = null;
     if (!h) {
       // Only one open stage passes it on, or Claude would hear it from the phone too.
       if (["127.0.0.1", "localhost"].includes(location.hostname)) act(() => api.chatSend(text));
     } else if (h.do === "jump") {
-      // "We're in the chorus" was true when they started talking: the song has moved on since.
-      const late = h.live && since !== null ? Math.max(0, (performance.now() - since) / 1000 - 0.4) * (clock.rate || 1) : 0;
+      // "We're at the chorus" was true when they started saying it: the song has moved on since,
+      // by however long hearing it and working it out took. Without the words' own time, they're
+      // taken to start talking 0.4 s after the switch went down.
+      const late = h.live && since !== null ? Math.max(0, (performance.now() - since) / 1000 - (exact ? 0 : 0.4)) * (clock.rate || 1) : 0;
       clock.jump(h.at + late);
       did = h.said;
     } else if (h.do === "nudge") {
@@ -168,7 +170,7 @@ export function Stage() {
   useEffect(() => {
     if (!stageHeard || stageHeard.n === seenHeard.current) return;
     seenHeard.current = stageHeard.n;
-    hearRef.current(stageHeard.text, stageHeard.since);
+    hearRef.current(stageHeard.text, stageHeard.since, stageHeard.exact);
   }, [stageHeard]);
   useEffect(() => {
     if (!heard) return;
@@ -505,6 +507,7 @@ export function Stage() {
           </button>
           <span className="stage-spacer" />
           {talk.installed && <TalkButton />}
+          {talk.installed && <WakeButton />}
           <button className="button" aria-pressed={tunerOn} onClick={() => act(() => api.tuner(!tunerOn))}>
             Tuner
           </button>

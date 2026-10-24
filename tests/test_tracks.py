@@ -130,10 +130,14 @@ class TrackRoutesTest(unittest.TestCase):
         self.assertEqual(request(self.url + "/api/tracks/notes")[0], 404)                  # nothing kept
         req = urllib.request.Request(self.url + "/api/tracks/huge", method="PUT", data=b"tiny",
                                      headers={"Content-Type": "audio/mpeg", "Content-Length": str(LIMIT + 1)})
-        with self.assertRaises(urllib.error.HTTPError) as ctx:      # refused from its size, before the body
+        try:                                                        # refused from its size, before the body
             urllib.request.urlopen(req, timeout=10)
-        self.assertEqual(ctx.exception.code, 400)
-        self.assertIn("80 MB", ctx.exception.read().decode())
+            self.fail("an 80 MB+ upload was taken")
+        except urllib.error.HTTPError as err:
+            self.assertEqual(err.code, 400)
+            self.assertIn("80 MB", err.read().decode())
+        except ConnectionError:                                     # Windows: hung up on before the answer was read
+            pass
         self.assertFalse(os.path.exists(os.path.join(self.root, "huge")))
         self.assertEqual(request(self.url + "/api/tracks/x", headers={"Origin": "https://evil.example"})[0], 403)
 
