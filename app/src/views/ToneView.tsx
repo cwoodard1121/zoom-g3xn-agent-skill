@@ -10,6 +10,7 @@ import { HistoryPanel } from "../components/HistoryPanel";
 import { Icon } from "../components/Icon";
 import { Knob } from "../components/Knob";
 import { Macros } from "../components/Macros";
+import { GuitarField } from "../components/Guitar";
 import { RackUnit } from "../components/RackUnit";
 import { usePedal } from "../pedal";
 import { SaveDialog } from "./SaveDialog";
@@ -86,6 +87,7 @@ export function ToneView() {
                 ? `Copy of ${copyOf.name} on slot ${slot} · slot ${copyOf.slot} is untouched`
                 : `Trying out · slot ${slot}`}
           </p>
+          <GuitarField slot={slot} className="tone-guitar" />
           <div className="tone-meters">
             <Meter label="DSP" value={tone.dsp_percent} max={100} text={`${Math.round(tone.dsp_percent)}%`} />
             <Meter label="Positions" value={used} max={MAX_POSITIONS} text={`${used} of ${MAX_POSITIONS}`} />

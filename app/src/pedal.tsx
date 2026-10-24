@@ -2,7 +2,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { api, ApiError, subscribe } from "./api";
-import type { ChatInfo, ChatMessage, GigSummary, HistorySummary, PedalEvent, Status, TalkInfo, TalkState, Tone } from "./api";
+import type { ChatInfo, ChatMessage, GigSummary, Guitars, HistorySummary, PedalEvent, Status, TalkInfo, TalkState, Tone } from "./api";
 
 interface State {
   linked: boolean; // WebSocket to the daemon is open
@@ -17,6 +17,8 @@ interface State {
   chat: { messages: ChatMessage[]; busy: boolean; available: boolean };
   /** Push to talk: the microphone settings, and what's being heard right now. */
   talk: TalkInfo & { heard: string | null; problem: string | null; since: number | null };
+  /** Which guitar each slot's tone is for (by slot number), and the guitars named so far. */
+  guitars: { slots: Record<number, string>; names: string[] };
   /** Counts the phone remote's changes (a phone paired, the remote turned on), to read it again. */
   remoteSeen: number;
   /** The last words meant for the stage view ("chorus", "two bars behind"), counted. */
@@ -28,7 +30,8 @@ type Action =
   | { type: "linked"; open: boolean }
   | { type: "live-read"; tone: Tone | null }
   | { type: "chat-read"; info: ChatInfo }
-  | { type: "talk-read"; info: TalkInfo };
+  | { type: "talk-read"; info: TalkInfo }
+  | { type: "guitars-read"; info: Guitars };
 
 /** The conversation with one more event applied: Claude's reply is the last message. */
 function chatWith(chat: State["chat"], a: Extract<PedalEvent, { type: "chat" }>): State["chat"] {
@@ -76,6 +79,11 @@ function reduce(s: State, a: Action): State {
       return { ...s, tuner: { note: a.note, meter: a.meter } };
     case "tempo":
       return { ...s, pedalTempo: { bpm: a.bpm, at: Date.now() } };
+    case "guitars":
+    case "guitars-read": {
+      const info = a.type === "guitars" ? a : a.info;
+      return { ...s, guitars: { slots: Object.fromEntries(Object.entries(info.slots).map(([k, v]) => [Number(k), v])), names: info.names } };
+    }
     case "remote":
       return { ...s, remoteSeen: s.remoteSeen + 1 };
     case "history":
@@ -133,6 +141,8 @@ interface Pedal extends State {
   say: (text: string, error?: boolean) => void;
   refreshLive: () => void;
   setLive: (tone: Tone) => void;
+  /** Name the guitar for a slot's tone ("" forgets it). */
+  setGuitar: (slot: number, guitar: string) => Promise<void>;
 }
 
 const PedalContext = createContext<Pedal | null>(null);
@@ -145,6 +155,7 @@ export function PedalProvider({ children }: { children: ReactNode }) {
     talk: { state: "idle", mic: "laptop", input: null, inputs: [], installed: false, heard: null, problem: null, since: null },
     stageHeard: null,
     remoteSeen: 0,
+    guitars: { slots: {}, names: [] },
   });
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [copyOf, setCopyOf] = useState<CopyOf | null>(null);
@@ -166,6 +177,7 @@ export function PedalProvider({ children }: { children: ReactNode }) {
     if (!state.linked) return;
     api.chat().then((info) => dispatch({ type: "chat-read", info }), () => {});
     api.talk().then((info) => dispatch({ type: "talk-read", info }), () => {});
+    api.guitars().then((info) => dispatch({ type: "guitars-read", info }), () => {});   // older daemons: none
   }, [state.linked]);
 
   const say = useCallback((text: string, error = false) => {
@@ -198,6 +210,13 @@ export function PedalProvider({ children }: { children: ReactNode }) {
     if (current) refreshLive();
   }, [current, refreshLive]);
   const setLive = useCallback((tone: Tone) => dispatch({ type: "live-read", tone }), []);
+  const setGuitar = useCallback(
+    async (slot: number, guitar: string) => {
+      const info = await act(() => api.setGuitar(slot, guitar));
+      if (info) dispatch({ type: "guitars-read", info });
+    },
+    [act],
+  );
   // Off the scratch slot, whatever plays there next may not be that copy any more.
   const scratch = state.status?.scratch_slot;
   useEffect(() => {
@@ -215,8 +234,9 @@ export function PedalProvider({ children }: { children: ReactNode }) {
       say,
       refreshLive,
       setLive,
+      setGuitar,
     }),
-    [state, copyOf, act, toasts, say, refreshLive, setLive],
+    [state, copyOf, act, toasts, say, refreshLive, setLive, setGuitar],
   );
   return <PedalContext.Provider value={value}>{children}</PedalContext.Provider>;
 }

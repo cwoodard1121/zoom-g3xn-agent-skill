@@ -41,7 +41,8 @@ def main(argv=None):
                                            footswitches=daemon.Footswitches(daemon.MIDI_FILE if real else None),
                                            backups_folder=daemon.service.BACKUP_ROOT if real else None,
                                            tracks_folder=daemon.TRACKS_FOLDER if real else
-                                           tempfile.mkdtemp(prefix="g3xn-tracks-"))
+                                           tempfile.mkdtemp(prefix="g3xn-tracks-"),
+                                           guitars_file=daemon.GUITARS_FILE if real else None)
     try:
         _show(url)
     finally:

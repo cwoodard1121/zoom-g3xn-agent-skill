@@ -175,6 +175,18 @@ def write_tone(tone: dict, slot: int, replace: bool = False) -> dict:
 
 
 @server.tool()
+def guitar(slot: int | None = None, name: str | None = None) -> dict:
+    """Which guitar a tone is for ("Strat", "Les Paul"...), kept by slot (the pedal can't store it).
+    With slot and name: name it (name "" forgets it). Without: every slot's guitar and the guitars
+    named so far. When you make or save a tone for the user, name the guitar they said they play it on."""
+    from .guitars import FILE, Guitars
+    if slot is not None and name is not None:
+        return _pedal(lambda p: (Guitars(FILE).set(slot, name), Guitars(FILE).info())[1], "PUT", "/api/guitars/%d" % slot,
+                      {"guitar": name}, needs_pedal=False)
+    return _pedal(lambda p: Guitars(FILE).info(), "GET", "/api/guitars", needs_pedal=False)
+
+
+@server.tool()
 def load_gig(gig: dict, confirm: bool = False) -> dict:
     """Load a setlist into consecutive slots. gig = {"name", "start_slot", "patches": [entries]}, each
     entry {"song", "tone": tone JSON} or {"song", "from_slot": n} (optionally "slot" to pin it).

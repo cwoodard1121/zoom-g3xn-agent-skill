@@ -43,7 +43,7 @@ const PLAYERS = {
 type Player = keyof typeof PLAYERS;
 
 export function Stage() {
-  const { gigs, status, names, tuner, live, act, say, stageHeard, talk } = usePedal();
+  const { gigs, status, names, tuner, live, act, say, stageHeard, talk, guitars } = usePedal();
   const [gig, setGig] = useState<Gig | null>(null);
   const [finding, setFinding] = useState(false);
   const findLyrics = async () => {
@@ -357,6 +357,12 @@ export function Stage() {
     </div>
   );
   const tuning = tuningOf(info?.tuning);
+  // The guitar for each song: the gig's, else the one named for its patch's slot.
+  const guitarAt = (i: number) => (slots[i] ? entryAt(i)?.guitar || guitars.slots[slots[i].slot] : undefined);
+  const guitar = guitarAt(index);
+  const nextGuitar = guitarAt(index + 1);
+  const switching = !!(next && nextGuitar && guitar && nextGuitar !== guitar);
+  const switched = index > 0 && !!guitar && !!guitarAt(index - 1) && guitarAt(index - 1) !== guitar;
 
   return (
     <section className="stage" ref={stageRef} aria-labelledby="stage-song">
@@ -414,6 +420,11 @@ export function Stage() {
                 <span className="stage-lcd-slot">{String(song.slot).padStart(3, "0")}</span>
                 <span>{song.patch}</span>
               </span>
+              {guitar && (
+                <span className={`stage-fact stage-guitar${switched ? " switched" : ""}`} key={`guitar-${song.slot}`}>
+                  {switched ? "Now on the" : "Guitar"} <b>{guitar}</b>
+                </span>
+              )}
               {info?.tempo && <span className="stage-fact"><b>{info.tempo}</b> BPM</span>}
               {info?.key && <span className="stage-fact">Key <b>{info.key}</b></span>}
               {info?.pickup && <span className="stage-fact">Pickup <b>{info.pickup}</b></span>}
@@ -478,7 +489,10 @@ export function Stage() {
 
         <div className="stage-next" style={{ viewTransitionName: "stage-next" }}>
           {next ? (
-            <p><span className="stage-next-label">Next</span> {next.song} <span className="stage-next-slot">slot {next.slot}</span></p>
+            <p>
+              <span className="stage-next-label">Next</span> {next.song} <span className="stage-next-slot">slot {next.slot}</span>
+              {switching && <span className="stage-next-guitar">switch to the <b>{nextGuitar}</b></span>}
+            </p>
           ) : song ? (
             <p><span className="stage-next-label">Next</span> That's the last song.</p>
           ) : null}
@@ -535,6 +549,7 @@ export function Stage() {
               >
                 <span className="setlist-n">{i + 1}</span>
                 <span className="setlist-title" style={i === incoming ? { viewTransitionName: "stage-song" } : undefined}>{s.song}</span>
+                {i > 0 && guitarAt(i) && guitarAt(i) !== guitarAt(i - 1) && <span className="setlist-guitar">{guitarAt(i)}</span>}
                 <span className="setlist-slot">{s.slot}</span>
               </button>
             </li>

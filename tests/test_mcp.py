@@ -74,6 +74,10 @@ class ThroughDaemonTest(unittest.TestCase):
         run_tools(self)
         self.assertEqual(mcp_server.pedal_status()["via"], "g3xn app")
 
+    def test_guitar(self):
+        self.assertEqual(mcp_server.guitar(slot=3, name="Tele")["slots"], {"3": "Tele"})
+        self.assertEqual(mcp_server.guitar()["names"], ["Tele"])
+
     def test_saved_gigs(self):
         import urllib.request
         req = urllib.request.Request(self.url + "/api/setlists/new", method="PUT", data=json.dumps(GIG).encode(),

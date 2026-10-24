@@ -49,6 +49,7 @@ from .footswitch import Footswitches
 from .backups import Backups, write as write_backup
 from . import tracks as track_files
 from .tracks import Tracks
+from .guitars import FILE as GUITARS_FILE, Guitars
 from .history import History
 from .patch import Patch
 from .lyrics import LyricsError
@@ -349,6 +350,10 @@ class BatchRequest(BaseModel):
     save: bool = False
 
 
+class GuitarRequest(BaseModel):
+    guitar: Optional[str] = None  # "Strat", "Les Paul"...; empty or null forgets it
+
+
 class RemoteRequest(BaseModel):
     on: bool = True
 
@@ -393,7 +398,7 @@ class TalkRequest(BaseModel):
 
 def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, gigs_folder=None,
                remote=None, remote_on=False, footswitches=None, chat=None, talk=None, backups_folder=None,
-               tracks_folder=None):
+               tracks_folder=None, guitars_file=None):
     """announce: write ~/.g3xn/daemon.json so g3xn-mcp finds this daemon.
     history_file: where the time machine keeps its versions (None = memory only).
     gigs_folder: where saved gigs live (None = a temporary folder).
@@ -406,7 +411,8 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
     backups_folder: where whole-pedal backups are listed from, and where one is kept each time the
     pedal connects (None = no automatic backups, none listed).
     tracks_folder: where the ghost band's recordings live (None = ~/.g3xn/tracks, made when the
-    first one is uploaded)."""
+    first one is uploaded).
+    guitars_file: which guitar each slot's tone is for (None = only until the daemon stops)."""
     remote = remote or Remote()
     footswitches = footswitches or Footswitches()
     if remote.port == port:
@@ -417,6 +423,7 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
     history = History(history_file)
     gigs = GigLibrary(gigs_folder or tempfile.mkdtemp(prefix="g3xn-gigs-"))
     tracks = Tracks(tracks_folder or TRACKS_FOLDER)
+    guitars = Guitars(guitars_file)
     chat = chat or Chat("http://127.0.0.1:%d" % port, hub.emit)
     talk = talk or Talk(hub.emit, chat.send)
 
@@ -798,8 +805,32 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
         result = await run("loading %s" % gig.get("name", "the gig"), lambda p: service.load_saved_gig(p, gigs, gig_id),
                            touches=lambda r: [s["slot"] for s in r["written"] if not s.get("in_place")])
         state["active_gig"] = gig_id
+        # Each song's guitar goes with it to its new slot: the gig's, or its patch's old slot's.
+        try:
+            dest = {s["song"]: s["slot"] for s in gigs.get(gig_id)["loaded"]["slots"]}
+        except (OSError, KeyError, TypeError):
+            dest = {}
+        for entry in gig.get("patches", []):
+            guitar = entry.get("guitar") or guitars.get(entry.get("from_slot"))
+            if guitar and entry.get("song") in dest:
+                guitars.set(dest[entry["song"]], guitar)
+        hub.emit(dict(guitars.info(), type="guitars"))
         hub.emit(gigs_event())
         return result
+
+    # --- which guitar each tone is for ---
+
+    @app.get("/api/guitars", tags=["guitars"])
+    async def guitar_list():
+        """The guitar named for each slot ({"slots": {"12": "Strat"}}), and every name used so far."""
+        return guitars.info()
+
+    @app.put("/api/guitars/{slot}", tags=["guitars"])
+    async def guitar_for(slot: int, req: GuitarRequest):
+        """Name the guitar a slot's tone is for (empty forgets it)."""
+        guitars.set(slot, req.guitar)
+        hub.emit(dict(guitars.info(), type="guitars"))
+        return guitars.info()
 
     @app.post("/api/setlists/{gig_id}/batch", tags=["gigs"])
     async def batch_setlist(gig_id: str, req: BatchRequest):
@@ -1132,11 +1163,13 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
 
 
 def start_in_thread(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, gigs_folder=None,
-                    remote=None, footswitches=None, chat=None, talk=None, backups_folder=None, tracks_folder=None):
+                    remote=None, footswitches=None, chat=None, talk=None, backups_folder=None, tracks_folder=None,
+                    guitars_file=None):
     """Run the daemon on a background thread (for the desktop window and tests).
     Returns (url, stop) once it is serving."""
     app = create_app(make_pedal, port, announce, history_file, gigs_folder, remote, footswitches=footswitches,
-                     chat=chat, talk=talk, backups_folder=backups_folder, tracks_folder=tracks_folder)
+                     chat=chat, talk=talk, backups_folder=backups_folder, tracks_folder=tracks_folder,
+                     guitars_file=guitars_file)
     server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning"))
     thread = threading.Thread(target=server.run, name="g3xn-daemon", daemon=True)
     thread.start()
@@ -1226,6 +1259,7 @@ def main(argv=None):
     app = create_app(pedal_factory(args), args.port, announce=real, history_file=HISTORY_FILE if real else None,
                      gigs_folder=GIGS_FOLDER if real else None, backups_folder=service.BACKUP_ROOT if real else None,
                      tracks_folder=TRACKS_FOLDER if real else tempfile.mkdtemp(prefix="g3xn-tracks-"),
+                     guitars_file=GUITARS_FILE if real else None,
                      remote=Remote(REMOTE_FILE if real else None, port=args.remote_port, use_tailscale=real), remote_on=args.remote,
                      footswitches=Footswitches(MIDI_FILE if real else None))
     print("g3xn daemon on http://127.0.0.1:%d (API docs at /docs)%s" % (args.port, "" if os.path.isdir(UI_DIR) else

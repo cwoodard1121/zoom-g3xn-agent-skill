@@ -8,7 +8,7 @@ import type { CopyOf } from "../pedal";
 
 /** over: the stored patch this tone is a copy of, when the user asked to save over it. */
 export function SaveDialog({ tone, over, onClose }: { tone: Tone; over?: CopyOf; onClose: () => void }) {
-  const { names, status, act, setCopyOf } = usePedal();
+  const { names, status, act, setCopyOf, guitars, setGuitar } = usePedal();
   const scratch = status?.scratch_slot ?? 150;
   const firstEmpty = Object.entries(names).find(([n, name]) => name === "Empty" && Number(n) !== scratch)?.[0];
   const [slot, setSlot] = useState(over?.slot ?? (firstEmpty ? Number(firstEmpty) : 1));
@@ -30,6 +30,8 @@ export function SaveDialog({ tone, over, onClose }: { tone: Tone; over?: CopyOf;
       (r) => `Kept ${r.saved} in slot ${r.slot}${r.kept ? ". The old patch is in a file, just in case" : ""}`,
     );
     if (done) {
+      const scratchGuitar = scratch ? guitars.slots[scratch] : undefined;
+      if (scratchGuitar && guitars.slots[done.slot] !== scratchGuitar) setGuitar(done.slot, scratchGuitar);
       setCopyOf(null);
       onClose();
     }

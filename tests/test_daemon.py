@@ -168,6 +168,21 @@ class DaemonTest(unittest.TestCase):
         self.assertIsNone(self.call("GET", "/api/setlists")["active"])
         self.assertEqual(self.error("GET", "/api/setlists/%s" % gid)[0], 400)
 
+    def test_guitars_follow_their_songs(self):
+        self.assertEqual(self.call("PUT", "/api/guitars/1", {"guitar": "  Les   Paul "})["slots"], {"1": "Les Paul"})
+        gig = {"name": "Guitars", "start_slot": 130, "patches": [
+            {"song": "From one", "from_slot": 1}, {"song": "Named", "from_slot": 1, "guitar": "Tele"},
+            {"song": "Neither", "from_slot": 2}]}
+        gid = self.call("PUT", "/api/setlists/new", gig)["id"]
+        self.call("POST", "/api/setlists/%s/load" % gid)
+        info = self.call("GET", "/api/guitars")
+        self.assertEqual({k: info["slots"].get(k) for k in ("130", "131", "132")}, {"130": "Les Paul", "131": "Tele", "132": None})
+        self.assertEqual(info["names"], ["Les Paul", "Tele"])
+        self.call("PUT", "/api/guitars/130", {"guitar": ""})
+        self.assertNotIn("130", self.call("GET", "/api/guitars")["slots"])
+        self.assertEqual(self.error("PUT", "/api/guitars/0", {"guitar": "Strat"})[0], 400)
+        self.call("DELETE", "/api/setlists/%s" % gid)
+
     def test_gig_check_lock_restore(self):
         clean = {"name": "CLEAN", "chain": [{"effect": "FD TWNR"}]}
         gig = {"name": "Saturday", "start_slot": 130, "patches": [{"song": "Drive", "tone": TONE},

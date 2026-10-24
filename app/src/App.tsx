@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "./api";
 import { ClaudeStrip } from "./components/ClaudeStrip";
+import { GuitarNames } from "./components/Guitar";
 import { PairGate, PhoneButton } from "./components/Phone";
 import { TalkSheet } from "./components/Talk";
 import { PedalProvider, usePedal } from "./pedal";
@@ -51,6 +52,7 @@ function Shell() {
       </main>
       {view !== "stage" && <ClaudeStrip />}
       <TalkSheet />
+      <GuitarNames />
       <Toasts />
     </div>
   );

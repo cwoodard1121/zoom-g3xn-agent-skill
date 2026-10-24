@@ -84,6 +84,7 @@ export interface GigEntry {
   notes?: string;
   tempo?: number;
   key?: string;
+  guitar?: string; // which guitar the song is played on (else its patch's guitar, see guitars())
   pickup?: string; // the guitar's pickup selector for the song: "Bridge", "Neck", "2"…
   tuning?: string; // "Eb", "Drop D", "D A D G B E"… (none is standard): see tuning.ts
   cues?: string; // effects to switch as the song goes, a line each: "1:05 Octave on" (see cues.ts)
@@ -107,6 +108,12 @@ export const trackKey = (e: { song: string; artist?: string }) =>
   e.song.trim()
     ? `${e.artist ?? ""} ${e.song}`.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80)
     : "";
+
+/** Which guitar each slot's tone is for, and every guitar named so far (most used first). */
+export interface Guitars {
+  slots: Record<string, string>;
+  names: string[];
+}
 
 /** The phone remote, as this computer sees it (the code only reaches this computer). */
 export interface RemoteInfo {
@@ -233,6 +240,7 @@ export type PedalEvent =
   | { type: "tuner"; note: string | null; meter: number }
   | { type: "tempo"; bpm: number }
   | { type: "backup"; folder?: string; problem?: string }
+  | ({ type: "guitars" } & Guitars)
   | ({ type: "history" } & HistorySummary)
   | { type: "gigs"; gigs: GigSummary[]; active: string | null }
   | ChatEvent
@@ -321,6 +329,8 @@ export const api = {
     if (!res.ok) throw new ApiError(data.error ?? `The daemon answered ${res.status}`);
     return data as TrackInfo;
   },
+  guitars: () => call<Guitars>("GET", "/api/guitars"),
+  setGuitar: (slot: number, guitar: string) => call<Guitars>("PUT", `/api/guitars/${slot}`, { guitar }),
   remote: () => call<RemoteInfo>("GET", "/api/remote"),
   /** A phone pairing itself with the code shown on the computer (the daemon sets its cookie). */
   pair: (code: string, name: string) => call<{ paired: { id: string; name: string } }>("POST", "/api/pair", { code, name }),

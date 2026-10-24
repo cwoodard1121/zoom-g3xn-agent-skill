@@ -107,7 +107,7 @@ interface EditorProps {
 }
 
 function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
-  const { names, live, act, say } = usePedal();
+  const { names, live, act, say, guitars } = usePedal();
   const [g, setG] = useState<Gig>(gig);
   const [dirty, setDirty] = useState(false);
   const [plan, setPlan] = useState<PlanStep[] | null>(null);
@@ -185,6 +185,7 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
             <span>BPM</span>
             <span>Key</span>
             <span>Tuning</span>
+            <span>Guitar</span>
             <span>Pickup</span>
             <span>Notes</span>
           </li>
@@ -238,6 +239,16 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
               list="tunings"
               value={entry.tuning ?? ""}
               onChange={(e) => setEntry(i, { ...entry, tuning: e.target.value || undefined })}
+            />
+            <input
+              className="song-guitar"
+              placeholder={(entry.from_slot !== undefined && guitars.slots[entry.from_slot]) || "Guitar"}
+              aria-label={`Guitar for song ${i + 1}`}
+              title="Which guitar the song is played on. Empty uses its patch's guitar (the grey name)"
+              list="guitars"
+              maxLength={40}
+              value={entry.guitar ?? ""}
+              onChange={(e) => setEntry(i, { ...entry, guitar: e.target.value || undefined })}
             />
             <input
               className="song-pickup"
