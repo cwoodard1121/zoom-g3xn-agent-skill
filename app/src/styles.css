@@ -1433,3 +1433,51 @@ select { cursor: pointer; }
 .stage-controls .talk-button { min-height: 52px; padding: 0 18px; }
 .stage-controls .talk-button.live { color: #ffb3a6; border-color: #ff3b1f; box-shadow: 0 0 18px rgba(255, 59, 31, 0.35); }
 @media (max-width: 760px) { .stage-side .setlist { max-height: none; } }
+
+/* ---------- the phone remote ---------- */
+.status-action.phone-button { display: inline-flex; align-items: center; gap: 7px; text-decoration: none; padding: 4px 8px; border: 1px solid #3a3d42; }
+.phone-led { width: 7px; height: 7px; border-radius: 50%; background: #3a3d42; }
+.phone-button.on { color: var(--plate-ink); }
+.phone-button.on .phone-led { background: var(--go); box-shadow: 0 0 8px var(--go); }
+.phone { display: grid; gap: 14px; color: var(--plate-ink); }
+.phone-switch { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.phone-switch p { margin: 0; color: var(--plate-dim); }
+.phone-steps { margin: 0; padding-left: 20px; color: var(--plate-dim); font-size: 14px; display: grid; gap: 4px; }
+.phone-qr { width: min(240px, 70vw); justify-self: center; padding: 10px; background: var(--vfd); box-shadow: 0 0 34px rgba(255, 176, 0, 0.3), inset 0 0 0 1px #000; }
+.phone-qr svg { display: block; width: 100%; height: auto; }
+.phone-addresses { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.phone-addresses button {
+  width: 100%; display: grid; gap: 3px; text-align: left; cursor: pointer; padding: 8px 10px;
+  background: var(--plate-black-2); border: 1px solid #000; color: var(--plate-dim);
+}
+.phone-addresses button[aria-pressed="true"] { background: var(--glass); color: var(--vfd); box-shadow: inset 0 2px 5px #000; }
+.phone-url { font: 400 20px/1.1 var(--readout); overflow-wrap: anywhere; }
+.phone-how { font-size: 12px; }
+.phone-problem { margin: 0; color: #ff8a6b; font-size: 13px; }
+.phone-code { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: var(--glass); box-shadow: inset 0 2px 6px #000; }
+.phone-code-label { font: 400 9px/1 var(--engraved); letter-spacing: 0.24em; text-transform: uppercase; color: var(--vfd-dim); }
+.phone-digits { font: 400 44px/1 var(--readout); color: var(--vfd-bright); letter-spacing: 0.06em; text-shadow: 0 0 14px var(--vfd-glow); font-weight: 400; }
+.phone-left { font: 400 18px/1 var(--readout); color: var(--vfd-dim); margin-right: auto; }
+.phone-title { margin: 6px 0 0; font: 400 10px/1 var(--engraved); letter-spacing: 0.22em; text-transform: uppercase; color: var(--plate-dim); }
+.phone-devices { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.phone-devices li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; background: var(--plate-black-2); }
+.phone-devices span { display: grid; gap: 2px; }
+.phone-devices small { color: var(--plate-dim); }
+.phone-none, .phone-note { margin: 0; color: var(--plate-dim); font-size: 13px; }
+
+/* A phone that isn't paired yet: just the code. */
+.pair { min-height: 100vh; display: grid; place-content: center; justify-items: center; gap: 14px; padding: 24px 16px; background: var(--night); color: var(--vfd); text-align: center; }
+.pair-mark { margin: 0; font: 400 12px/1 var(--engraved); letter-spacing: 0.5em; color: var(--vfd-dim); }
+.pair-title { margin: 0; font: 400 44px/1 var(--readout); text-shadow: 0 0 16px var(--vfd-glow); }
+.pair-help { margin: 0; color: #c8a25a; max-width: 30ch; }
+.pair-form { display: grid; gap: 14px; width: min(320px, 100%); margin-top: 8px; }
+.pair-code {
+  width: 100%; text-align: center; letter-spacing: 0.3em; padding: 12px 8px 8px;
+  font: 400 54px/1 var(--readout); color: var(--vfd-bright); caret-color: var(--vfd);
+  background: var(--glass); border: 1px solid #2a1d00; box-shadow: inset 0 2px 10px #000; text-shadow: 0 0 12px var(--vfd-glow);
+}
+.pair-code::placeholder { color: var(--vfd-ghost); text-shadow: none; }
+.pair-name { display: grid; gap: 6px; text-align: left; font: 400 9px/1 var(--engraved); letter-spacing: 0.22em; text-transform: uppercase; color: var(--vfd-dim); }
+.pair-name input { font: 400 16px/1.2 var(--body); letter-spacing: 0; text-transform: none; padding: 10px; background: #15110b; color: #f0c46a; border: 1px solid #2a1d00; }
+.pair .button.primary { min-height: 52px; background: var(--vfd); color: var(--glass); border-color: #000; font: 400 13px/1 var(--engraved); letter-spacing: 0.24em; text-transform: uppercase; }
+.pair-problem { margin: 0; color: #ff8a6b; }

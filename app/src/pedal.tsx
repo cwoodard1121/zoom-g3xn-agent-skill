@@ -17,6 +17,8 @@ interface State {
   chat: { messages: ChatMessage[]; busy: boolean; available: boolean };
   /** Push to talk: the microphone settings, and what's being heard right now. */
   talk: TalkInfo & { heard: string | null; problem: string | null; since: number | null };
+  /** Counts the phone remote's changes (a phone paired, the remote turned on), to read it again. */
+  remoteSeen: number;
   /** The last words meant for the stage view ("chorus", "two bars behind"), counted. */
   stageHeard: { text: string; n: number; since: number | null } | null;
 }
@@ -74,6 +76,8 @@ function reduce(s: State, a: Action): State {
       return { ...s, tuner: { note: a.note, meter: a.meter } };
     case "tempo":
       return { ...s, pedalTempo: { bpm: a.bpm, at: Date.now() } };
+    case "remote":
+      return { ...s, remoteSeen: s.remoteSeen + 1 };
     case "history":
       return { ...s, history: { position: a.position, entries: a.entries } };
     case "gigs":
@@ -140,6 +144,7 @@ export function PedalProvider({ children }: { children: ReactNode }) {
     chat: { messages: [], busy: false, available: true },
     talk: { state: "idle", mic: "laptop", input: null, inputs: [], installed: false, heard: null, problem: null, since: null },
     stageHeard: null,
+    remoteSeen: 0,
   });
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [copyOf, setCopyOf] = useState<CopyOf | null>(null);

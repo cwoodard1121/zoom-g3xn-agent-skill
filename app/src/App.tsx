@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "./api";
 import { ClaudeStrip } from "./components/ClaudeStrip";
+import { PairGate, PhoneButton } from "./components/Phone";
 import { TalkSheet } from "./components/Talk";
 import { PedalProvider, usePedal } from "./pedal";
 import { Gigs } from "./views/Gigs";
@@ -20,9 +21,11 @@ type View = (typeof VIEWS)[number]["id"];
 
 export function App() {
   return (
-    <PedalProvider>
-      <Shell />
-    </PedalProvider>
+    <PairGate>
+      <PedalProvider>
+        <Shell />
+      </PedalProvider>
+    </PairGate>
   );
 }
 
@@ -102,6 +105,7 @@ function StatusBar() {
       <span className="wordmark" aria-hidden="true">G3XN</span>
       <span className="status-text vfd">{text}</span>
       {status?.pedal.virtual && <span className="status-badge">Virtual pedal</span>}
+      <PhoneButton />
       {action && (
         <button className="status-action" onClick={action.run}>
           {action.label}

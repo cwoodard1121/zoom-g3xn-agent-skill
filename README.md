@@ -92,6 +92,15 @@ g3xn-app                                          # the app in its own window
 g3xn-app --sim                                    # try it with no pedal plugged in
 ```
 
+Or as a desktop app with Electron, which also puts the phone remote on:
+
+```bash
+cd desktop && npm install && npm run build        # desktop/out/g3xn-win32-x64/g3xn.exe
+npm start                                         # or run it from here; npm run sim for no pedal
+```
+
+`g3xn.exe` starts the daemon from this repo's `.venv` (or uses one that's already running) and stops it when you close the window. **Phone** in the top bar shows a QR code, the address and a six-digit code: open it on the phone (same Wi-Fi, the computer's hotspot, or anywhere with Tailscale), enter the code, and the phone has the whole app until you forget it there.
+
 Behind the window is `g3xn-daemon`, one process that holds the pedal so the app, Claude and the command line can share it. While it runs, the Claude plugin's tool calls go through it, so you watch Claude's changes happen in the app. The bar at the top always says what the pedal is doing; **Let go of the pedal** frees it for ToneLib. The daemon's API is documented at `http://127.0.0.1:8370/docs`. What's next is in [`docs/APP_PLAN.md`](docs/APP_PLAN.md).
 
 ## Install (library + CLI)

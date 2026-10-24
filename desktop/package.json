@@ -1,0 +1,16 @@
+{
+  "name": "g3xn-desktop",
+  "private": true,
+  "version": "0.1.0",
+  "description": "The g3xn app in its own window, with the daemon and the phone remote running behind it",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "sim": "electron . --sim",
+    "build": "node build.js"
+  },
+  "devDependencies": {
+    "@electron/packager": "^20.3.0",
+    "electron": "^45.0.0"
+  }
+}

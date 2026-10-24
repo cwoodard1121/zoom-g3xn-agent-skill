@@ -108,6 +108,16 @@ export const trackKey = (e: { song: string; artist?: string }) =>
     ? `${e.artist ?? ""} ${e.song}`.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80)
     : "";
 
+/** The phone remote, as this computer sees it (the code only reaches this computer). */
+export interface RemoteInfo {
+  on: boolean;
+  url: string | null; // http://<this computer on the network>:8372
+  devices: { id: string; name: string; paired: number; last_seen: number }[];
+  tailscale?: { url: string | null; https_url: string | null; problem: string | null };
+  code?: string | null;
+  code_expires?: number | null; // seconds since 1970
+}
+
 /** A song that changed on the pedal since its gig was loaded. */
 export interface GigChange {
   song: string;
@@ -311,6 +321,12 @@ export const api = {
     if (!res.ok) throw new ApiError(data.error ?? `The daemon answered ${res.status}`);
     return data as TrackInfo;
   },
+  remote: () => call<RemoteInfo>("GET", "/api/remote"),
+  /** A phone pairing itself with the code shown on the computer (the daemon sets its cookie). */
+  pair: (code: string, name: string) => call<{ paired: { id: string; name: string } }>("POST", "/api/pair", { code, name }),
+  remoteSwitch: (on: boolean) => call<RemoteInfo>("POST", "/api/remote", { on }),
+  remoteCode: () => call<RemoteInfo>("POST", "/api/remote/code"),
+  remoteForget: (id: string) => call<RemoteInfo>("DELETE", `/api/remote/devices/${id}`),
   deleteTrack: (key: string) => call<{ deleted: string }>("DELETE", `/api/tracks/${key}`),
   /** Songs changed on the pedal since the gig was loaded; and the panic button, putting them back. */
   checkGig: (id: string) => call<{ changed: GigChange[] }>("POST", `/api/setlists/${id}/check`),
