@@ -43,6 +43,7 @@ export interface SongClock {
   tap: () => void;
   jump: (at: number) => void; // carry on from `at` seconds (and run)
   nudge: (by: number) => void; // move the words on (or back) by `by` seconds, running or not
+  follow: (at: number, rate: number, running: boolean) => void; // keep to something else (the ghost band)
   toggle: () => void; // pause or carry on
   reset: () => void; // back to the top, stopped
 }
@@ -143,6 +144,7 @@ export function useSongClock(entry: GigEntry | undefined): SongClock {
     tap,
     jump: (at) => set({ base: Math.max(0, at), running: true }),
     nudge: (by) => set({ base: Math.max(0, time() + by) }),
+    follow: (at, rate, running) => set({ base: Math.max(0, at), rate, running }),
     toggle: () => set({ running: !clock.current.running }),
     reset: () => {
       set({ base: 0, running: false });

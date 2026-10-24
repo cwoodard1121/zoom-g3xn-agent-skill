@@ -18,6 +18,10 @@ import { api } from "../api";
 import type { Gig, GigEntry } from "../api";
 import type React from "react";
 import { ClockBar, Lyrics } from "../components/Lyrics";
+import { GhostBand } from "../components/GhostBand";
+import { Recap } from "../components/Recap";
+import type { Played } from "../components/Recap";
+import { Scope } from "../components/Scope";
 import { SongMap, StageNote } from "../components/SongMap";
 import { TalkButton } from "../components/Talk";
 import { addCue, effectIndex, parseCues, parseNotes } from "../cues";
@@ -105,6 +109,18 @@ export function Stage() {
     act(() => api.select(s.slot));
   };
 
+  // The show so far, for the recap: each song as it comes up, and the band's tempo each time it's tapped.
+  const [played, setPlayed] = useState<Played[]>([]);
+  const [recap, setRecap] = useState(false);
+  useEffect(() => {
+    if (!song) return;
+    setPlayed((p) => (p[p.length - 1]?.song === song.song ? p : [...p, { song: song.song, album: info?.tempo, tempos: [] }]));
+  }, [song?.song]);
+  useEffect(() => {
+    if (!clock.bpm || !song) return;
+    setPlayed((p) => p.map((x, i) => (i === p.length - 1 && x.song === song.song ? { ...x, tempos: [...x.tempos, clock.bpm!] } : x)));
+  }, [clock.bpm]);
+
   // The song's parts, and what was said about where it is.
   const allLines = useMemo(() => (info ? lines(info) : []), [info]);
   const total = info ? length(info, allLines) : 0;
@@ -172,12 +188,14 @@ export function Stage() {
   };
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.ctrlKey || e.metaKey || e.altKey || (e.target as HTMLElement).closest("input, textarea, select")) return;
+      // [ and ] work from a slider too (the ghost band's speed); typing in a box is left alone.
+      if (e.ctrlKey || e.metaKey || e.altKey || (e.target as HTMLElement).closest("input:not([type=range]), textarea, select")) return;
       if (e.key === "[" || e.key === "]") {
         e.preventDefault();
         nudgeRef.current(e.key === "]" ? 1 : -1);
         return;
       }
+      if ((e.target as HTMLElement).closest("input")) return;
       const d = { ArrowRight: 1, ArrowDown: 1, PageDown: 1, " ": 1, ArrowLeft: -1, ArrowUp: -1, PageUp: -1 }[e.key];
       if (d) {
         e.preventDefault();
@@ -425,6 +443,7 @@ export function Stage() {
               </div>
             )}
             {info?.notes && <p className="stage-notes" style={{ viewTransitionName: "stage-notes" }}>{info.notes}</p>}
+            <Scope />
             {info?.chords && (
               <dl className="stage-chords" aria-label="Chords" style={{ viewTransitionName: "stage-chords" }}>
                 {info.chords.split("\n").filter((l) => l.trim()).map((l, i) => {
@@ -479,6 +498,9 @@ export function Stage() {
             ))}
           </span>
           <TalkButton />
+          <button className="button" onClick={() => setRecap(true)} title="Tempo against the record, and patches changed on the pedal (with the button that puts them back)">
+            Recap
+          </button>
           <button className="button" aria-pressed={tunerOn} onClick={() => act(() => api.tuner(!tunerOn))}>
             Tuner
           </button>
@@ -496,6 +518,7 @@ export function Stage() {
         {song && info && (
           <div className="stage-lyrics-wrap" style={{ viewTransitionName: "stage-words" }}>
             <ClockBar entry={info} clock={clock} />
+            <GhostBand entry={info} clock={clock} />
             <SongMap parts={parts} total={total} clock={clock} cues={cues} notes={notes} />
             <StageNote notes={notes} clock={clock} />
             {heard && (
@@ -518,6 +541,7 @@ export function Stage() {
         )}
       </div>
 
+      {recap && <Recap gig={gig} played={played} onClose={() => setRecap(false)} />}
       <ol className="setlist" aria-label="Setlist">
         {slots.map((s, i) => (
           <li key={s.slot}>

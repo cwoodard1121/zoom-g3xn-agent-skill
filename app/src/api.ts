@@ -93,6 +93,30 @@ export interface GigEntry {
   duration?: number; // the recording's length in seconds
 }
 
+/** A song's recording, kept by the daemon for the ghost band. */
+export interface TrackInfo {
+  key: string;
+  name: string; // the file it came from
+  type: string;
+  size: number;
+  added: number; // seconds since 1970
+}
+
+/** Where a song's recording is kept: its artist and title, as a key ("" if it has no title). */
+export const trackKey = (e: { song: string; artist?: string }) =>
+  e.song.trim()
+    ? `${e.artist ?? ""} ${e.song}`.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80)
+    : "";
+
+/** A song that changed on the pedal since its gig was loaded. */
+export interface GigChange {
+  song: string;
+  slot: number;
+  patch: string;
+  now: string;
+  change?: string;
+}
+
 export interface Backup {
   name: string; // "auto/2026-10-23_101500"
   time: number; // seconds since 1970
@@ -276,6 +300,20 @@ export const api = {
     return data as { text: string | null };
   },
   connect: () => call<Status>("POST", "/api/connect"),
+  track: (key: string) => call<TrackInfo>("GET", `/api/tracks/${key}`),
+  trackUrl: (key: string, added?: number) => `/api/tracks/${key}/audio${added ? `?v=${Math.round(added)}` : ""}`,
+  putTrack: async (key: string, file: File) => {
+    const res = await fetch(`/api/tracks/${key}?name=${encodeURIComponent(file.name)}`, {
+      method: "PUT", body: file, headers: { "Content-Type": file.type || "application/octet-stream" },
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new ApiError(data.error ?? `The daemon answered ${res.status}`);
+    return data as TrackInfo;
+  },
+  deleteTrack: (key: string) => call<{ deleted: string }>("DELETE", `/api/tracks/${key}`),
+  /** Songs changed on the pedal since the gig was loaded; and the panic button, putting them back. */
+  checkGig: (id: string) => call<{ changed: GigChange[] }>("POST", `/api/setlists/${id}/check`),
+  restoreGig: (id: string) => call<{ restored: GigChange[]; backup: string | null }>("POST", `/api/setlists/${id}/restore`),
 };
 
 let allEffects: Promise<EffectSummary[]> | null = null;
