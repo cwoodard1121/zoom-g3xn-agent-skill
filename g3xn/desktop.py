@@ -11,6 +11,7 @@ import contextlib
 import json
 import os
 import sys
+import tempfile
 import threading
 import urllib.request
 import webbrowser
@@ -38,7 +39,9 @@ def main(argv=None):
                                            gigs_folder=daemon.GIGS_FOLDER if real else None,
                                            remote=daemon.Remote(daemon.REMOTE_FILE if real else None, use_tailscale=real),
                                            footswitches=daemon.Footswitches(daemon.MIDI_FILE if real else None),
-                                           backups_folder=daemon.service.BACKUP_ROOT if real else None)
+                                           backups_folder=daemon.service.BACKUP_ROOT if real else None,
+                                           tracks_folder=daemon.TRACKS_FOLDER if real else
+                                           tempfile.mkdtemp(prefix="g3xn-tracks-"))
     try:
         _show(url)
     finally:

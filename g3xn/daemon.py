@@ -36,7 +36,7 @@ from typing import Optional, Union
 
 import uvicorn
 from fastapi import Body, FastAPI, Request, Response, WebSocket, WebSocketDisconnect
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -47,6 +47,8 @@ from .gig import GigLibrary, shown as shown_gig
 from .chat import Chat, ChatError
 from .footswitch import Footswitches
 from .backups import Backups, write as write_backup
+from . import tracks as track_files
+from .tracks import Tracks
 from .history import History
 from .patch import Patch
 from .lyrics import LyricsError
@@ -60,6 +62,7 @@ DEFAULT_PORT = 8370
 DISCOVERY_FILE = os.path.join(os.path.expanduser("~"), ".g3xn", "daemon.json")
 HISTORY_FILE = os.path.join(os.path.expanduser("~"), ".g3xn", "history.json")
 GIGS_FOLDER = gig_files.FOLDER
+TRACKS_FOLDER = track_files.FOLDER
 REMOTE_FILE = os.path.join(os.path.expanduser("~"), ".g3xn", "remote.json")
 MIDI_FILE = os.path.join(os.path.expanduser("~"), ".g3xn", "midi.json")
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -384,10 +387,13 @@ class TalkRequest(BaseModel):
     pressed: bool | None = None   # the app's hold-to-talk button: down (true) and up (false)
     mic: str | None = None        # laptop or phone
     input: str | None = None      # which of this computer's microphones ("" = the system default)
+    stage: bool | None = None     # the stage view is open (sent every few seconds) or closed
+    say: str | None = None        # words typed instead of spoken
 
 
 def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, gigs_folder=None,
-               remote=None, remote_on=False, footswitches=None, chat=None, talk=None, backups_folder=None):
+               remote=None, remote_on=False, footswitches=None, chat=None, talk=None, backups_folder=None,
+               tracks_folder=None):
     """announce: write ~/.g3xn/daemon.json so g3xn-mcp finds this daemon.
     history_file: where the time machine keeps its versions (None = memory only).
     gigs_folder: where saved gigs live (None = a temporary folder).
@@ -398,7 +404,9 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
     chat: Claude in the app (a chat.Chat; default: the user's Claude Code, on this daemon's tools).
     talk: push to talk (a voice.Talk; default: the laptop microphone, words to the chat).
     backups_folder: where whole-pedal backups are listed from, and where one is kept each time the
-    pedal connects (None = no automatic backups, none listed)."""
+    pedal connects (None = no automatic backups, none listed).
+    tracks_folder: where the ghost band's recordings live (None = ~/.g3xn/tracks, made when the
+    first one is uploaded)."""
     remote = remote or Remote()
     footswitches = footswitches or Footswitches()
     if remote.port == port:
@@ -408,6 +416,7 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
     worker = PedalWorker(make_pedal, hub.emit, backups)
     history = History(history_file)
     gigs = GigLibrary(gigs_folder or tempfile.mkdtemp(prefix="g3xn-gigs-"))
+    tracks = Tracks(tracks_folder or TRACKS_FOLDER)
     chat = chat or Chat("http://127.0.0.1:%d" % port, hub.emit)
     talk = talk or Talk(hub.emit, chat.send)
 
@@ -700,6 +709,46 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
 
         return await run("putting slot %d back" % req.slot, put_back, touches=[req.slot])
 
+    # --- the ghost band's recordings ---
+
+    @app.get("/api/tracks", tags=["tracks"])
+    async def list_tracks():
+        """Every song recording kept for the ghost band, by key."""
+        return {"tracks": await asyncio.to_thread(tracks.list)}
+
+    @app.get("/api/tracks/{key}", tags=["tracks"])
+    async def get_track(key: str):
+        """A recording's name, type, size in bytes and when it was added."""
+        return tracks.info(key) or no_track(key)
+
+    @app.put("/api/tracks/{key}", tags=["tracks"])
+    async def put_track(key: str, request: Request, name: str = ""):
+        """Upload a song's recording (mp3, m4a, ogg, wav, webm or flac, up to 80 MB) as the raw
+        request body, with its file's name as ?name=. Replaces any earlier one under the same key."""
+        size = request.headers.get("content-length", "")
+        if size.isdigit() and int(size) > track_files.LIMIT:
+            raise ValueError("that recording is over %d MB" % (track_files.LIMIT // (1024 * 1024)))
+        tracks.info(key)                  # a bad key is refused before the upload is read
+        data = await request.body()
+        return await asyncio.to_thread(tracks.put, key, data, name, request.headers.get("content-type", ""))
+
+    @app.get("/api/tracks/{key}/audio", tags=["tracks"])
+    async def track_audio(key: str):
+        """The recording itself, for an <audio> element. Range requests work, so it can seek."""
+        info, path = tracks.info(key), tracks.path(key)
+        if not info or not path:
+            return no_track(key)
+        return FileResponse(path, media_type=info["type"], headers={"Cache-Control": "no-cache"})
+
+    @app.delete("/api/tracks/{key}", tags=["tracks"])
+    async def delete_track(key: str):
+        if not await asyncio.to_thread(tracks.delete, key):
+            return no_track(key)
+        return {"deleted": key}
+
+    def no_track(key):
+        return JSONResponse({"error": "there's no recording for %s" % key}, status_code=404)
+
     # --- saved gigs (the app's setlists) ---
 
     @app.get("/api/setlists", tags=["gigs"])
@@ -983,8 +1032,13 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
 
     @app.post("/api/talk", tags=["claude"])
     async def talk_switch(req: TalkRequest):
-        """Pick the microphone (`mic`: laptop or phone; `input`: which of this computer's), or press
-        and release the app's talk button (`pressed`)."""
+        """Pick the microphone (`mic`: laptop or phone; `input`: which of this computer's), press
+        and release the app's talk button (`pressed`), say the stage view is open (`stage`: the
+        words go to it while it is) or type the words (`say`)."""
+        if req.stage is not None:
+            talk.stage(req.stage)
+        if req.say is not None:
+            await asyncio.to_thread(talk.said, req.say)
         if req.mic is not None:
             talk.set_mic(req.mic)
         if req.input is not None:
@@ -1078,11 +1132,11 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
 
 
 def start_in_thread(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, gigs_folder=None,
-                    remote=None, footswitches=None, chat=None, talk=None, backups_folder=None):
+                    remote=None, footswitches=None, chat=None, talk=None, backups_folder=None, tracks_folder=None):
     """Run the daemon on a background thread (for the desktop window and tests).
     Returns (url, stop) once it is serving."""
     app = create_app(make_pedal, port, announce, history_file, gigs_folder, remote, footswitches=footswitches,
-                     chat=chat, talk=talk, backups_folder=backups_folder)
+                     chat=chat, talk=talk, backups_folder=backups_folder, tracks_folder=tracks_folder)
     server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning"))
     thread = threading.Thread(target=server.run, name="g3xn-daemon", daemon=True)
     thread.start()
@@ -1171,6 +1225,7 @@ def main(argv=None):
     real = args.sim is None
     app = create_app(pedal_factory(args), args.port, announce=real, history_file=HISTORY_FILE if real else None,
                      gigs_folder=GIGS_FOLDER if real else None, backups_folder=service.BACKUP_ROOT if real else None,
+                     tracks_folder=TRACKS_FOLDER if real else tempfile.mkdtemp(prefix="g3xn-tracks-"),
                      remote=Remote(REMOTE_FILE if real else None, port=args.remote_port, use_tailscale=real), remote_on=args.remote,
                      footswitches=Footswitches(MIDI_FILE if real else None))
     print("g3xn daemon on http://127.0.0.1:%d (API docs at /docs)%s" % (args.port, "" if os.path.isdir(UI_DIR) else
