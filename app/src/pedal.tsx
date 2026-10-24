@@ -16,7 +16,9 @@ interface State {
   gigs: { list: GigSummary[]; active: string | null };
   chat: { messages: ChatMessage[]; busy: boolean; available: boolean };
   /** Push to talk: the microphone settings, and what's being heard right now. */
-  talk: TalkInfo & { heard: string | null; problem: string | null };
+  talk: TalkInfo & { heard: string | null; problem: string | null; since: number | null };
+  /** The last words meant for the stage view ("chorus", "two bars behind"), counted. */
+  stageHeard: { text: string; n: number; since: number | null } | null;
 }
 
 type Action =
@@ -83,14 +85,18 @@ function reduce(s: State, a: Action): State {
     case "talk-read":
       return { ...s, talk: { ...s.talk, ...a.info } };
     case "talk": {
-      const { type: _type, text, problem, ...info } = a;
+      const { type: _type, text, problem, to, n, ...info } = a;
       const state = a.state as TalkState;
+      // `since`: when the talking started (performance.now()), so the stage can allow for the delay.
+      const since = state === "listening" ? performance.now() : s.talk.since;
+      if (to === "stage" && text && n) return { ...s, stageHeard: { text, n, since }, talk: { ...s.talk, state, heard: text, problem: null, since } };
       return {
         ...s,
         talk: {
           ...s.talk,
           ...info,
           state,
+          since,
           heard: state === "listening" ? null : text ?? s.talk.heard,
           problem: state === "listening" ? null : problem ?? (state === "idle" ? s.talk.problem : null),
         },
@@ -132,7 +138,8 @@ export function PedalProvider({ children }: { children: ReactNode }) {
     linked: false, status: null, names: {}, live: null, tuner: null, pedalTempo: null, history: { position: -1, entries: [] },
     gigs: { list: [], active: null },
     chat: { messages: [], busy: false, available: true },
-    talk: { state: "idle", mic: "laptop", input: null, inputs: [], installed: false, heard: null, problem: null },
+    talk: { state: "idle", mic: "laptop", input: null, inputs: [], installed: false, heard: null, problem: null, since: null },
+    stageHeard: null,
   });
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [copyOf, setCopyOf] = useState<CopyOf | null>(null);

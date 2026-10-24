@@ -180,7 +180,15 @@ export type ChatEvent =
   | { type: "chat"; kind: "error"; text: string }
   | { type: "chat"; kind: "new" };
 
-export type TalkEvent = { type: "talk"; state: TalkState; mic?: TalkInfo["mic"]; text?: string; problem?: string } & Partial<TalkInfo>;
+export type TalkEvent = {
+  type: "talk";
+  state: TalkState;
+  mic?: TalkInfo["mic"];
+  text?: string;
+  problem?: string;
+  to?: "stage"; // the stage view takes these words (n counts them)
+  n?: number;
+} & Partial<TalkInfo>;
 
 export type PedalEvent =
   | ({ type: "status" } & Status)
@@ -257,7 +265,10 @@ export const api = {
   chatNew: () => call<ChatInfo>("POST", "/api/chat/new"),
   chatTerminal: () => call<{ session: string | null }>("POST", "/api/chat/terminal"),
   talk: () => call<TalkInfo>("GET", "/api/talk"),
-  talkSet: (req: { pressed?: boolean; mic?: TalkInfo["mic"]; input?: string }) => call<TalkInfo>("POST", "/api/talk", req),
+  /** The talk button (`pressed`), the mic, the stage view being open (`stage`: words go to it), or
+   * words typed instead of said (`say`). */
+  talkSet: (req: { pressed?: boolean; mic?: TalkInfo["mic"]; input?: string; stage?: boolean; say?: string }) =>
+    call<TalkInfo>("POST", "/api/talk", req),
   talkAudio: async (audio: Blob) => {
     const res = await fetch("/api/talk/audio", { method: "POST", body: audio, headers: { "Content-Type": audio.type || "application/octet-stream" } });
     const data = await res.json().catch(() => ({}));

@@ -153,6 +153,20 @@ class TalkTest(unittest.TestCase):
         self.assertEqual(self.heard, [b"webm bytes"])
         self.assertEqual(self.sent, ["more gain on the solo"])
 
+    def test_while_the_stage_is_open_the_words_go_to_it(self):
+        talk = self.talk(words="two bars behind")
+        talk.stage(True)
+        talk.press()
+        talk.release()
+        seen = self.events.until(lambda e: e["state"] == "idle")
+        self.assertEqual([e.get("to") for e in seen if e["state"] == "heard"], ["stage"])
+        self.assertEqual(self.sent, [])
+        talk.stage(False)
+        self.assertEqual(talk.said(" less fizzy "), "less fizzy")
+        self.assertEqual(self.sent, ["less fizzy"])
+        with self.assertRaises(ValueError):
+            talk.said("  ")
+
     def test_only_known_mics(self):
         with self.assertRaises(ValueError):
             self.talk().set_mic("bluetooth")

@@ -924,6 +924,89 @@ select { cursor: pointer; }
 .stage-lyrics:focus-visible { outline: 2px solid var(--vfd); outline-offset: 2px; }
 .stage:fullscreen .stage-lyrics { max-height: 52vh; font-size: clamp(22px, 2vw, 30px); }
 
+/* The song's parts as a strip of glass: where the clock is, the part you're in, the next one. */
+.songmap { margin: 4px 0 14px; }
+.songmap-head { display: flex; align-items: center; gap: 16px; min-height: 46px; }
+.songmap-now {
+  font: 400 44px/1 var(--readout); color: var(--vfd-dim); letter-spacing: 0.02em; min-width: 5.5ch;
+}
+.songmap.started .songmap-now { color: var(--vfd-bright); text-shadow: 0 0 14px var(--vfd-glow); animation: vfd-strike 0.5s var(--ease-out) both; }
+.songmap.started .songmap-now.kind-chorus { color: #fff1cc; text-shadow: 0 0 18px var(--vfd), 0 0 4px var(--vfd); }
+.songmap.started .songmap-now.kind-solo { color: #ff8a6b; text-shadow: 0 0 16px rgba(255, 59, 31, 0.7); }
+.songmap.started .songmap-now.kind-bridge { color: #ffa040; text-shadow: 0 0 14px rgba(255, 122, 0, 0.6); }
+.songmap-progress { flex: 1; max-width: 220px; height: 3px; background: var(--vfd-ghost); overflow: hidden; }
+.songmap-progress span { display: block; height: 100%; background: var(--vfd); box-shadow: 0 0 8px var(--vfd-glow); }
+.songmap-next { font: 400 20px/1 var(--readout); color: var(--vfd-dim); margin-left: auto; }
+.songmap-next b { font-weight: 400; color: var(--vfd); }
+
+.songmap-strip {
+  position: relative; display: flex; gap: 2px; height: 40px; margin-top: 8px; padding: 4px;
+  background: var(--glass); box-shadow: inset 0 2px 8px #000, 0 0 0 1px #2a1d00;
+}
+.songmap-part {
+  --tint: var(--vfd-dim);
+  flex: 1 1 0; min-width: 0; position: relative; overflow: hidden; cursor: pointer;
+  display: flex; align-items: center; padding: 0 7px;
+  background: color-mix(in srgb, var(--tint) 16%, transparent);
+  border: none; border-top: 2px solid color-mix(in srgb, var(--tint) 55%, transparent);
+  color: color-mix(in srgb, var(--tint) 85%, #000);
+  font: 400 9px/1 var(--engraved); letter-spacing: 0.16em; text-transform: uppercase; white-space: nowrap;
+  transition: background 0.25s, color 0.25s, box-shadow 0.25s;
+}
+.songmap-part span { overflow: hidden; text-overflow: ellipsis; }
+.songmap-part.kind-chorus { --tint: var(--vfd); }
+.songmap-part.kind-verse { --tint: #b07a00; }
+.songmap-part.kind-bridge, .songmap-part.kind-pre { --tint: #ff7a00; }
+.songmap-part.kind-solo { --tint: #ff3b1f; }
+.songmap-part.kind-intro, .songmap-part.kind-outro, .songmap-part.kind-part { --tint: #6b4c12; }
+.songmap-part:hover { background: color-mix(in srgb, var(--tint) 30%, transparent); color: var(--vfd-bright); }
+.songmap-part.past { opacity: 0.45; }
+.songmap-part.here {
+  background: color-mix(in srgb, var(--tint) 34%, transparent); color: #fff1cc;
+  border-top-color: var(--tint); box-shadow: 0 0 16px color-mix(in srgb, var(--tint) 45%, transparent), inset 0 0 12px color-mix(in srgb, var(--tint) 30%, transparent);
+}
+.songmap-part:focus-visible { outline: 2px solid var(--vfd); outline-offset: 1px; z-index: 1; }
+.songmap-head-line {
+  position: absolute; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; pointer-events: none; z-index: 2;
+  background: #fff1cc; box-shadow: 0 0 10px var(--vfd), 0 0 2px #fff;
+}
+.songmap:not(.started) .songmap-head-line { opacity: 0; }
+.songmap-tick { position: absolute; width: 6px; height: 6px; margin-left: -3px; pointer-events: auto; z-index: 1; }
+.songmap-tick.cue { bottom: 1px; transform: rotate(45deg); background: #6b1d12; }
+.songmap-tick.cue.on { background: #ff3b1f; box-shadow: 0 0 6px #ff3b1f; }
+.songmap-tick.note { top: 1px; border-radius: 50%; background: var(--go); box-shadow: 0 0 6px var(--go); }
+
+/* A reminder coming round ("capo 2"), and what was just said ("chorus" -> Chorus 2). */
+.stage-note {
+  display: flex; align-items: baseline; gap: 16px; margin: 0 0 12px; padding: 12px 18px 10px;
+  font: 400 clamp(30px, 3vw, 44px)/1.05 var(--readout); color: #c9ffd6;
+  background: #04140a; border: 1px solid #1b5a2c; box-shadow: 0 0 22px rgba(94, 224, 122, 0.18), inset 0 0 18px rgba(94, 224, 122, 0.12);
+  text-shadow: 0 0 10px rgba(94, 224, 122, 0.55);
+  animation: note-in 0.45s var(--ease-out) both;
+}
+.stage-note.soon { color: #7fbf8f; border-color: #12391d; box-shadow: none; animation: note-in 0.45s var(--ease-out) both, blink 1s steps(2, end) infinite; }
+.stage-note-when { font: 400 10px/1 var(--engraved); letter-spacing: 0.24em; text-transform: uppercase; color: var(--go); }
+@keyframes note-in { from { opacity: 0; transform: translateY(-6px); filter: blur(3px); } }
+
+.stage-heard {
+  position: fixed; left: 50%; bottom: 34px; z-index: 30; transform: translateX(-50%);
+  display: flex; align-items: baseline; gap: 14px; margin: 0; padding: 12px 20px 10px; max-width: min(92vw, 720px);
+  background: rgba(10, 7, 0, 0.94); border: 1px solid #6b4a00;
+  box-shadow: 0 12px 40px #000, 0 0 30px rgba(255, 176, 0, 0.18);
+  animation: heard-in 3.2s var(--ease-out) both;
+}
+.stage-heard-said { font: 400 20px/1.2 var(--body); color: #c8a25a; font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stage-heard-did { font: 400 34px/1 var(--readout); color: var(--vfd-bright); text-shadow: 0 0 12px var(--vfd-glow); white-space: nowrap; }
+.stage-heard.claude .stage-heard-did { font: 400 11px/1 var(--engraved); letter-spacing: 0.2em; text-transform: uppercase; color: var(--vfd-dim); text-shadow: none; }
+@keyframes heard-in {
+  0% { opacity: 0; transform: translate(-50%, 10px) scale(0.98); }
+  8%, 82% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .songmap.started .songmap-now, .stage-note, .stage-heard { animation: none; }
+}
+
 .stage-no-lyrics { margin: 8px 0 0; display: flex; align-items: center; gap: 14px; color: var(--vfd-dim); font-size: 16px; }
 .stage-rehearse { display: inline-flex; gap: 1px; }
 

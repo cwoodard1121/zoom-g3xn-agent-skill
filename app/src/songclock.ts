@@ -42,6 +42,7 @@ export interface SongClock {
   moved: number; // goes up whenever the clock jumps, starts, stops or changes speed
   tap: () => void;
   jump: (at: number) => void; // carry on from `at` seconds (and run)
+  nudge: (by: number) => void; // move the words on (or back) by `by` seconds, running or not
   toggle: () => void; // pause or carry on
   reset: () => void; // back to the top, stopped
 }
@@ -66,7 +67,7 @@ export function useSongClock(entry: GigEntry | undefined): SongClock {
 
   // A new song: back to the top, stopped.
   useEffect(() => {
-    clock.current = STOPPED;
+    clock.current = { ...STOPPED, beat: tempo ? 60 / tempo : STOPPED.beat };
     setRunning(false);
     setMoved((m) => m + 1);
     setTaps([]);
@@ -141,6 +142,7 @@ export function useSongClock(entry: GigEntry | undefined): SongClock {
     moved,
     tap,
     jump: (at) => set({ base: Math.max(0, at), running: true }),
+    nudge: (by) => set({ base: Math.max(0, time() + by) }),
     toggle: () => set({ running: !clock.current.running }),
     reset: () => {
       set({ base: 0, running: false });

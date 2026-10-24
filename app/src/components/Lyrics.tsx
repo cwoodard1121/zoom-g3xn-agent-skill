@@ -29,7 +29,14 @@ export function ClockBar({ entry, clock }: { entry: GigEntry; clock: SongClock }
       <div className="lyrics-bar">
         <button
           className="button lyrics-tap"
-          onClick={clock.tap}
+          // On the press, not the click: a click needs the finger to come up on the button again,
+          // and taps in time are quick and sloppy. Enter and space still count (detail is 0).
+          onPointerDown={(e) => {
+            if (e.button !== 0) return;
+            e.preventDefault();
+            clock.tap();
+          }}
+          onClick={(e) => e.detail === 0 && clock.tap()}
           title="Listen for a bar, then tap two bars with the band (or press T, or tap FS3 on the pedal). The first bar of taps only finds the beat; the song carries on from three bars in."
         >
           Tap

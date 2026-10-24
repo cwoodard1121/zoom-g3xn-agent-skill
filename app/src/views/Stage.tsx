@@ -9,18 +9,24 @@
 // Tapping in (songclock.ts) starts the song clock: the words follow it, and so do the song's cues,
 // which switch its effects at set points. The effects are buttons too, and while recording cues,
 // each press becomes one at that point in the song.
+// Where the song is can be said, too (push to talk while this view is open): "chorus", "second
+// verse", "you're two bars behind", a line of the words (songmap.ts). Anything else goes to Claude.
+// [ and ] move the words a bar back or on.
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { api } from "../api";
 import type { Gig, GigEntry } from "../api";
 import type React from "react";
 import { ClockBar, Lyrics } from "../components/Lyrics";
-import { addCue, effectIndex, parseCues } from "../cues";
+import { SongMap, StageNote } from "../components/SongMap";
+import { TalkButton } from "../components/Talk";
+import { addCue, effectIndex, parseCues, parseNotes } from "../cues";
 import type { Cue } from "../cues";
-import { fillLyrics, lyricsMessage } from "../lyrics";
+import { fillLyrics, length, lines, lyricsMessage } from "../lyrics";
 import { usePedal } from "../pedal";
 import { mmss, useSongClock, useSongTime } from "../songclock";
 import type { SongClock } from "../songclock";
+import { partsOf, understand } from "../songmap";
 import { sameTuning, tuningOf } from "../tuning";
 import type { Tuning } from "../tuning";
 
@@ -33,7 +39,7 @@ const PLAYERS = {
 type Player = keyof typeof PLAYERS;
 
 export function Stage() {
-  const { gigs, status, names, tuner, live, act, say } = usePedal();
+  const { gigs, status, names, tuner, live, act, say, stageHeard } = usePedal();
   const [gig, setGig] = useState<Gig | null>(null);
   const [finding, setFinding] = useState(false);
   const findLyrics = async () => {
@@ -99,11 +105,79 @@ export function Stage() {
     act(() => api.select(s.slot));
   };
 
+  // The song's parts, and what was said about where it is.
+  const allLines = useMemo(() => (info ? lines(info) : []), [info]);
+  const total = info ? length(info, allLines) : 0;
+  const parts = useMemo(() => (info ? partsOf(info, allLines, total) : []), [info, allLines, total]);
+  const notes = useMemo(() => parseNotes(info?.cues), [info?.cues]);
+  const [heard, setHeard] = useState<{ text: string; did: string | null; n: number } | null>(null);
+  const bars = (by: number) => {
+    const n = Math.round((Math.abs(by) / (4 * clock.beat)) * 2) / 2;
+    return `${by > 0 ? "on" : "back"} ${n === 0.5 ? "half a bar" : `${n} bar${n === 1 ? "" : "s"}`}`;
+  };
+  const hearRef = useRef((_text: string, _since: number | null) => {});
+  hearRef.current = (text, since) => {
+    const h = info ? understand(text, { now: clock.time(), beat: clock.beat, parts, lines: allLines, total }) : null;
+    let did: string | null = null;
+    if (!h) {
+      act(() => api.chatSend(text));
+    } else if (h.do === "jump") {
+      // "We're in the chorus" was true when they started talking: the song has moved on since.
+      const late = h.live && since !== null ? Math.max(0, (performance.now() - since) / 1000 - 0.4) * (clock.rate || 1) : 0;
+      clock.jump(h.at + late);
+      did = h.said;
+    } else if (h.do === "nudge") {
+      clock.nudge(h.by);
+      did = bars(h.by);
+    } else if (h.do === "pause") {
+      if (clock.running) clock.toggle();
+      did = "Paused";
+    } else if (h.do === "go") {
+      if (!clock.running) clock.toggle();
+      did = "Carrying on";
+    } else {
+      clock.reset();
+      did = "From the top";
+    }
+    setHeard((x) => ({ text, did, n: (x?.n ?? 0) + 1 }));
+  };
+  const seenHeard = useRef(stageHeard?.n);
+  useEffect(() => {
+    if (!stageHeard || stageHeard.n === seenHeard.current) return;
+    seenHeard.current = stageHeard.n;
+    hearRef.current(stageHeard.text, stageHeard.since);
+  }, [stageHeard]);
+  useEffect(() => {
+    if (!heard) return;
+    const id = window.setTimeout(() => setHeard(null), 3200);
+    return () => window.clearTimeout(id);
+  }, [heard]);
+  // Tell the daemon this view is open, so talking comes here first (it forgets after 20 s).
+  useEffect(() => {
+    const open = () => api.talkSet({ stage: true }).catch(() => {});
+    open();
+    const id = window.setInterval(open, 8000);
+    return () => {
+      window.clearInterval(id);
+      api.talkSet({ stage: false }).catch(() => {});
+    };
+  }, []);
+
   const stepRef = useRef((_d: number) => {});
   stepRef.current = (d: number) => goTo(index < 0 ? 0 : Math.min(slots.length - 1, Math.max(0, index + d)));
+  const nudgeRef = useRef((_bars: number) => {});
+  nudgeRef.current = (n: number) => {
+    clock.nudge(n * 4 * clock.beat);
+    setHeard((x) => ({ text: n > 0 ? "]" : "[", did: bars(n * 4 * clock.beat), n: (x?.n ?? 0) + 1 }));
+  };
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey || e.altKey || (e.target as HTMLElement).closest("input, textarea, select")) return;
+      if (e.key === "[" || e.key === "]") {
+        e.preventDefault();
+        nudgeRef.current(e.key === "]" ? 1 : -1);
+        return;
+      }
       const d = { ArrowRight: 1, ArrowDown: 1, PageDown: 1, " ": 1, ArrowLeft: -1, ArrowUp: -1, PageUp: -1 }[e.key];
       if (d) {
         e.preventDefault();
@@ -404,6 +478,7 @@ export function Stage() {
               </button>
             ))}
           </span>
+          <TalkButton />
           <button className="button" aria-pressed={tunerOn} onClick={() => act(() => api.tuner(!tunerOn))}>
             Tuner
           </button>
@@ -421,6 +496,14 @@ export function Stage() {
         {song && info && (
           <div className="stage-lyrics-wrap" style={{ viewTransitionName: "stage-words" }}>
             <ClockBar entry={info} clock={clock} />
+            <SongMap parts={parts} total={total} clock={clock} cues={cues} notes={notes} />
+            <StageNote notes={notes} clock={clock} />
+            {heard && (
+              <p className={`stage-heard${heard.did ? "" : " claude"}`} role="status" key={heard.n}>
+                <span className="stage-heard-said">{heard.text.length > 2 ? `\u201c${heard.text}\u201d` : heard.text}</span>
+                <span className="stage-heard-did">{heard.did ?? "to Claude"}</span>
+              </p>
+            )}
             {info.lyrics ? (
               <Lyrics entry={info} clock={clock} />
             ) : (

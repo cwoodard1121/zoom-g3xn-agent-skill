@@ -8,11 +8,15 @@ The words come from one of two microphones:
             over HTTPS, so this goes through Tailscale)
 
 Speech becomes text on this computer with faster-whisper (no audio leaves it), and the
-text goes to Claude. Each step is an event for the app's talk sheet:
+text goes to Claude, or, while the app's stage view is open, to the stage (it follows
+"chorus", "two bars behind", a line of the song, and passes anything else on to Claude).
+Each step is an event for the app's talk sheet:
 
     {"type": "talk", "state": "listening", "mic": "laptop"}
     {"type": "talk", "state": "transcribing"}
     {"type": "talk", "state": "heard", "text": "more gain on the solo"}
+    {"type": "talk", "state": "heard", "text": "chorus", "to": "stage", "n": 7}   (the stage takes it;
+                                                       n counts, so saying it twice counts twice)
     {"type": "talk", "state": "idle", "problem": "..."}       (nothing heard, or it failed)
 
 faster-whisper and sounddevice are the `voice` extra; the speech model (about 145 MB
@@ -20,12 +24,14 @@ for base.en) downloads from Hugging Face the first time it's used.
 """
 import io
 import threading
+import time
 
 SAMPLE_RATE = 16000
 MICS = ("laptop", "phone")
 MODEL = "base.en"
 SHORTEST = 0.3              # seconds; a tap shorter than this is ignored
 PHONE_WAIT = 20.0           # seconds to wait for a phone's recording after the switch comes up
+STAGE_HOLD = 20.0           # seconds the stage keeps the words after it last said it's open
 
 
 class LaptopMic:
@@ -102,6 +108,8 @@ class Talk:
         self.recorder = recorder or LaptopMic()
         self.transcribe = transcribe or Whisper()
         self.state = "idle"
+        self._stage_until = 0.0
+        self._said = 0
         self._working = False
         self._lock = threading.Lock()
 
@@ -119,6 +127,22 @@ class Talk:
     def set_mic(self, mic):
         self.mic = check_mic(mic)
         return self.info()
+
+    def stage(self, open_=True):
+        """The app's stage view is open (it says so again every few seconds) or has closed.
+        While it's open, the words go to it instead of straight to Claude."""
+        self._stage_until = time.monotonic() + STAGE_HOLD if open_ else 0.0
+
+    def to_stage(self):
+        return time.monotonic() < self._stage_until
+
+    def said(self, text):
+        """Words typed instead of spoken: on to the stage or Claude like heard ones."""
+        text = (text or "").strip()
+        if not text:
+            raise ValueError("say something")
+        self._heard(text)
+        return text
 
     def press(self):
         """The talk switch went down: start listening."""
@@ -185,14 +209,22 @@ class Talk:
         if not text:
             self._idle("Didn't catch anything. Hold the switch and try again.")
             return None
+        self._heard(text)
+        return text
+
+    def _heard(self, text):
+        if self.to_stage():
+            self._said += 1
+            self._set("heard", text=text, to="stage", n=self._said)
+            self._set("idle")
+            return
         self._set("heard", text=text)
         try:
             self.send(text)
         except Exception as err:
             self._idle("Claude couldn't take it: %s" % err)
-            return text
+            return
         self._set("idle")
-        return text
 
     def _set(self, state, **more):
         self.state = state
