@@ -1404,8 +1404,10 @@ select { cursor: pointer; }
 @media (max-width: 640px) { .shape-list li { grid-template-columns: 30px minmax(0, 1fr) auto; } .shape-facts { display: none; } }
 
 /* ---------- stage, beside the song: the set, rehearsing, the desk ---------- */
-.stage-side { display: grid; gap: 14px; position: sticky; top: 8px; max-height: calc(100vh - 24px); overflow: auto; scrollbar-width: none; }
-.stage-side .setlist { margin-top: 0; }
+/* A long set scrolls inside its own box (keeping the song that's on in view), so rehearsing and
+   the desk stay in reach below it. */
+.stage-side { display: grid; gap: 14px; }
+.stage-side .setlist { position: relative; margin-top: 0; max-height: min(46vh, 520px); overflow: auto; overscroll-behavior: contain; }
 .side-panel { padding: 12px 12px 14px; background: #0b0905; border: 1px solid #2a1d00; display: grid; gap: 10px; }
 .side-title { margin: 0; font: 400 9px/1 var(--engraved); letter-spacing: 0.26em; text-transform: uppercase; color: var(--vfd-dim); }
 .side-tools { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -1430,4 +1432,4 @@ select { cursor: pointer; }
 .stage-controls { flex-wrap: wrap; }
 .stage-controls .talk-button { min-height: 52px; padding: 0 18px; }
 .stage-controls .talk-button.live { color: #ffb3a6; border-color: #ff3b1f; box-shadow: 0 0 18px rgba(255, 59, 31, 0.35); }
-@media (max-width: 760px) { .stage-side { position: static; max-height: none; } }
+@media (max-width: 760px) { .stage-side .setlist { max-height: none; } }

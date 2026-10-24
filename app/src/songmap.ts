@@ -136,7 +136,7 @@ const GEAR = /\b(gain|delay|reverb|overdrive|distortion|fuzz|volume|treble|bass|
 const TONE = /\b(on|off|turn|make|more|less|louder|quieter|tone|drive|level)\b/;
 const PART_TALK = new Set(("skip jump go to the a we re were are in at its it s now this is here thats back take me start from of " +
   "into lets let next last final first second third fourth fifth 1st 2nd 3rd 4th 1 2 3 4 5 one two three four five part the into ok okay").split(" "));
-const SKIP = /\b(skip|jump|go to|next|take me|start (at|from)|from the)\b/;
+const SKIP = /\b(skip|jump|go to|back to|next|take me|start (at|from)|from the)\b/;
 
 interface Where {
   now: number; // where the clock is
@@ -162,6 +162,9 @@ export function understand(text: string, w: Where): Heard | null {
   if (GEAR.test(s)) return null;
   const toneish = TONE.test(s);
 
+  // A part named with no amount ("go back to the chorus") is a jump, not a nudge.
+  const partWord = /\b(intro|verse|pre chorus|prechorus|chorus|hook|refrain|bridge|middle eight|solo|break|instrumental|outro|ending|coda)\b/.exec(s);
+
   // Nudges: "you're two bars behind", "we're ahead a bit", "move up a bit", "back a bar".
   const bar = 4 * w.beat;
   const amount = (() => {
@@ -180,7 +183,7 @@ export function understand(text: string, w: Where): Heard | null {
   })();
   const behind = /\b(behind|late|slow|lagging|catch up|move up|skip ahead|jump ahead|go forward|forward|faster)\b/.test(s);
   const ahead = /\b(ahead|early|too fast|go back|back up|move back|backwards?|rewind|back)\b/.test(s.replace(/\b(skip|jump) ahead\b/g, ""));
-  if (!toneish && (behind || ahead) && (amount !== null || /\b(behind|ahead|early|late|move up|go back|back up)\b/.test(s))) {
+  if (!toneish && !(partWord && amount === null) && (behind || ahead) && (amount !== null || /\b(behind|ahead|early|late|move up|go back|back up)\b/.test(s))) {
     // "We're" means the band: the band behind the words means the words go back.
     const band = /^(we re|we are|were|the band|band|the band s|we)\b/.test(s);
     let sign = behind && !ahead ? 1 : ahead && !behind ? -1 : /\bbehind\b/.test(s) ? 1 : -1;
@@ -189,7 +192,6 @@ export function understand(text: string, w: Where): Heard | null {
   }
 
   // A part: "chorus", "second verse", "skip to the solo", "last chorus", "we're in the bridge".
-  const partWord = /\b(intro|verse|pre chorus|prechorus|chorus|hook|refrain|bridge|middle eight|solo|break|instrumental|outro|ending|coda)\b/.exec(s);
   if (partWord && !toneish && ws.every((x) => PART_TALK.has(x) || x === partWord[1] || partWord[1].split(" ").includes(x))) {
     const kind = KINDS[partWord[1]];
     const ofKind = w.parts.filter((p) => p.kind === kind);

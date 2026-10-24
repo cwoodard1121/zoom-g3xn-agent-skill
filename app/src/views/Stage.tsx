@@ -43,7 +43,7 @@ const PLAYERS = {
 type Player = keyof typeof PLAYERS;
 
 export function Stage() {
-  const { gigs, status, names, tuner, live, act, say, stageHeard } = usePedal();
+  const { gigs, status, names, tuner, live, act, say, stageHeard, talk } = usePedal();
   const [gig, setGig] = useState<Gig | null>(null);
   const [finding, setFinding] = useState(false);
   const findLyrics = async () => {
@@ -87,6 +87,12 @@ export function Stage() {
   }, [incoming]);
 
   const song = index >= 0 ? slots[index] : null;
+  useEffect(() => {
+    // Just the setlist's own box: scrollIntoView would move the whole page as well.
+    const box = document.querySelector<HTMLElement>(".stage-side .setlist");
+    const row = box?.querySelector<HTMLElement>('[aria-current="true"]')?.closest("li");
+    if (box && row) box.scrollTo({ top: row.offsetTop - box.clientHeight / 2 + row.clientHeight / 2, behavior: "smooth" });
+  }, [index]);
   const next = slots[index + 1];
   // Notes, tempo and key can change after loading; match them by song title.
   const info: GigEntry | undefined = song
@@ -136,7 +142,8 @@ export function Stage() {
     const h = info ? understand(text, { now: clock.time(), beat: clock.beat, parts, lines: allLines, total }) : null;
     let did: string | null = null;
     if (!h) {
-      act(() => api.chatSend(text));
+      // Only one open stage passes it on, or Claude would hear it from the phone too.
+      if (["127.0.0.1", "localhost"].includes(location.hostname)) act(() => api.chatSend(text));
     } else if (h.do === "jump") {
       // "We're in the chorus" was true when they started talking: the song has moved on since.
       const late = h.live && since !== null ? Math.max(0, (performance.now() - since) / 1000 - 0.4) * (clock.rate || 1) : 0;
@@ -483,7 +490,7 @@ export function Stage() {
             {song ? "Next" : "Start"}
           </button>
           <span className="stage-spacer" />
-          <TalkButton />
+          {talk.installed && <TalkButton />}
           <button className="button" aria-pressed={tunerOn} onClick={() => act(() => api.tuner(!tunerOn))}>
             Tuner
           </button>
@@ -492,7 +499,7 @@ export function Stage() {
         {song && info && (
           <div className="stage-lyrics-wrap" style={{ viewTransitionName: "stage-words" }}>
             <ClockBar entry={info} clock={clock} />
-            <SongMap parts={parts} total={total} clock={clock} cues={cues} notes={notes} />
+            {parts.length > 1 && <SongMap parts={parts} total={total} clock={clock} cues={cues} notes={notes} />}
             <StageNote notes={notes} clock={clock} />
             {heard && (
               <p className={`stage-heard${heard.did ? "" : " claude"}`} role="status" key={heard.n}>
