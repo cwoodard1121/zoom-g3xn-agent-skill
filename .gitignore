@@ -19,5 +19,5 @@ app/tsconfig.tsbuildinfo
 desktop/out/
 
 # deep-research working folders (the finished reports are copied into docs/research/)
-research_notes/
-reports/
+/research_notes/
+/reports/
