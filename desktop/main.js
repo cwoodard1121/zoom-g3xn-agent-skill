@@ -10,7 +10,7 @@
 //     g3xn.exe --bass      start on the B1X FOUR bass pedal (--guitar: the G3Xn). Without one the
 //                          app starts on the pedal it was on last; the switch is in its status bar.
 //
-// The daemon is the one packed into the app (resources/daemon), else the repo's own
+// The daemon is the one packed into the app (resources/g3xn-daemon), else the repo's own
 // (.venv/Scripts/g3xn-daemon.exe): the repo is G3XN_REPO, else the one this was built from
 // (build-config.json), else the folder above this one.
 const { app, BrowserWindow, session, shell } = require("electron");
@@ -70,7 +70,7 @@ let daemon = null; // the daemon this window started, if it did
 
 /** The daemon to start, and the folder to start it in. */
 function daemonProgram() {
-  const packed = path.join(process.resourcesPath || "", "daemon", EXE);
+  const packed = path.join(process.resourcesPath || "", "g3xn-daemon", EXE);
   if (!process.env.G3XN_REPO && fs.existsSync(packed)) return { exe: packed, cwd: path.dirname(packed) };
   const exe = path.join(repo(), ".venv", process.platform === "win32" ? "Scripts" : "bin", EXE);
   if (!fs.existsSync(exe)) throw new Error(`No g3xn daemon at ${exe}. Set G3XN_REPO to the g3xn folder.`);
