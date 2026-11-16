@@ -46,6 +46,7 @@ GH_PAGE = "https://cli.github.com"
 NO_WINDOW = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
 CODE_LINE = re.compile(r"one-time code:\s*([A-Z0-9]{4}-[A-Z0-9]{4})")
 PAGE_LINE = re.compile(r"(https://github\.com/login/device)\b")
+COLOUR = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
 CODE_WAIT = 30                  # seconds for the GitHub CLI to print its code
 
 
@@ -53,31 +54,52 @@ class SyncError(RuntimeError):
     pass
 
 
+def find_gh():
+    """The GitHub CLI's program: on PATH, or where its installers put it (it may be installed
+    while g3xn runs, and then g3xn's PATH doesn't have it yet)."""
+    found = shutil.which("gh")
+    if found:
+        return found
+    env = os.environ.get
+    places = [os.path.join(env("ProgramFiles", r"C:\Program Files"), "GitHub CLI", "gh.exe"),
+              os.path.join(env("LOCALAPPDATA", ""), "Programs", "GitHub CLI", "gh.exe"),
+              os.path.join(env("LOCALAPPDATA", ""), "Microsoft", "WinGet", "Links", "gh.exe"),
+              os.path.join(os.path.expanduser("~"), "scoop", "shims", "gh.exe")] if os.name == "nt" else \
+             ["/opt/homebrew/bin/gh", "/usr/local/bin/gh", "/usr/bin/gh"]
+    return next((p for p in places if os.path.isfile(p)), None)
+
+
 def has_gh():
-    return bool(shutil.which("gh"))
+    return bool(find_gh())
+
+
+def _gh_env():
+    """The CLI's environment, without colour: its codes would hide the one-time code from CODE_LINE."""
+    env = {k: v for k, v in os.environ.items() if k not in ("CLICOLOR_FORCE", "GH_FORCE_TTY")}
+    env["NO_COLOR"] = "1"
+    return env
 
 
 def gh_login():
     """Start `gh auth login --web` with no terminal: it prints a one-time code and the page to type
     it at, then waits until the user says yes there (or the code runs out, after 15 minutes).
-    None when the GitHub CLI isn't installed."""
-    gh = shutil.which("gh")
+    None when the GitHub CLI isn't installed. No --git-protocol: that would overwrite the user's."""
+    gh = find_gh()
     if not gh:
         return None
-    return subprocess.Popen([gh, "auth", "login", "--hostname", "github.com", "--git-protocol", "https",
-                             "--web", "--scopes", "repo"],
+    return subprocess.Popen([gh, "auth", "login", "--hostname", "github.com", "--web", "--scopes", "repo"],
                             stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                            text=True, encoding="utf-8", errors="replace", creationflags=NO_WINDOW)
+                            text=True, encoding="utf-8", errors="replace", creationflags=NO_WINDOW, env=_gh_env())
 
 
 def gh_token():
     """The GitHub CLI's token, if it is installed and signed in."""
-    gh = shutil.which("gh")
+    gh = find_gh()
     if not gh:
         return None
     try:
         out = subprocess.run([gh, "auth", "token", "--hostname", "github.com"], capture_output=True, text=True,
-                             timeout=10, creationflags=NO_WINDOW)
+                             timeout=10, creationflags=NO_WINDOW, env=_gh_env())
     except (OSError, subprocess.SubprocessError):
         return None
     return out.stdout.strip() if out.returncode == 0 and out.stdout.strip() else None
@@ -114,6 +136,7 @@ class GigSync:
         self._lock = threading.Lock()
         self._signing_in = None        # {"code", "url"} while the GitHub CLI waits for the user
         self._login_process = None
+        self._closed = False
         self._sign_in_problem = ""
         self._login = None
         self._branch = "main"
@@ -121,29 +144,36 @@ class GigSync:
     # --- signing in ---
 
     def status(self):
+        """Signed in or not (a token GitHub rejects is not signed in), the sign-in waiting for the
+        user if there is one, and the last send or get."""
         token, via = self._token()
         signing = self._signing_in
         out = {"signed_in": False, "via": via, "login": None, "repo": None,
                "can_sign_in": bool(self._can_login()), "token_page": TOKEN_PAGE, "gh_page": GH_PAGE,
-               "signing_in": dict(signing) if signing and not token else None,
-               "problem": "" if token else self._sign_in_problem, "last": self._state().get("last")}
+               "signing_in": None, "problem": self._sign_in_problem, "last": self._state().get("last")}
         if token:
             try:
-                out.update(signed_in=True, login=self.login(), repo=self.repo())
+                out.update(signed_in=True, login=self.login(), repo=self.repo(), problem="")
             except SyncError as err:
                 out["problem"] = str(err)
+        if signing and not out["signed_in"]:
+            out["signing_in"] = dict(signing)
         return out
 
     def sign_in(self):
         """Sign in through the GitHub CLI: start `gh auth login --web`, open the page where its
         one-time code is typed, and return {"code", "url"}. A thread waits for the CLI to finish;
-        from then on its login is the one used. A second call while it waits returns the same code."""
+        from then on its login is the one used (a pasted token kept before is dropped). A second
+        call while it waits returns the same code. close() stops it, even before the code shows."""
         with self._lock:
             if self._signing_in:
                 return dict(self._signing_in)
+            if self._closed:
+                raise SyncError("g3xn is closing")
             proc = self._start_login()
             if proc is None:
                 raise SyncError("install the GitHub CLI (%s) to sign in, or paste a token" % GH_PAGE)
+            self._login_process = proc             # close() can stop it while the code is awaited
             self._sign_in_problem = ""
             lines = queue.Queue()
             threading.Thread(target=_read_lines, args=(proc, lines), name="g3xn-gh-out", daemon=True).start()
@@ -156,17 +186,20 @@ class GigSync:
                     break
                 if line is None:                   # the CLI stopped without a code
                     break
+                line = COLOUR.sub("", line)
                 said.append(line.strip())
                 found = CODE_LINE.search(line)
                 code = code or (found and found.group(1))
                 found = PAGE_LINE.search(line)
                 url = url or (found and found.group(1))
-            if not (code and url):
+            if not (code and url) or self._closed:
                 _stop(proc)
+                self._login_process = None
+                if self._closed:
+                    raise SyncError("g3xn is closing")
                 told = " ".join(s for s in said if s)[-300:]
                 raise SyncError("the GitHub CLI didn't start a sign-in%s" % (": " + told if told else ""))
             self._signing_in = {"code": code, "url": url}
-            self._login_process = proc
             self._login = None
         threading.Thread(target=self._wait_for_gh, args=(proc, lines), name="g3xn-github", daemon=True).start()
         try:
@@ -181,18 +214,26 @@ class GigSync:
             line = lines.get()
             if line is None:
                 break
-            said.append(line.strip())
+            said.append(COLOUR.sub("", line).strip())
         ok = proc.wait() == 0
         with self._lock:
             self._login = None
-            if not ok and not self._token()[0]:
+            if ok:
+                # the CLI's login is the one to use now: a pasted token kept before would win over
+                # it in _token(), and may be the very one GitHub rejects
+                state = self._state()
+                if state.pop("token", None) is not None:
+                    self._save(state)
+                self._sign_in_problem = ""
+            elif not self._closed:
                 last = next((s for s in reversed(said) if s), "")
                 self._sign_in_problem = "the GitHub sign-in didn't finish" + (": " + last if last else "")
             self._signing_in = None
             self._login_process = None
 
     def close(self):
-        """Stop a GitHub CLI sign-in still waiting (the app is closing)."""
+        """Stop a GitHub CLI sign-in still waiting, or still starting (the app is closing)."""
+        self._closed = True
         proc = self._login_process
         if proc is not None:
             _stop(proc)

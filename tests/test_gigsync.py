@@ -265,6 +265,54 @@ class GigSyncTest(unittest.TestCase):
         self.assertTrue(cli.logins[0].killed)
         self.assertTrue(until(lambda: sync.status()["signing_in"] is None))
 
+    def test_a_rejected_saved_token_still_shows_the_code_and_gives_way_to_the_cli(self):
+        cli = FakeCli(self.github)
+        sync, _ = computer(self.github, cli=cli)
+        sync._keep(token="expired")                      # a token pasted long ago, now refused
+        status = sync.status()
+        self.assertEqual((status["signed_in"], status["via"]), (False, "app"))
+        self.assertIn("Bad credentials", status["problem"])
+        started = sync.sign_in()
+        self.assertEqual(sync.status()["signing_in"], started)      # the code shows anyway
+        cli.logins[0].say_yes()
+        self.assertTrue(until(lambda: sync.status()["signing_in"] is None))
+        status = sync.status()
+        self.assertEqual((status["signed_in"], status["via"], status["problem"]), (True, "gh", ""))
+        self.assertNotIn("token", sync._state())               # the refused token is gone
+
+    def test_colour_codes_do_not_hide_the_code(self):
+        esc = "\x1b"
+        cli = FakeCli(self.github, lines=[
+            esc + "[0;33m!" + esc + "[0m First copy your one-time code: " + esc + "[0;1;39m075F-C887" + esc + "[0m\n",
+            esc + "[0;1;39mOpen this URL" + esc + "[0m to continue in your web browser: https://github.com/login/device\n"])
+        sync, _ = computer(self.github, cli=cli)
+        self.assertEqual(sync.sign_in()["code"], "075F-C887")
+        sync.close()
+
+    def test_closing_while_the_cli_starts_stops_it_and_opens_nothing(self):
+        cli = FakeCli(self.github, lines=["\n"])        # no code yet
+        sync, _ = computer(self.github, cli=cli)
+        errors = []
+        thread = threading.Thread(target=lambda: self._sign_in_into(sync, errors))
+        thread.start()
+        self.assertTrue(until(lambda: len(cli.logins) == 1))
+        sync.close()
+        thread.join(5)
+        self.assertFalse(thread.is_alive())
+        self.assertIn("closing", str(errors[0]))
+        self.assertTrue(cli.logins[0].killed)
+        self.assertEqual(cli.opened, [])
+        with self.assertRaises(SyncError):
+            sync.sign_in()                                 # and nothing starts after closing
+        self.assertEqual(len(cli.logins), 1)
+
+    @staticmethod
+    def _sign_in_into(sync, errors):
+        try:
+            sync.sign_in()
+        except SyncError as err:
+            errors.append(err)
+
     def test_the_token_never_shows_in_the_status(self):
         self.home.use_token(self.github.token)
         self.assertNotIn(self.github.token, json.dumps(self.home.status()))
@@ -297,6 +345,16 @@ class GitHubRoutesTest(unittest.TestCase):
             self.assertNotIn(github.token, json.dumps(get_json(url + "/api/github")))
         finally:
             stop()
+
+    def test_stopping_the_daemon_stops_a_waiting_sign_in_first(self):
+        from g3xn.daemon import ModeServer
+        calls = []
+
+        def build(model, switch):
+            raise AssertionError("not started")
+        build.interrupt = lambda: calls.append("interrupt")
+        ModeServer(build, 0, "g3xn").stop()
+        self.assertEqual(calls, ["interrupt"])
 
     def test_off_for_a_virtual_pedal(self):
         from g3xn.sim import VirtualPedal

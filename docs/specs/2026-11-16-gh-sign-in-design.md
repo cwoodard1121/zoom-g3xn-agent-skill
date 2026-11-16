@@ -30,7 +30,7 @@ The Gigs view's On GitHub panel. `POST /api/github/sign-in` (phone refused, as b
 
 ## Edge cases
 
-No CLI: the panel shows the token box and a link to cli.github.com. A CLI that prints no code: it is stopped and its words are in the error. The code runs out after 15 minutes: the problem line says so, and the button starts again.
+A pasted token GitHub now refuses: the code still shows, a finished CLI login drops that token, and the panel offers Forget the saved token and Paste a token instead. The CLI is started without colour and without `--git-protocol`, so its code is readable and the user's git protocol stays. A CLI installed while g3xn runs is found in its install folders. No CLI: the panel shows the token box and a link to cli.github.com. A CLI that prints no code: it is stopped and its words are in the error. The code runs out after 15 minutes: the problem line says so, and the button starts again.
 
 ## Out of scope
 

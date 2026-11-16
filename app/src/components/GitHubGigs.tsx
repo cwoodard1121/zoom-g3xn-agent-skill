@@ -20,6 +20,7 @@ export function GitHubGigs() {
   const { act } = usePedal();
   const [gh, setGh] = useState<GitHubStatus | null>(null);
   const [token, setToken] = useState("");
+  const [pasting, setPasting] = useState(false); // the token box, when the GitHub CLI is there too
   const [busy, setBusy] = useState<"send" | "get" | "sign-in" | null>(null);
 
   const load = useCallback(() => api.github().then(setGh, () => setGh(null)), []);
@@ -80,13 +81,18 @@ export function GitHubGigs() {
               disabled={busy === "sign-in"}
               onClick={async () => {
                 setBusy("sign-in");
-                await act(() => api.githubSignIn());
+                const started = await act(() => api.githubSignIn());
                 setBusy(null);
+                // show the code straight away, then let the status take over
+                if (started) setGh((g) => g && { ...g, signing_in: started });
                 load();
               }}
             >
               {busy === "sign-in" ? "Starting…" : "Sign in with GitHub"}
             </button>
+          ) : null}
+          {gh.can_sign_in && !pasting ? (
+            <button className="link-button" onClick={() => setPasting(true)}>Paste a token instead</button>
           ) : (
             <form
               className="github-token"
@@ -108,8 +114,18 @@ export function GitHubGigs() {
               />
               <button className="button" type="submit" disabled={!token.trim()}>Sign in</button>
               <a className="github-note" href={gh.token_page} target="_blank" rel="noreferrer">Make a token (tick “repo”)</a>
-              <a className="github-note" href={gh.gh_page} target="_blank" rel="noreferrer">Or install the GitHub CLI and sign in with it</a>
+              {!gh.can_sign_in && (
+                <a className="github-note" href={gh.gh_page} target="_blank" rel="noreferrer">
+                  Or install the GitHub CLI and sign in with it
+                </a>
+              )}
             </form>
+          )}
+          {gh.via === "app" && (
+            // a pasted token GitHub no longer takes: forget it, so the CLI's login (or a new token) is used
+            <button className="link-button" onClick={() => act(() => api.githubSignOut()).then((s) => s && setGh({ ...s, available: true }))}>
+              Forget the saved token
+            </button>
           )}
           {gh.problem && <p className="github-note error">{gh.problem}</p>}
         </>

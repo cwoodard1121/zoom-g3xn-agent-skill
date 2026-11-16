@@ -1355,6 +1355,9 @@ class ModeServer:
 
     def stop(self):
         self._stopped = True
+        interrupt = getattr(self.build, "interrupt", None)   # a sign-in waiting on the GitHub CLI
+        if interrupt:
+            interrupt()
         if self.server:
             self.server.should_exit = True
 
@@ -1431,6 +1434,7 @@ def app_builder(args, port=None):
         if sync:
             sync.close()          # a GitHub CLI sign-in still waiting
     build.close = close
+    build.interrupt = sync.close if sync else None
     return build
 
 
