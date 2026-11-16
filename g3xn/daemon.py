@@ -1295,7 +1295,7 @@ def _effect_in(chain, which):
 def pedal_factory(args):
     """() -> Pedal for the options from add_pedal_options: the real pedal, or a virtual one."""
     if args.sim is None:
-        return lambda: Pedal(scratch=args.scratch)
+        return lambda: Pedal(scratch=args.scratch, model="g3xn")      # the app is G3Xn only for now
     from .sim import VirtualPedal
     folder = args.sim or os.path.join(REPO, "data", "pedal_dump")
     device = VirtualPedal.from_backup(folder) if os.path.isdir(folder) else VirtualPedal()

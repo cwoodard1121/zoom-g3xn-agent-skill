@@ -1,10 +1,12 @@
-"""A G3Xn in software: answers the same MIDI messages as the real pedal.
+"""A G3Xn (or a B1X FOUR) in software: answers the same MIDI messages as the real pedal.
 
     from g3xn import Pedal
     from g3xn.sim import VirtualPedal
 
     with Pedal(device=VirtualPedal()) as pedal:     # no hardware needed
         pedal.audition(tone)
+
+    VirtualPedal(model="b1xfour")                   # the bass pedal: 50 slots of 760 bytes
 
 The real `Pedal` class runs unchanged on top of it, so the app, the daemon
 and the tests exercise the same code that talks to the hardware. Behaviour
@@ -24,21 +26,29 @@ import time
 
 import mido
 
+from . import models
 from . import protocol as P
 from .catalog import catalog
 from .patch import Patch, Slot
 
-PATCH_COUNT = 150
+PATCH_COUNT = 150       # the G3Xn's; a VirtualPedal takes its own from its model
 PATCH_SIZE = 736
 BANK_SIZE = 3
 FIRMWARE = "2.20"
+IDENTITY = {"g3xn": ([0x1F, 0x00, 0x00, 0x00], "2.20"),      # model bytes after 52 6E 00, firmware
+            "b1xfour": ([0x0F, 0x00], "2.00")}                # as a B1X FOUR replied on 2026-11-15
 
 
 class VirtualPedal:
-    def __init__(self, patches=None, current=1):
-        """patches: {slot number: Patch or raw bytes}; missing slots are Empty."""
-        empty = Patch.blank("Empty").encode()
-        self.slots = {n: empty for n in range(1, PATCH_COUNT + 1)}
+    def __init__(self, patches=None, current=1, model="g3xn"):
+        """patches: {slot number: Patch or raw bytes}; missing slots are Empty.
+        model: which pedal to be ("g3xn" or "b1xfour")."""
+        self.model = models.get(model)
+        self.patch_count, self.patch_size, self.bank_size = (self.model.patch_count, self.model.patch_size,
+                                                             self.model.bank_size)
+        self.live_edits_work = True    # False: knob/on-off edits are ignored, as an untested pedal might
+        empty = Patch.blank("Empty", self.model).encode()
+        self.slots = {n: empty for n in range(1, self.patch_count + 1)}
         for n, p in (patches or {}).items():
             self.slots[n] = p.encode() if isinstance(p, Patch) else bytes(p)
         home = tempfile.mkdtemp(prefix="g3xn-sim-")
@@ -53,7 +63,7 @@ class VirtualPedal:
         self._select(current)
 
     @classmethod
-    def from_backup(cls, folder):
+    def from_backup(cls, folder, model="g3xn"):
         """A virtual pedal loaded from a `g3xn backup` folder (NNN_NAME.zptc files)."""
         patches = {}
         for path in glob.glob(os.path.join(folder, "*.zptc")):
@@ -61,7 +71,7 @@ class VirtualPedal:
             if prefix.isdigit():
                 with open(path, "rb") as f:
                     patches[int(prefix)] = f.read()
-        return cls(patches)
+        return cls(patches, model=model)
 
     def connect(self):
         """(input port, output port) for `Pedal`, like opening the USB-MIDI ports."""
@@ -77,7 +87,7 @@ class VirtualPedal:
     def stomp(self, location):
         """Fake a footswitch patch change."""
         self._select(location)
-        bank, index = P.location_to_bank(location, BANK_SIZE)
+        bank, index = P.location_to_bank(location, self.bank_size)
         self._outbox.extend([mido.Message("control_change", control=0, value=0),
                              mido.Message("control_change", control=32, value=bank),
                              mido.Message("program_change", program=index)])
@@ -88,21 +98,22 @@ class VirtualPedal:
         if m.type == "control_change" and m.control == 32:
             self._bank = m.value
         elif m.type == "program_change":
-            self._select(self._bank * BANK_SIZE + m.program + 1)
+            self._select(self._bank * self.bank_size + m.program + 1)
         elif m.type == "sysex":
             self._sysex(list(m.data))
 
     def _sysex(self, d):
         if d[:4] == [0x7E, 0x00, 0x06, 0x01]:
-            return self._reply([0x7E, 0x00, 0x06, 0x02, 0x52, P.DEVICE_ID, 0x00, 0x1F, 0x00, 0x00, 0x00]
-                               + list(FIRMWARE.encode()))
+            model_bytes, firmware = IDENTITY[self.model.key]
+            return self._reply([0x7E, 0x00, 0x06, 0x02, 0x52, P.DEVICE_ID, 0x00] + model_bytes
+                               + list(firmware.encode()))
         if d[:3] != list(P.ZOOM):
             return
         cmd, body = d[3], d[4:]
         if cmd == P.PATCH_INFO:
-            self._reply(P.msg(0x43, P.u14(PATCH_COUNT), P.u14(PATCH_SIZE), 0, 0, P.u14(BANK_SIZE)))
+            self._reply(P.msg(0x43, P.u14(self.patch_count), P.u14(self.patch_size), 0, 0, P.u14(self.bank_size)))
         elif cmd == P.CURRENT_PROGRAM:
-            bank, index = P.location_to_bank(self.current, BANK_SIZE)
+            bank, index = P.location_to_bank(self.current, self.bank_size)
             self._outbox.extend([mido.Message("control_change", control=0, value=0),
                                  mido.Message("control_change", control=32, value=bank),
                                  mido.Message("program_change", program=index)])
@@ -141,7 +152,7 @@ class VirtualPedal:
 
     def _select(self, location):
         self.current = location
-        self.buffer = Patch.decode(self.slots[location])
+        self.buffer = Patch.decode(self.slots[location], self.model)
 
     def _apply_edit(self, target, param, value):
         b = self.buffer
@@ -156,12 +167,14 @@ class VirtualPedal:
                 self.tempo = value
             elif param == P.SETTING_AUTOSAVE:
                 self.autosave = bool(value)
+        elif not self.live_edits_work and param != P.PARAM_EFFECT:
+            return
         else:
             slot = b.slots[target]
             if param == P.PARAM_ON_OFF:
                 slot.enabled = bool(value)
             elif param == P.PARAM_EFFECT:
-                effect = catalog().find(value)
+                effect = catalog(self.model).find(value)
                 b.slots[target] = Slot.unpack(effect.template) if effect and effect.template else Slot(value)
             else:
                 slot.knobs[param - P.PARAM_FIRST_KNOB] = value
@@ -175,7 +188,7 @@ class VirtualPedal:
         while first > 0 and slots[first].is_continuation:
             first, page = first - 1, page + 1
         slot = slots[first]
-        effect = catalog().find(slot.id)
+        effect = catalog(self.model).find(slot.id)
         cells = [(P.PARAM_ON_OFF, "", "ON" if slot.enabled else "OFF"),
                  (P.PARAM_EFFECT, "", effect.name if effect else "")]
         params = effect.params[page * 4:page * 4 + 4] if effect else []
@@ -205,7 +218,7 @@ class VirtualPedal:
 
     def _location(self, body):
         bank, index = body[2] | body[3] << 7, body[4] | body[5] << 7
-        return bank * BANK_SIZE + index + 1
+        return bank * self.bank_size + index + 1
 
 
 def _text10(s):

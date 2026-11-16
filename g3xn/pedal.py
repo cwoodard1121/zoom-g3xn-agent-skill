@@ -1,4 +1,4 @@
-"""Talk to a Zoom G3n / G3Xn over USB-MIDI.
+"""Talk to a Zoom G3n / G3Xn, or a B1X FOUR bass pedal, over USB-MIDI.
 
     from g3xn import Pedal, Patch
 
@@ -15,6 +15,12 @@ written into whatever slot is selected. So:
   * the scratch slot must be Empty the first time it is claimed;
   * a slot cannot be written while the pedal is sitting on it (the pedal's
     edit buffer would overwrite it).
+
+Which pedal: the mode (g3xn.models) says which one to drive. Both pedals
+show up as "ZOOM G Series", so open() asks each Zoom port for its patch
+storage and takes the one that matches; it refuses, naming the fix, when only
+the other pedal is plugged in. The scratch slot and state file are per pedal
+(150 on the G3Xn, 50 on the B1X FOUR).
 """
 import json
 import os
@@ -22,6 +28,7 @@ import time
 
 import mido
 
+from . import models
 from . import protocol as P
 from .patch import Patch
 
@@ -33,13 +40,19 @@ class PedalError(RuntimeError):
 
 
 class Pedal:
-    def __init__(self, scratch=150, timeout=2.0, device=None):
+    def __init__(self, scratch=None, timeout=2.0, device=None, model=None):
         """device: something with connect() -> (inport, outport) to use instead of
-        the USB-MIDI ports, e.g. g3xn.sim.VirtualPedal()."""
+        the USB-MIDI ports, e.g. g3xn.sim.VirtualPedal().
+        model: the pedal to expect ("g3xn", "b1xfour"; default: the mode's, or the
+        virtual pedal's own).
+        scratch: the audition slot (default: the model's, 150 or 50)."""
+        self.wanted = models.get(model) if model else None
+        self.model = None
+        self._scratch = scratch
         self.scratch = scratch
         self.timeout = timeout
         self.device = device
-        self.state_file = getattr(device, "state_file", STATE_FILE)
+        self.state_file = getattr(device, "state_file", None)
         self.inport = self.outport = None
         self._bank, self._note = 0, None      # running state for events()
 
@@ -48,17 +61,36 @@ class Pedal:
     def open(self):
         if self.device:
             self.inport, self.outport = self.device.connect()
-            return self._start()
-        ins = [p for p in mido.get_input_names() if p.startswith(P.PORT_PREFIX)]
-        outs = [p for p in mido.get_output_names() if p.startswith(P.PORT_PREFIX)]
+            self._start()
+            # a virtual pedal is the model it was made as, unless one is asked for
+            return self._expect(self.wanted or self.model or models.active())
+        wanted = self.wanted or models.active()
+        ins = sorted(p for p in mido.get_input_names() if p.startswith(P.PORT_PREFIX))
+        outs = sorted(p for p in mido.get_output_names() if p.startswith(P.PORT_PREFIX))
         if not ins or not outs:
-            raise PedalError("no Zoom G-series pedal found. Is it plugged in over USB, and is ToneLib/Guitar Lab closed?")
-        try:
-            self.inport = mido.open_input(ins[0])
-            self.outport = mido.open_output(outs[0])
-        except Exception as err:
-            raise PedalError("could not open %s (another program may be using it): %s" % (ins[0], err))
-        return self._start()
+            raise PedalError("no Zoom pedal found. Is it plugged in over USB, and is ToneLib/Guitar Lab closed?")
+        found, busy = [], []
+        for i, o in zip(ins, outs):      # both pedals are "ZOOM G Series": ask each which it is
+            try:
+                self.inport, self.outport = mido.open_input(i), mido.open_output(o)
+            except Exception as err:
+                self._close_ports()
+                busy.append("could not open %s (another program may be using it): %s" % (i, err))
+                continue
+            try:
+                self._start()
+            except PedalError:
+                self._close_ports()
+                continue
+            if self.model is wanted:
+                return self._expect(wanted)
+            found.append(self.model)
+            self.close()
+        if found:
+            self._wrong_pedal(wanted, found[0])
+        if busy:
+            raise PedalError(busy[0])
+        raise PedalError("the Zoom pedal on USB did not answer. Unplug it and plug it back in.")
 
     def _start(self):
         self._drain()
@@ -69,7 +101,40 @@ class Pedal:
         self.patch_count = info[5] << 7 | info[4]
         self.patch_size = info[7] << 7 | info[6]
         self.bank_size = info[11] << 7 | info[10]
+        found = models.detect(self.patch_count, self.patch_size, self.bank_size)
+        if found is None and self.patch_count == 150:            # a G3n, or a G3Xn on other firmware
+            found = models.MODELS["g3xn"]
+        self.model = found
         return self
+
+    def _expect(self, wanted):
+        """Refuse a pedal other than the one the mode asks for; then take its scratch slot and state."""
+        if self.model is not wanted:
+            found = self.model
+            self.close()
+            self._wrong_pedal(wanted, found)
+        if self._scratch is None:
+            self.scratch = self.model.scratch
+        self.state_file = self.state_file or (STATE_FILE if self.model.key == "g3xn" else self.model.state_file)
+        return self
+
+    @staticmethod
+    def _wrong_pedal(wanted, found):
+        if found is None:
+            raise PedalError("the Zoom pedal on USB is not one g3xn knows (it knows the %s)"
+                             % " and the ".join(m.name for m in models.MODELS.values()))
+        raise PedalError("the pedal on USB is a %s, but g3xn is in %s mode. Switch with `g3xn mode %s`, "
+                         "or ask Claude to switch to %s mode." % (found.name, wanted.name, found.key, found.kind))
+
+    def _close_ports(self):
+        """Let go of a port without the editor-off message (it never answered, or failed to open)."""
+        for port in (self.inport, self.outport):
+            if port:
+                try:
+                    port.close()
+                except Exception:
+                    pass
+        self.inport = self.outport = None
 
     def close(self):
         if self.outport:
@@ -91,7 +156,8 @@ class Pedal:
 
     def identity(self):
         r = self._request([0x7E, 0x00, 0x06, 0x01])
-        return {"manufacturer": "Zoom", "device_id": r[5], "firmware": bytes(r[-4:]).decode("ascii", "replace"),
+        return {"manufacturer": "Zoom", "model": self.model.name if self.model else None, "device_id": r[5],
+                "firmware": bytes(r[-4:]).decode("ascii", "replace"),
                 "patches": self.patch_count, "patch_size": self.patch_size, "bank_size": self.bank_size}
 
     def current(self):
@@ -134,7 +200,7 @@ class Pedal:
         return data
 
     def read(self, location):
-        return Patch.decode(self.read_raw(location))
+        return Patch.decode(self.read_raw(location), self.model)
 
     def read_all(self):
         return {n: self.read(n) for n in range(1, self.patch_count + 1)}
@@ -142,6 +208,8 @@ class Pedal:
     def write(self, location, patch):
         """Store a patch (Patch or raw bytes) into slot `location`."""
         self._check_location(location)
+        if isinstance(patch, Patch) and self.model and patch.model is not self.model:
+            raise PedalError("that patch is for the %s; this pedal is a %s" % (patch.model.name, self.model.name))
         data = patch.encode() if isinstance(patch, Patch) else bytes(patch)
         if isinstance(patch, Patch) and patch.problems():
             raise PedalError("refusing to write: " + "; ".join(patch.problems()))
@@ -152,7 +220,7 @@ class Pedal:
         bank, index = P.location_to_bank(location, self.bank_size)
         self._request(P.msg(P.PATCH_WRITE, 0, 0, P.u14(bank), P.u14(index), P.u14(len(data)),
                             P.pack7(data), P.checksum(data)))
-        if self.read_raw(location) != data:
+        if not same_patch_bytes(self.read_raw(location), data):
             raise PedalError("patch %d did not read back as written" % location)
 
     def backup(self, folder):
@@ -174,7 +242,7 @@ class Pedal:
         data = P.unpack7(r[8:8 + n + n // 7 + 1])[:n]
         if not P.verify_checksum(data, r[-5:]):
             raise PedalError("checksum mismatch reading the edit buffer")
-        return Patch.decode(data)
+        return Patch.decode(data, self.model)
 
     # --- auditioning on the scratch slot ---
 
@@ -209,6 +277,8 @@ class Pedal:
             self.set_volume(patch.volume)
         if live.name != patch.name:
             self.set_name(patch.name)
+        if self.model and not self.model.live_edits_proven and not same_sound(self.edit_buffer(), patch):
+            self.audition(patch)        # live edits untested on this pedal: when they did not stick, rewrite
 
     def save_scratch(self, location):
         """Store what you are hearing on the scratch slot into a real slot, then
@@ -336,6 +406,8 @@ class Pedal:
     def display(self):
         """Every effect's knobs as the pedal shows them (e.g. delay time in ms):
         [{"position", "effect", "on", "knobs": {label: text}}]."""
+        if self.model and not self.model.has_screen:
+            return []                   # screen text not tested on this pedal yet
         out = []
         for pos, slot in enumerate(self.edit_buffer().slots):
             if slot.is_empty:
@@ -442,6 +514,20 @@ class Pedal:
         state = _load_state(self.state_file)
         state.update(scratch=self.scratch, scratch_name=name)
         _save_state(self.state_file, state)
+
+
+def same_patch_bytes(a, b):
+    """Two stored patch images hold the same patch. Only the PTCF length counts: past it the
+    B1X FOUR keeps leftover bytes in a slot, and the G3Xn's edit buffer holds stale ones."""
+    n = int.from_bytes(bytes(b[4:8]), "little") if bytes(b[:4]) == b"PTCF" else len(b)
+    return bytes(a[:n]) == bytes(b[:n])
+
+
+def same_sound(a, b):
+    """Two patches play the same: effects, on/off, knobs, volume and name (not the bits the pedal keeps)."""
+    def key(p):
+        return ([(s.id, s.enabled, s.knobs) for s in p.slots], p.volume, p.name)
+    return key(a) == key(b)
 
 
 def _cstr(s):

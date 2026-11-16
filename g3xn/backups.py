@@ -27,7 +27,7 @@ class Backups:
         """Keep {slot: raw bytes} as a backup if anything differs from the last automatic one.
         Returns the new folder, or None when nothing changed."""
         last = self._latest_auto()
-        if last and self._load(last) == patches:
+        if last and _same(self._load(last), patches):
             return None
         folder = os.path.join(self.root, "auto", datetime.datetime.now().strftime(STAMP))
         write(folder, patches)
@@ -120,3 +120,9 @@ def _name(data):
         return Patch.decode(data).name
     except Exception:          # a damaged file still lists, just without a name
         return "?"
+
+
+def _same(a, b):
+    """Two backups hold the same patches (bytes past each patch's PTCF length don't count)."""
+    from .pedal import same_patch_bytes
+    return a.keys() == b.keys() and all(same_patch_bytes(a[k], b[k]) for k in a)
