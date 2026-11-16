@@ -67,7 +67,7 @@ class VirtualPedal:
         """A virtual pedal loaded from a `g3xn backup` folder (NNN_NAME.zptc files)."""
         patches = {}
         for path in glob.glob(os.path.join(folder, "*.zptc")):
-            prefix = os.path.basename(path).split("_", 1)[0]
+            prefix = os.path.splitext(os.path.basename(path))[0].split("_", 1)[0]
             if prefix.isdigit():
                 with open(path, "rb") as f:
                     patches[int(prefix)] = f.read()

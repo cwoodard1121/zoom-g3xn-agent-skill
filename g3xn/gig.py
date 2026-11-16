@@ -13,7 +13,7 @@
 Each entry is a tone (tone JSON), a copy of a slot already on the pedal
 (`from_slot`), or a .json/.zptc/.zg3xn file. An entry may set "slot" to pin
 it; otherwise entries fill consecutive slots from start_slot. Entries may
-also carry "artist", "notes", "tempo", "key", "pickup", "tuning", "chords" and "lyrics"
+also carry "artist", "notes", "tempo", "key", "pickup", "tuning" and "lyrics"
 for the stage view, and "cues": effects to switch during the song, a line each ("1:05 Octave on").
 
 GigLibrary keeps gigs as JSON files (the app's saved setlists). A gig that
@@ -26,6 +26,7 @@ import datetime
 import json
 import os
 import re
+import time
 import uuid
 
 from .catalog import catalog
@@ -319,7 +320,13 @@ class GigLibrary:
         return gig
 
     def delete(self, gig_id):
-        os.remove(self._path(gig_id))
+        """Delete a gig. It is moved to a "deleted" folder beside the gigs, so it can be got back by hand."""
+        path = self._path(gig_id)
+        if not os.path.exists(path):
+            raise KeyError("no gig %r" % gig_id)
+        trash = os.path.join(self.folder, "deleted")
+        os.makedirs(trash, exist_ok=True)
+        os.replace(path, os.path.join(trash, "%s_%s.json" % (time.strftime("%Y-%m-%d_%H%M%S"), gig_id)))
 
     def _path(self, gig_id):
         if not re.fullmatch(r"[a-z0-9-]+", gig_id or ""):

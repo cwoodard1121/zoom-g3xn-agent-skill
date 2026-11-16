@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
 import type { Gig, GigEntry, PlanStep } from "../api";
+import { GitHubGigs } from "../components/GitHubGigs";
 import { Icon } from "../components/Icon";
-import { retunes, shapeSet } from "../setshape";
-import type { Shape } from "../setshape";
 import { TUNINGS } from "../tuning";
 import { fillLyrics, lyricsMessage } from "../lyrics";
 import { usePedal } from "../pedal";
@@ -15,7 +14,7 @@ const BLANK: Gig = { name: "New gig", start_slot: 100, patches: [] };
 const PICKUPS = ["Neck", "Neck + middle", "Middle", "Middle + bridge", "Bridge", "Rhythm", "Both", "Treble"];
 
 export function Gigs({ onStage }: { onStage: () => void }) {
-  const { gigs, names, act } = usePedal();
+  const { gigs, names, act, model, num } = usePedal();
   const [openId, setOpenId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Gig | null>(null);
 
@@ -43,7 +42,7 @@ export function Gigs({ onStage }: { onStage: () => void }) {
               <button className={`gig-item${g.id === openId ? " is-open" : ""}`} onClick={() => setOpenId(g.id)}>
                 <span className="gig-item-name">{g.name}</span>
                 <span className="gig-item-meta">
-                  {g.songs} song{g.songs === 1 ? "" : "s"} · from slot {g.start_slot}
+                  {g.songs} song{g.songs === 1 ? "" : "s"} · from slot {num(g.start_slot)}
                   {g.id === gigs.active && <span className="badge on-pedal">On the pedal</span>}
                 </span>
               </button>
@@ -51,9 +50,10 @@ export function Gigs({ onStage }: { onStage: () => void }) {
           ))}
         </ul>
         <div className="gig-new">
-          <button className="button primary" onClick={() => create({ ...BLANK, start_slot: firstEmpty(names) })}>New gig</button>
+          <button className="button primary" onClick={() => create({ ...BLANK, start_slot: firstEmpty(names, model.scratch_slot) })}>New gig</button>
           <ImportFromSlots onImport={create} />
         </div>
+        <GitHubGigs />
       </div>
       {draft ? (
         <GigEditor
@@ -74,7 +74,8 @@ export function Gigs({ onStage }: { onStage: () => void }) {
 }
 
 function ImportFromSlots({ onImport }: { onImport: (g: Gig) => void }) {
-  const { act } = usePedal();
+  const { act, model, num } = usePedal();
+  const offset = model.screen_offset;       // the fields take the numbers the pedal's screen shows
   const [open, setOpen] = useState(false);
   const [first, setFirst] = useState(1);
   const [last, setLast] = useState(10);
@@ -84,14 +85,14 @@ function ImportFromSlots({ onImport }: { onImport: (g: Gig) => void }) {
       className="import-slots"
       onSubmit={async (e) => {
         e.preventDefault();
-        const gig = await act(() => api.exportGig(first, last, `Slots ${first}-${last}`));
+        const gig = await act(() => api.exportGig(first, last, `Slots ${num(first)}-${num(last)}`));
         // Keep the tones but not their slot numbers, so the set can be loaded anywhere.
         if (gig) onImport({ ...gig, start_slot: first, patches: gig.patches.map(({ slot: _slot, ...entry }) => entry) });
         setOpen(false);
       }}
     >
-      <label>Slots <input type="number" min={1} max={150} value={first} onChange={(e) => setFirst(Number(e.target.value))} /></label>
-      <label>to <input type="number" min={1} max={150} value={last} onChange={(e) => setLast(Number(e.target.value))} /></label>
+      <label>Slots <input type="number" min={1 + offset} max={model.patches + offset} value={first + offset} onChange={(e) => setFirst(Number(e.target.value) - offset)} /></label>
+      <label>to <input type="number" min={1 + offset} max={model.patches + offset} value={last + offset} onChange={(e) => setLast(Number(e.target.value) - offset)} /></label>
       <button className="button primary" type="submit">Make gig</button>
       <button className="button" type="button" onClick={() => setOpen(false)}>Cancel</button>
     </form>
@@ -107,11 +108,11 @@ interface EditorProps {
 }
 
 function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
-  const { names, live, act, say, guitars } = usePedal();
+  const { names, live, act, say, guitars, model, num } = usePedal();
+  const offset = model.screen_offset;
   const [g, setG] = useState<Gig>(gig);
   const [dirty, setDirty] = useState(false);
   const [plan, setPlan] = useState<PlanStep[] | null>(null);
-  const [replaceOk, setReplaceOk] = useState(false);
 
   const update = (next: Gig) => {
     setG(next);
@@ -148,19 +149,13 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
     }
     return saved;
   };
-  const checkPlan = async () => {
-    if (dirty && !(await save(true))) return;
-    const r = await act(() => api.planGig(g.id!));
-    if (r) {
-      setPlan(r.plan);
-      setReplaceOk(false);
-    }
-  };
+  // One click: save the gig if it changed, then load it. The daemon backs up every slot first,
+  // and the table shows where each song went.
   const load = async () => {
+    if (dirty && !(await save(true))) return;
     const r = await act(() => api.loadGig(g.id!), (r) => `Loaded ${r.written.length} songs. Every slot was backed up first.`);
-    if (r) setPlan(null);
+    if (r) setPlan(r.written);
   };
-  const overwrites = plan?.filter((s) => s.overwrites_real_patch) ?? [];
   const slotOptions = Object.entries(names).filter(([, n]) => n !== "Empty");
 
   return (
@@ -172,7 +167,7 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
         </label>
         <label className="field">
           <span>First slot</span>
-          <input type="number" min={1} max={149} value={g.start_slot} onChange={(e) => update({ ...g, start_slot: Number(e.target.value) })} />
+          <input type="number" min={1 + offset} max={model.patches - 1 + offset} value={g.start_slot + offset} onChange={(e) => update({ ...g, start_slot: Number(e.target.value) - offset })} />
         </label>
       </div>
 
@@ -213,7 +208,7 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
               {!entry.tone && entry.from_slot === undefined && <option value="">Pick a patch…</option>}
               {live && <option value="live">The tone playing now ({live.name})</option>}
               {slotOptions.map(([n, name]) => (
-                <option key={n} value={n}>Slot {n} · {name}</option>
+                <option key={n} value={n}>Slot {num(Number(n))} · {name}</option>
               ))}
             </select>
             <input
@@ -267,11 +262,11 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
             />
             <span className="song-tools">
               <button
-                className={`song-words${entry.lyrics || entry.chords ? " has" : ""}`}
+                className={`song-words${entry.lyrics ? " has" : ""}`}
                 onClick={() => setWords(words === i ? null : i)}
                 aria-expanded={words === i}
                 aria-label={`Lyrics for song ${i + 1}`}
-                title={entry.lyrics || entry.chords ? "Chords and lyrics" : "No chords or lyrics yet"}
+                title={entry.lyrics ? "Lyrics and cues" : "No lyrics yet"}
               >
                 Aa
               </button>
@@ -292,14 +287,6 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
                     {finding ? "Looking…" : entry.lyrics ? "Find them again" : "Find lyrics"}
                   </button>
                 </div>
-                <textarea
-                  className="song-chords"
-                  aria-label={`Chords for ${entry.song || `song ${i + 1}`}`}
-                  placeholder={"Chords, a section a line:\nVerse: Dm C Bb A\nChorus: F C Bb Dm"}
-                  rows={3}
-                  value={entry.chords ?? ""}
-                  onChange={(e) => setEntry(i, { ...entry, chords: e.target.value || undefined })}
-                />
                 <textarea
                   className="song-cues"
                   aria-label={`Cues for ${entry.song || `song ${i + 1}`}`}
@@ -336,21 +323,19 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
         <button className="button" disabled={finding || g.patches.every((e) => (e.lyrics && e.duration !== undefined) || !e.song.trim())} onClick={() => findLyrics()}>
           {finding ? "Finding lyrics…" : "Find lyrics for every song"}
         </button>
-        <ShapeSet songs={g.patches} onUse={(patches) => update({ ...g, patches })} />
       </div>
 
       <div className="gig-actions">
         <button className="button" onClick={() => save()} disabled={!dirty}>{dirty ? "Save" : "Saved"}</button>
-        <button className="button" onClick={checkPlan} disabled={g.patches.length === 0 || g.patches.some((e) => !e.tone && e.from_slot === undefined)}>
-          Check where it goes
+        <button className="button primary" onClick={load} disabled={g.patches.length === 0 || g.patches.some((e) => !e.tone && e.from_slot === undefined)}>
+          Load to pedal
         </button>
         {active && <button className="button" onClick={onStage}>Stage view</button>}
         <button
           className="button danger"
           onClick={async () => {
-            if (window.confirm(`Delete ${g.name}? The patches on the pedal stay as they are.`)) {
-              if (await act(() => api.deleteGig(g.id!), () => `Deleted ${g.name}`)) onDeleted();
-            }
+            // No question first: the daemon keeps deleted gigs in a "deleted" folder.
+            if (await act(() => api.deleteGig(g.id!), () => `Deleted ${g.name}. The patches on the pedal stay as they are.`)) onDeleted();
           }}
         >
           Delete gig
@@ -359,7 +344,7 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
 
       {plan && (
         <div className="plan">
-          <h2 className="plan-title">Where it goes</h2>
+          <h2 className="plan-title">Where it went</h2>
           <table className="plan-table">
             <thead>
               <tr><th>#</th><th>Song</th><th>Slot</th><th>Replaces</th></tr>
@@ -369,24 +354,13 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
                 <tr key={s.order} className={s.overwrites_real_patch ? "overwrites" : ""}>
                   <td>{s.order}</td>
                   <td>{s.song}</td>
-                  <td>{s.slot}</td>
+                  <td>{num(s.slot)}</td>
                   <td>{s.replaces === "Empty" ? "empty slot" : s.replaces_own ? `${s.replaces} (this gig's own)` : s.replaces}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-          {overwrites.length > 0 && (
-            <label className="check">
-              <input type="checkbox" checked={replaceOk} onChange={(e) => setReplaceOk(e.target.checked)} />
-              <span>
-                Replace {overwrites.length} patch{overwrites.length === 1 ? "" : "es"} ({overwrites.map((s) => s.replaces).join(", ")}).
-                Every slot is backed up first.
-              </span>
-            </label>
-          )}
-          <button className="button primary" disabled={overwrites.length > 0 && !replaceOk} onClick={load}>
-            Load to pedal
-          </button>
+          <p className="field-note">Every slot was backed up first: Patches › Backups puts one back.</p>
         </div>
       )}
     </div>
@@ -394,65 +368,11 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
 }
 
 /** The first Empty slot, where a new gig starts unless you pick another. */
-function firstEmpty(names: Record<number, string>): number {
-  const n = Object.entries(names).find(([slot, name]) => name === "Empty" && Number(slot) < 150);
-  return n ? Number(n[0]) : BLANK.start_slot;
+function firstEmpty(names: Record<number, string>, scratch: number): number {
+  const n = Object.entries(names).find(([slot, name]) => name === "Empty" && Number(slot) !== scratch);
+  return n ? Number(n[0]) : Math.min(BLANK.start_slot, Math.max(1, Object.keys(names).length - 1));
 }
 
 function stripTone(t: { name: string; volume: number; dsp_percent: number; chain: { effect: string; on: boolean; knobs: Record<string, number> }[] }) {
   return { name: t.name, volume: t.volume, dsp_percent: t.dsp_percent, chain: t.chain.map((f) => ({ effect: f.effect, on: f.on, knobs: f.knobs })) };
-}
-
-/** An order for the set that flows: fewest retunes, gentle key and tempo moves ("smooth"), or the
- * tempo climbing as it goes ("build"). A preview first; nothing changes until it's used. */
-function ShapeSet({ songs, onUse }: { songs: GigEntry[]; onUse: (order: GigEntry[]) => void }) {
-  const [open, setOpen] = useState(false);
-  const [shape, setShape] = useState<Shape>("smooth");
-  const [keepEnds, setKeepEnds] = useState(true);
-  if (songs.length < 3) return null;
-  if (!open) {
-    return (
-      <button className="button" onClick={() => setOpen(true)} title="Find an order with fewer retunes and smoother key and tempo changes">
-        Shape the set…
-      </button>
-    );
-  }
-  const r = shapeSet(songs, shape, keepEnds);
-  const same = r.order.every((e, i) => e === songs[i]);
-  return (
-    <div className="shape">
-      <div className="shape-head">
-        <span className="shape-title">Shape the set</span>
-        <span className="segmented" role="group" aria-label="Shape">
-          <button aria-pressed={shape === "smooth"} onClick={() => setShape("smooth")}>Smooth</button>
-          <button aria-pressed={shape === "build"} onClick={() => setShape("build")}>Build up</button>
-        </span>
-        <label className="check">
-          <input type="checkbox" checked={keepEnds} onChange={(e) => setKeepEnds(e.target.checked)} />
-          Keep the opener and closer
-        </label>
-      </div>
-      <p className="shape-sum">
-        {same ? "This order already flows as well as it can." : <>Retunes: <b>{retunes(songs)}</b> → <b>{retunes(r.order)}</b></>}
-      </p>
-      <ol className="shape-list">
-        {r.order.map((e, i) => {
-          const was = songs.indexOf(e);
-          return (
-            <li key={i} className={was === i ? "" : "moved"}>
-              <span className="shape-n">{i + 1}</span>
-              <span className="shape-song">{e.song || "Untitled"}</span>
-              <span className="shape-facts">{[e.key, e.tempo && `${e.tempo} BPM`, e.tuning].filter(Boolean).join(" · ")}</span>
-              {was !== i && <span className="shape-was">was {was + 1}</span>}
-            </li>
-          );
-        })}
-      </ol>
-      <div className="shape-actions">
-        <button className="button primary" disabled={same} onClick={() => { onUse(r.order); setOpen(false); }}>Use this order</button>
-        <button className="button" onClick={() => setOpen(false)}>Keep mine</button>
-      </div>
-      <p className="shape-note">After using it, load the gig again so the pedal's slots follow the new order.</p>
-    </div>
-  );
 }

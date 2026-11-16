@@ -114,7 +114,7 @@ function PhoneSheet({ info, setInfo, onClose }: { info: RemoteInfo; setInfo: (i:
                   <b>{d.name}</b>
                   <small>last seen {ago(d.last_seen)}</small>
                 </span>
-                <button className="button" onClick={() => window.confirm(`Forget ${d.name}? It will need a new code to come back.`) && run(() => api.remoteForget(d.id))}>
+                <button className="button" onClick={() => run(() => api.remoteForget(d.id))} title="It needs a new code to come back">
                   Forget
                 </button>
               </li>

@@ -43,7 +43,7 @@ const PLAYERS = {
 type Player = keyof typeof PLAYERS;
 
 export function Stage() {
-  const { gigs, status, names, tuner, live, act, say, stageHeard, stageMove, talk, guitars } = usePedal();
+  const { gigs, status, names, tuner, live, act, say, stageHeard, stageMove, talk, guitars, num } = usePedal();
   const [gig, setGig] = useState<Gig | null>(null);
   const [finding, setFinding] = useState(false);
   const findLyrics = async () => {
@@ -510,8 +510,8 @@ export function Stage() {
               </div>
             )}
             <div className="stage-patch" style={{ viewTransitionName: "stage-patch" }}>
-              <span className="stage-lcd" aria-label={`Slot ${song.slot}, ${song.patch}`}>
-                <span className="stage-lcd-slot">{String(song.slot).padStart(3, "0")}</span>
+              <span className="stage-lcd" aria-label={`Slot ${num(song.slot)}, ${song.patch}`}>
+                <span className="stage-lcd-slot">{String(num(song.slot)).padStart(3, "0")}</span>
                 <span>{song.patch}</span>
               </span>
               {guitar && (
@@ -555,25 +555,12 @@ export function Stage() {
               </div>
             )}
             {info?.notes && <p className="stage-notes" style={{ viewTransitionName: "stage-notes" }}>{info.notes}</p>}
-            {info?.chords && (
-              <dl className="stage-chords" aria-label="Chords" style={{ viewTransitionName: "stage-chords" }}>
-                {info.chords.split("\n").filter((l) => l.trim()).map((l, i) => {
-                  const [part, chords] = l.includes(":") ? [l.slice(0, l.indexOf(":")), l.slice(l.indexOf(":") + 1)] : ["", l];
-                  return (
-                    <div key={i}>
-                      <dt>{part.trim()}</dt>
-                      <dd>{chords.trim()}</dd>
-                    </div>
-                  );
-                })}
-              </dl>
-            )}
           </>
         ) : (
           <>
             <h1 id="stage-song" className="stage-song off-set">Not in the set</h1>
             <p className="stage-notes">
-              The pedal is on slot {current}{current && names[current] ? `, ${names[current]}` : ""}.
+              The pedal is on slot {current ? num(current) : current}{current && names[current] ? `, ${names[current]}` : ""}.
               Press Next to start at {slots[0].song}.
             </p>
           </>
@@ -584,7 +571,7 @@ export function Stage() {
         <div className="stage-next" style={{ viewTransitionName: "stage-next" }}>
           {next ? (
             <p>
-              <span className="stage-next-label">Next</span> {next.song} <span className="stage-next-slot">slot {next.slot}</span>
+              <span className="stage-next-label">Next</span> {next.song} <span className="stage-next-slot">slot {num(next.slot)}</span>
               {switching && <span className="stage-next-guitar">switch to the <b>{nextGuitar}</b></span>}
             </p>
           ) : song ? (

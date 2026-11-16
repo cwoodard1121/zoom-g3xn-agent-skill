@@ -2,7 +2,13 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { api, ApiError, subscribe } from "./api";
-import type { ChatInfo, ChatMessage, GigSummary, Guitars, HistorySummary, PedalEvent, StageMove, Status, TalkInfo, TalkState, Tone } from "./api";
+import type { ChatInfo, ChatMessage, GigSummary, Guitars, HistorySummary, PedalEvent, PedalModel, StageMove, Status, TalkInfo, TalkState, Tone } from "./api";
+
+/** Until the daemon says which pedal it is on (and for older daemons, which only know this one). */
+const G3XN: PedalModel = {
+  key: "g3xn", name: "G3Xn", kind: "guitar", patches: 150, bank_size: 3, scratch_slot: 150,
+  chain: { rule: "positions", max: 7 }, screen_offset: 0,
+};
 
 interface State {
   linked: boolean; // WebSocket to the daemon is open
@@ -142,6 +148,10 @@ export interface CopyOf {
 }
 
 interface Pedal extends State {
+  /** The pedal the app is on, with its limits. */
+  model: PedalModel;
+  /** A slot's number as the pedal's own screen shows it (the B1X FOUR shows slot 1 as 10). */
+  num: (slot: number) => number;
   onScratch: boolean;
   copyOf: CopyOf | null;
   setCopyOf: (c: CopyOf | null) => void;
@@ -228,6 +238,18 @@ export function PedalProvider({ children }: { children: ReactNode }) {
     },
     [act],
   );
+  // The app is on one pedal at a time. When it changes (the switch in the status bar, or Claude),
+  // every screen starts again on the other pedal's patches, effects and history.
+  const model = state.status?.model ?? G3XN;
+  const seenModel = useRef<string | null>(null);
+  useEffect(() => {
+    const key = state.status?.model?.key;
+    if (!key) return;
+    if (seenModel.current && seenModel.current !== key) location.reload();
+    seenModel.current = key;
+  }, [state.status?.model?.key]);
+  const offset = model.screen_offset;
+  const num = useCallback((slot: number) => slot + offset, [offset]);
   // Off the scratch slot, whatever plays there next may not be that copy any more.
   const scratch = state.status?.scratch_slot;
   useEffect(() => {
@@ -237,6 +259,8 @@ export function PedalProvider({ children }: { children: ReactNode }) {
   const value = useMemo<Pedal>(
     () => ({
       ...state,
+      model,
+      num,
       onScratch: !!state.status && state.status.current_slot === state.status.scratch_slot,
       copyOf,
       setCopyOf,
@@ -247,7 +271,7 @@ export function PedalProvider({ children }: { children: ReactNode }) {
       setLive,
       setGuitar,
     }),
-    [state, copyOf, act, toasts, say, refreshLive, setLive, setGuitar],
+    [state, model, num, copyOf, act, toasts, say, refreshLive, setLive, setGuitar],
   );
   return <PedalContext.Provider value={value}>{children}</PedalContext.Provider>;
 }

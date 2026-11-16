@@ -6,17 +6,18 @@ import type { EffectSummary } from "../api";
 import { Drawer } from "./Drawer";
 
 const GROUP_ORDER = ["DYNAMICS", "FILTER", "DRIVE", "AMP", "CABINET", "MODULATION", "SFX", "DELAY", "REVERB", "PEDAL"];
-export const MAX_POSITIONS = 7;
-
 interface Props {
   title: string;
-  freePositions: number; // positions left (plus what the effect being swapped out frees)
+  /** The pedal's chain: `max` positions (a big effect takes 2), or `max` effects whatever their size. */
+  chain: { rule: "positions" | "effects"; max: number };
+  freePositions: number; // positions (or effect places) left, plus what the effect being swapped out frees
   freeDsp: number; // DSP % left (likewise)
   onPick: (effect: string) => void;
   onClose: () => void;
 }
 
-export function EffectBrowser({ title, freePositions, freeDsp, onPick, onClose }: Props) {
+export function EffectBrowser({ title, chain, freePositions, freeDsp, onPick, onClose }: Props) {
+  const byEffect = chain.rule === "effects";
   const [effects, setEffects] = useState<EffectSummary[]>([]);
   const [query, setQuery] = useState("");
   const [error, setError] = useState("");
@@ -35,7 +36,9 @@ export function EffectBrowser({ title, freePositions, freeDsp, onPick, onClose }
   }, [effects, query]);
 
   const whyNot = (e: EffectSummary) => {
-    if (e.positions > freePositions) {
+    if (byEffect) {
+      if (freePositions < 1) return `The pedal holds ${chain.max} effects`;
+    } else if (e.positions > freePositions) {
       return e.positions === 2 ? "Takes 2 positions; not enough free" : "No chain positions free";
     }
     if (e.dsp_percent > freeDsp + 0.05) return `Needs ${Math.round(e.dsp_percent)}% DSP; ${Math.max(0, Math.round(freeDsp))}% free`;
@@ -54,7 +57,7 @@ export function EffectBrowser({ title, freePositions, freeDsp, onPick, onClose }
         onChange={(e) => setQuery(e.target.value)}
       />
       <p className="drawer-note">
-        {freePositions} of {MAX_POSITIONS} positions and {Math.max(0, Math.round(freeDsp))}% DSP free
+        {freePositions} of {chain.max} {byEffect ? "effects" : "positions"} and {Math.max(0, Math.round(freeDsp))}% DSP free
       </p>
       {error && <p className="drawer-note error">{error}</p>}
       {groups.map(([group, list]) => (
@@ -68,7 +71,7 @@ export function EffectBrowser({ title, freePositions, freeDsp, onPick, onClose }
                   <button className="fx-item" disabled={!!reason} onClick={() => onPick(e.name)}>
                     <span className="fx-name">{e.name}</span>
                     <span className="fx-meta">
-                      {e.positions === 2 ? "2 positions · " : ""}
+                      {e.positions === 2 ? (byEffect ? "2 screens · " : "2 positions · ") : ""}
                       {Math.round(e.dsp_percent)}% DSP
                     </span>
                     <span className="fx-desc">{reason || e.description}</span>

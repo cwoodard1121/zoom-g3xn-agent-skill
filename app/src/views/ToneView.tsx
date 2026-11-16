@@ -5,12 +5,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { api, effectInfo } from "../api";
 import type { ChainEffect, EffectInfo, Tone, TweakChange } from "../api";
 import { ABSwitch } from "../components/ABSwitch";
-import { EffectBrowser, MAX_POSITIONS } from "../components/EffectBrowser";
+import { EffectBrowser } from "../components/EffectBrowser";
 import { HistoryPanel } from "../components/HistoryPanel";
 import { Icon } from "../components/Icon";
 import { Knob } from "../components/Knob";
-import { Macros } from "../components/Macros";
-import { GuitarField } from "../components/Guitar";
 import { RackUnit } from "../components/RackUnit";
 import { usePedal } from "../pedal";
 import { SaveDialog } from "./SaveDialog";
@@ -22,11 +20,11 @@ type Panel = { kind: "add" } | { kind: "swap"; index: number } | { kind: "histor
 
 export function ToneView() {
   const pedal = usePedal();
-  const { live, status, onScratch, act, setLive, refreshLive, history, copyOf, setCopyOf } = pedal;
+  const { live, status, onScratch, act, setLive, refreshLive, history, copyOf, setCopyOf, model, num } = pedal;
   const infos = useEffectInfos(live);
   const copyFirst = useCopyFirst();
-  const { draft, queue, queueMany } = useTweaks(setLive, refreshLive, pedal.say, copyFirst);
-  const [saving, setSaving] = useState<"new" | "over" | null>(null);
+  const { draft, queue } = useTweaks(setLive, refreshLive, pedal.say, copyFirst);
+  const [saving, setSaving] = useState(false);
   const [panel, setPanel] = useState<Panel>(null);
   const [drag, setDrag] = useState<{ from: number; over: number | null } | null>(null);
   const [opened, setOpened] = useState<number | null>(0); // the unit whose knobs are out
@@ -41,7 +39,10 @@ export function ToneView() {
   if (!status || status.connection !== "connected" || !live) return <NoTone />;
 
   const tone = withDraft(live, draft);
-  const positionsOf = (fx: ChainEffect) => infos[fx.effect]?.positions ?? 1;
+  // The G3Xn counts chain positions (a big effect takes 2); the B1X FOUR counts effects.
+  const byEffect = model.chain.rule === "effects";
+  const MAX_POSITIONS = model.chain.max;
+  const positionsOf = (fx: ChainEffect) => (byEffect ? 1 : infos[fx.effect]?.positions ?? 1);
   const used = tone.chain.reduce((n, fx) => n + positionsOf(fx), 0);
   const slot = status.current_slot!;
 
@@ -82,16 +83,18 @@ export function ToneView() {
           <NameField key={`${slot}-${live.name}`} name={tone.name} onCommit={(name) => queue("name", { name })} />
           <p className="master-state">
             {!onScratch
-              ? `Slot ${slot} · as stored`
+              ? `Slot ${num(slot)} · as stored`
               : copyOf
-                ? `Copy of ${copyOf.name} on slot ${slot} · slot ${copyOf.slot} is untouched`
-                : `Trying out · slot ${slot}`}
+                ? `Copy of ${copyOf.name} on slot ${num(slot)} · slot ${num(copyOf.slot)} is untouched`
+                : `Trying out · slot ${num(slot)}`}
           </p>
-          <GuitarField slot={slot} className="tone-guitar" />
-          <div className="tone-meters">
-            <Meter label="DSP" value={tone.dsp_percent} max={100} text={`${Math.round(tone.dsp_percent)}%`} />
-            <Meter label="Positions" value={used} max={MAX_POSITIONS} text={`${used} of ${MAX_POSITIONS}`} />
-          </div>
+          {/* The meters only show when the pedal is nearly full: the effect list says what won't fit. */}
+          {(tone.dsp_percent >= 90 || used >= MAX_POSITIONS) && (
+            <div className="tone-meters">
+              <Meter label="DSP" value={tone.dsp_percent} max={100} text={`${Math.round(tone.dsp_percent)}%`} />
+              <Meter label={byEffect ? "Effects" : "Positions"} value={used} max={MAX_POSITIONS} text={`${used} of ${MAX_POSITIONS}`} />
+            </div>
+          )}
         </div>
         <div className="master-knobs">
           <Knob
@@ -101,16 +104,6 @@ export function ToneView() {
             text={String(tone.volume)}
             hint="Patch volume"
             onChange={(v) => queue("volume", { volume: v })}
-          />
-          <Macros
-            tone={tone}
-            infos={infos}
-            onMove={(m) =>
-              queueMany([
-                ...m.knobs.map((k) => [`k:${k.index + 1}:${k.knob}`, { change: { effect: k.index + 1, knob: k.knob, value: k.value } }] as const),
-                ...(m.volume !== undefined ? [["volume", { volume: m.volume }] as const] : []),
-              ])
-            }
           />
         </div>
       </div>
@@ -200,26 +193,29 @@ export function ToneView() {
         <span className="rail-label">Out</span>
         <span className="rail-line" aria-hidden="true" />
         {onScratch && copyOf && (
-          <button className="button primary" onClick={() => setSaving("over")}>Save over {copyOf.name}…</button>
+          <button
+            className="button primary"
+            onClick={() =>
+              // One click: the daemon keeps a copy of the old patch in a file first.
+              act(() => api.save(copyOf.slot, tone.name, true), (r) => `Saved over slot ${num(r.slot)}. The old ${copyOf.name} is kept in a file`)
+                .then((r) => r && setCopyOf(null))
+            }
+          >
+            Save over {copyOf.name}
+          </button>
         )}
         {onScratch && (
-          <button className={`button${copyOf ? "" : " primary"}`} onClick={() => setSaving("new")}>
+          <button className={`button${copyOf ? "" : " primary"}`} onClick={() => setSaving(true)}>
             {copyOf ? "Keep as a new patch…" : "Keep it in a slot…"}
           </button>
         )}
-        <span className="tone-hint">
-          {onScratch
-            ? "Open a unit to turn its knobs: drag up or down, scroll, or use the arrow keys. Drag a unit to move it."
-            : `Change anything and the pedal switches to a copy on slot ${status.scratch_slot}. ${tone.name} on slot ${slot} stays as it is until you save over it.`}
-        </span>
       </div>
 
-      {saving && (
-        <SaveDialog tone={tone} over={saving === "over" ? copyOf ?? undefined : undefined} onClose={() => setSaving(null)} />
-      )}
+      {saving && <SaveDialog tone={tone} onClose={() => setSaving(false)} />}
       {(panel?.kind === "add" || panel?.kind === "swap") && (
         <EffectBrowser
           title={swapping ? `Swap ${swapping.effect} for…` : "Add an effect"}
+          chain={model.chain}
           freePositions={MAX_POSITIONS - used + freedPositions}
           freeDsp={100 - tone.dsp_percent + freedDsp}
           onPick={pick}
@@ -232,10 +228,10 @@ export function ToneView() {
 }
 
 function NoTone() {
-  const { status, linked } = usePedal();
+  const { status, linked, model } = usePedal();
   let text = "Reading the pedal…";
   if (!linked) text = "Start the g3xn daemon to see your pedal here.";
-  else if (status?.connection === "disconnected") text = "No pedal yet. Plug the G3Xn in over USB; it connects by itself.";
+  else if (status?.connection === "disconnected") text = status.problem || `No pedal yet. Plug the ${model.name} in over USB; it connects by itself.`;
   else if (status?.connection === "released") text = "The pedal is free for other programs. Take it back from the bar above.";
   return (
     <section className="tone">
@@ -316,7 +312,7 @@ type Pending = { change?: TweakChange; volume?: number; name?: string };
  * many tweaks are waiting). Returns null when the scratch slot is already playing.
  */
 function useCopyFirst() {
-  const { status, onScratch, setLive, setCopyOf, live, say } = usePedal();
+  const { status, onScratch, setLive, setCopyOf, live, say, num } = usePedal();
   const copying = useRef<Promise<void> | null>(null);
   const now = useRef({ status, onScratch, live });
   now.current = { status, onScratch, live };
@@ -328,11 +324,11 @@ function useCopyFirst() {
     if (onScratch || !status?.current_slot) return null;
     if (!copying.current) {
       const slot = status.current_slot;
-      const name = live?.name ?? status.current_name ?? `slot ${slot}`;
+      const name = live?.name ?? status.current_name ?? `slot ${num(slot)}`;
       copying.current = api.audition({ slot }).then((view) => {
         setLive(view);
         setCopyOf({ slot, name });
-        say(`Tweaking a copy of ${name} on slot ${status.scratch_slot}. Slot ${slot} is untouched.`);
+        say(`Tweaking a copy of ${name} on slot ${status.scratch_slot ? num(status.scratch_slot) : "?"}. Slot ${num(slot)} is untouched.`);
       });
       copying.current.catch(() => (copying.current = null));
     }

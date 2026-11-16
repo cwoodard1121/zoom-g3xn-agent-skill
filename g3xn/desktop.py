@@ -22,8 +22,6 @@ TITLE = "g3xn"
 
 
 def main(argv=None):
-    from . import models
-    models.pin("g3xn")      # the app is G3Xn only, whatever mode Claude left this computer in
     ap = argparse.ArgumentParser(prog="g3xn-app", description=__doc__.split("\n\n")[0])
     ap.add_argument("--port", type=int, default=daemon.DEFAULT_PORT)
     daemon.add_pedal_options(ap)
@@ -35,16 +33,10 @@ def main(argv=None):
     url, stop = _running_daemon(), None
     if url is None or args.sim is not None:
         port = args.port if args.sim is None else daemon.free_port()
-        real = args.sim is None
-        url, stop = daemon.start_in_thread(daemon.pedal_factory(args), port, announce=real,
-                                           history_file=daemon.HISTORY_FILE if real else None,
-                                           gigs_folder=daemon.GIGS_FOLDER if real else None,
-                                           remote=daemon.Remote(daemon.REMOTE_FILE if real else None, use_tailscale=real),
-                                           footswitches=daemon.Footswitches(daemon.MIDI_FILE if real else None),
-                                           backups_folder=daemon.service.BACKUP_ROOT if real else None,
-                                           tracks_folder=daemon.TRACKS_FOLDER if real else
-                                           tempfile.mkdtemp(prefix="g3xn-tracks-"),
-                                           guitars_file=daemon.GUITARS_FILE if real else None)
+        first = daemon.first_pedal(args)
+        if args.pedal and args.sim is None:
+            daemon.models.use(first.key)
+        url, stop, _ = daemon.start_modes_in_thread(daemon.app_builder(args, port), port, first.key)
     try:
         _show(url)
     finally:

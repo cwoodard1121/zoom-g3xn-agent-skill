@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "g3xn"
-version = "0.1.0"
+version = "0.3.0"
 description = "Build, edit and play Zoom G3n / G3Xn patches from code, the command line, or an AI agent"
 readme = "README.md"
 requires-python = ">=3.10"

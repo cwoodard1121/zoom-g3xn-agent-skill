@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "./api";
+import type { PedalChoice } from "./api";
 import { ClaudeStrip } from "./components/ClaudeStrip";
 import { GuitarNames } from "./components/Guitar";
 import { PairGate, PhoneButton } from "./components/Phone";
@@ -74,20 +75,29 @@ function useHashView(): [View, (v: View) => void] {
 
 /** What the pedal is doing, always in view, so nothing happens to it unannounced. */
 function StatusBar() {
-  const { linked, status, act } = usePedal();
+  const { linked, status, act, model, num } = usePedal();
+  const [switching, setSwitching] = useState<string | null>(null); // the pedal being switched to
   let light = "off";
   let text = "Can't reach the g3xn daemon. Start it with g3xn-daemon.";
   let action: { label: string; run: () => void } | null = null;
+  const pick = async (m: PedalChoice) => {
+    setSwitching(m.name);
+    // The page starts again on the other pedal when the daemon is back (see PedalProvider).
+    if (!(await act(() => api.setMode(m.key)))) setSwitching(null);
+  };
 
-  if (linked && status) {
+  if (switching) {
+    light = "busy";
+    text = `Switching to the ${switching}…`;
+  } else if (linked && status) {
     if (status.connection === "connected" && status.doing) {
       light = "busy";
       text = status.doing[0].toUpperCase() + status.doing.slice(1) + "…";
     } else if (status.connection === "connected") {
       light = "ok";
-      const fw = status.pedal.firmware ? ` · firmware ${status.pedal.firmware}` : "";
-      const which = status.pedal.virtual ? "Not your G3Xn" : `G3Xn connected${fw}`;
-      text = `${which} · on slot ${status.current_slot}${status.current_name ? `, ${status.current_name}` : ""}`;
+      const which = status.pedal.virtual ? `Not your ${model.name}` : `${model.name} connected`;
+      const slot = status.current_slot ? num(status.current_slot) : status.current_slot;
+      text = `${which} · on slot ${slot}${status.current_name ? `, ${status.current_name}` : ""}`;
       action = { label: "Let go of the pedal", run: () => act(() => api.release(), () => "The pedal is free for ToneLib and other programs") };
     } else if (status.connection === "released") {
       text = "The pedal is free for other programs.";
@@ -107,6 +117,21 @@ function StatusBar() {
       <span className="wordmark" aria-hidden="true">G3XN</span>
       <span className="status-text vfd">{text}</span>
       {status?.pedal.virtual && <span className="status-badge">Virtual pedal</span>}
+      {status?.modes && status.modes.length > 1 && (
+        <span className="segmented pedal-switch" role="group" aria-label="Pedal">
+          {status.modes.map((m) => (
+            <button
+              key={m.key}
+              aria-pressed={m.key === model.key}
+              title={m.name}
+              disabled={!!switching}
+              onClick={() => m.key !== model.key && pick(m)}
+            >
+              {m.kind === "bass" ? "Bass" : "Guitar"}
+            </button>
+          ))}
+        </span>
+      )}
       <PhoneButton />
       {action && (
         <button className="status-action" onClick={action.run}>

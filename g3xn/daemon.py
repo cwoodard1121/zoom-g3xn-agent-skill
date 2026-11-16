@@ -44,6 +44,7 @@ from . import protocol as P
 from . import service
 from . import gig as gig_files
 from .gig import GigLibrary, shown as shown_gig
+from .gigsync import GigSync, SyncError
 from .chat import Chat, ChatError
 from .footswitch import Footswitches
 from .backups import Backups, write as write_backup
@@ -82,9 +83,10 @@ class NotConnected(PedalError):
 class PedalWorker(threading.Thread):
     """Runs pedal actions one at a time and watches the pedal in between."""
 
-    def __init__(self, make_pedal, emit, backups=None):
+    def __init__(self, make_pedal, emit, backups=None, extra=None):
         super().__init__(name="pedal", daemon=True)
         self.make_pedal = make_pedal      # () -> Pedal (not yet open)
+        self.extra = extra or {}          # in every status: which pedal this daemon drives, and the choices
         self.emit = emit                  # (event dict) -> None, thread-safe
         self.backups = backups            # a backups.Backups: keep every slot each time the pedal connects
         self.jobs = queue.Queue()
@@ -111,9 +113,9 @@ class PedalWorker(threading.Thread):
         return future
 
     def snapshot(self):
-        return {"type": "status", "connection": self.connection, "problem": self.problem, "doing": self.doing,
-                "pedal": self.info, "current_slot": self.current, "current_name": self.names.get(self.current),
-                "scratch_slot": self.pedal.scratch if self.pedal else None, "tuner": self.tuner_on}
+        return dict(self.extra, type="status", connection=self.connection, problem=self.problem, doing=self.doing,
+                    pedal=self.info, current_slot=self.current, current_name=self.names.get(self.current),
+                    scratch_slot=self.pedal.scratch if self.pedal else None, tuner=self.tuner_on)
 
     def release(self):
         """Let go of the pedal (so ToneLib can use it) until connect() is called."""
@@ -327,6 +329,10 @@ class BackupRequest(BaseModel):
     folder: str = ""
 
 
+class ModeRequest(BaseModel):
+    pedal: str                        # "g3xn" / "guitar", or "b1xfour" / "bass"
+
+
 class TunerRequest(BaseModel):
     on: bool = True
 
@@ -353,6 +359,11 @@ class BatchRequest(BaseModel):
 
 class GuitarRequest(BaseModel):
     guitar: Optional[str] = None  # "Strat", "Les Paul"...; empty or null forgets it
+
+
+class GitHubRequest(BaseModel):
+    token: str | None = None          # sign in with a token pasted in
+    repo: str | None = None           # use another repo ("" = the default, <login>/g3xn-gigs)
 
 
 class RemoteRequest(BaseModel):
@@ -411,8 +422,12 @@ class TalkRequest(BaseModel):
 
 def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, gigs_folder=None,
                remote=None, remote_on=False, footswitches=None, chat=None, talk=None, backups_folder=None,
-               tracks_folder=None, guitars_file=None):
+               tracks_folder=None, guitars_file=None, model=None, switch=None, keep_chat=False, gig_sync=None):
     """announce: write ~/.g3xn/daemon.json so g3xn-mcp finds this daemon.
+    model: the pedal this app drives (default: the mode's). One app drives one pedal;
+    switch(key): restart on the other pedal (see ModeServer), None = this daemon can't.
+    keep_chat: the chat outlives this app (it carries on across a pedal switch): don't close it.
+    gig_sync: gigs on GitHub (a gigsync.GigSync over every pedal's gigs; None = off, as on a virtual pedal).
     history_file: where the time machine keeps its versions (None = memory only).
     gigs_folder: where saved gigs live (None = a temporary folder).
     remote: the phone remote (a remote.Remote; default: one that forgets phones on exit);
@@ -430,9 +445,11 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
     footswitches = footswitches or Footswitches()
     if remote.port == port:
         raise ValueError("the phone remote needs a port of its own (both are %d)" % port)
+    model = models.get(model) if model else models.active()
+    modes = [{"key": m.key, "name": m.name, "kind": m.kind} for m in models.MODELS.values()]
     hub = EventHub()
     backups = Backups(backups_folder) if backups_folder else None
-    worker = PedalWorker(make_pedal, hub.emit, backups)
+    worker = PedalWorker(make_pedal, hub.emit, backups, {"model": model.app_view(), "modes": modes})
     history = History(history_file)
     gigs = GigLibrary(gigs_folder or tempfile.mkdtemp(prefix="g3xn-gigs-"))
     tracks = Tracks(tracks_folder or TRACKS_FOLDER)
@@ -457,13 +474,15 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
             if announce:
                 _remove_discovery()
             await asyncio.to_thread(remote.stop)
-            await asyncio.to_thread(chat.close)
+            if not keep_chat:
+                await asyncio.to_thread(chat.close)
             await asyncio.to_thread(footswitches.stop)
             await asyncio.to_thread(worker.stop)
 
     app = FastAPI(title="g3xn", version="0.1.0", lifespan=lifespan,
                   description="Control a Zoom G3n / G3Xn: patches, live tone editing, gigs and the tuner.")
     app.state.worker = worker
+    app.state.emit = hub.emit
     loaded = [g for g in gigs.list() if g.get("loaded")]
     state = {"active_gig": max(loaded, key=lambda g: g["loaded"]["time"])["id"] if loaded else None,
              "locked_gig": None}
@@ -499,6 +518,10 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
     async def pedal_error(request, err):
         return JSONResponse({"error": str(err)}, status_code=503 if isinstance(err, NotConnected) else 409)
 
+    @app.exception_handler(SyncError)
+    async def sync_error(request, err):
+        return JSONResponse({"error": str(err)}, status_code=400)
+
     @app.exception_handler(PermissionError)
     async def refused(request, err):
         return JSONResponse({"error": str(err)}, status_code=403)
@@ -515,6 +538,26 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
     async def status():
         """Connection, what the pedal is doing right now, and the patch it is on."""
         return worker.snapshot()
+
+    @app.get("/api/mode", tags=["pedal"])
+    async def mode():
+        """The pedal this app drives (one at a time), and the pedals to pick from."""
+        return dict(model.limits(), mode=model.key, name=model.name, modes=modes)
+
+    @app.post("/api/mode", tags=["pedal"])
+    async def set_mode(req: ModeRequest):
+        """Switch the app to the other pedal: "g3xn" (guitar) or "b1xfour" (bass). The app lets go of
+        the pedal and starts again on the same address with the other pedal's effects, history,
+        gigs and backups. `restarting` says whether anything changed."""
+        want = models.get(req.pedal)
+        if want is not model:
+            if switch is None:
+                raise ValueError("this g3xn app can't switch pedals; start it with --pedal %s" % want.key)
+            if state["locked_gig"]:
+                raise ValueError("a gig is locked for the show; unlock it before switching pedals")
+            hub.emit({"type": "mode", "mode": want.key, "name": want.name})
+            asyncio.get_running_loop().call_later(0.2, switch, want.key)     # after this answer is sent
+        return {"mode": want.key, "name": want.name, "restarting": want is not model}
 
     @app.post("/api/release", tags=["pedal"])
     async def release():
@@ -920,6 +963,53 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
         except OSError:
             raise KeyError("no saved gig %r" % gig_id)
 
+    # --- gigs on GitHub ---
+
+    def need_sync():
+        if gig_sync is None:
+            raise ValueError("gigs on GitHub are off for a virtual pedal")
+        return gig_sync
+
+    @app.get("/api/github", tags=["gigs"])
+    async def github_status():
+        """Gigs on GitHub: signed in or not, as whom, the repo, and the last send or get."""
+        if gig_sync is None:
+            return {"available": False}
+        return dict(await asyncio.to_thread(gig_sync.status), available=True)
+
+    @app.post("/api/github/sign-in", tags=["gigs"])
+    async def github_sign_in():
+        """Start signing in to GitHub: type the code it returns at the address it returns."""
+        return await asyncio.to_thread(need_sync().sign_in)
+
+    @app.put("/api/github", tags=["gigs"])
+    async def github_settings(req: GitHubRequest):
+        """Sign in with a token (it needs the "repo" scope), or use another repo."""
+        sync = need_sync()
+        if req.token is not None:
+            await asyncio.to_thread(sync.use_token, req.token)
+        if req.repo is not None:
+            await asyncio.to_thread(sync.set_repo, req.repo)
+        return await asyncio.to_thread(sync.status)
+
+    @app.post("/api/github/sign-out", tags=["gigs"])
+    async def github_sign_out():
+        """Forget the GitHub sign-in g3xn kept."""
+        return await asyncio.to_thread(need_sync().sign_out)
+
+    @app.post("/api/github/send", tags=["gigs"])
+    async def github_send():
+        """Send every gig on this computer (both pedals') to the GitHub repo. This computer's version wins."""
+        return await asyncio.to_thread(need_sync().send)
+
+    @app.post("/api/github/get", tags=["gigs"])
+    async def github_get():
+        """Get every gig from the GitHub repo onto this computer. GitHub's version wins; the one it
+        replaces goes to the gigs' "deleted" folder."""
+        result = await asyncio.to_thread(need_sync().get)
+        hub.emit(gigs_event())
+        return result
+
     # --- the phone remote ---
 
     @app.get("/api/remote", tags=["remote"])
@@ -1220,12 +1310,12 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
 
 def start_in_thread(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, gigs_folder=None,
                     remote=None, footswitches=None, chat=None, talk=None, backups_folder=None, tracks_folder=None,
-                    guitars_file=None):
+                    guitars_file=None, gig_sync=None):
     """Run the daemon on a background thread (for the desktop window and tests).
     Returns (url, stop) once it is serving."""
     app = create_app(make_pedal, port, announce, history_file, gigs_folder, remote, footswitches=footswitches,
                      chat=chat, talk=talk, backups_folder=backups_folder, tracks_folder=tracks_folder,
-                     guitars_file=guitars_file)
+                     guitars_file=guitars_file, gig_sync=gig_sync)
     server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning"))
     thread = threading.Thread(target=server.run, name="g3xn-daemon", daemon=True)
     thread.start()
@@ -1238,6 +1328,105 @@ def start_in_thread(make_pedal, port=DEFAULT_PORT, announce=True, history_file=N
         server.should_exit = True
         thread.join(timeout=10)
     return "http://127.0.0.1:%d" % port, stop
+
+
+class ModeServer:
+    """One daemon, one pedal at a time. build(model, switch) makes the app for a pedal; switch(key)
+    stops the server and starts it again for the other pedal on the same port, so the app's pages
+    and Claude keep the address. Each start pins this process to its pedal (models.pin), so the
+    catalog, new patches and the Claude chat it starts are that pedal's."""
+
+    def __init__(self, build, port, first):
+        self.build, self.port = build, port
+        self.key = None
+        self.server = None
+        self._next = models.get(first).key
+        self._stopped = False
+
+    @property
+    def started(self):
+        return bool(self.server and self.server.started)
+
+    def switch(self, key):
+        self._next = models.get(key).key
+        if self.server:
+            self.server.should_exit = True
+
+    def stop(self):
+        self._stopped = True
+        if self.server:
+            self.server.should_exit = True
+
+    def run(self):
+        try:
+            while self._next and not self._stopped:
+                self.key, self._next = self._next, None
+                models.pin(self.key)
+                app = self.build(models.get(self.key), self.switch)
+                self.server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=self.port,
+                                                            log_level="warning", timeout_graceful_shutdown=5))
+                self.server.run()
+        finally:
+            close = getattr(self.build, "close", None)      # what lives across switches (the chat)
+            if close:
+                close()
+
+
+def start_modes_in_thread(build, port, first):
+    """Run a ModeServer on a background thread. Returns (url, stop, server) once it is serving."""
+    modes = ModeServer(build, port, first)
+    thread = threading.Thread(target=modes.run, name="g3xn-daemon", daemon=True)
+    thread.start()
+    while not modes.started:
+        if not thread.is_alive():
+            raise RuntimeError("the g3xn daemon could not start (is port %d in use?)" % port)
+        time.sleep(0.02)
+
+    def stop():
+        modes.stop()
+        thread.join(timeout=15)
+    return "http://127.0.0.1:%d" % port, stop, modes
+
+
+def app_builder(args, port=None):
+    """(model, switch) -> the daemon's app for one pedal, from the command line options
+    (add_pedal_options, and --port / --remote / --remote-port when the program has them).
+    The real pedal keeps each pedal's history, gigs, guitar notes and backups apart; a virtual
+    one keeps nothing, and never touches the mode file."""
+    real = args.sim is None
+    port = port or getattr(args, "port", DEFAULT_PORT)
+    make = pedal_factory(args)
+    remote = Remote(REMOTE_FILE if real else None, port=getattr(args, "remote_port", REMOTE_PORT), use_tailscale=real)
+    footswitches = Footswitches(MIDI_FILE if real else None)
+    tracks = TRACKS_FOLDER if real else tempfile.mkdtemp(prefix="g3xn-tracks-")
+    was = {"remote_on": getattr(args, "remote", False), "emit": None}
+    sync = GigSync({m.key: GigLibrary(m.gigs_folder) for m in models.MODELS.values()}) if real else None
+
+    def emit(event):                                # to whichever app is up now
+        with contextlib.suppress(RuntimeError):     # between two apps: nobody to tell
+            if was["emit"]:
+                was["emit"](event)
+    # One conversation with Claude across pedal switches: asking Claude for the bass pedal mustn't
+    # stop Claude mid-answer. It starts again (same conversation) with the new pedal's instructions.
+    chat = Chat("http://127.0.0.1:%d" % port, emit)
+
+    def build(model, switch):
+        def change(key):
+            was["remote_on"] = remote.on            # the phone remote comes back on if it was
+            if real:
+                models.use(key)                     # Claude and the command line follow the app
+            chat.refresh()
+            switch(key)
+        app = create_app(make(model), port, announce=real, history_file=model.history_file if real else None,
+                         gigs_folder=model.gigs_folder if real else None,
+                         backups_folder=service.backup_root_of(model) if real else None, tracks_folder=tracks,
+                         guitars_file=model.guitars_file if real else None, remote=remote,
+                         remote_on=was["remote_on"], footswitches=footswitches, chat=chat, keep_chat=True,
+                         model=model, switch=change, gig_sync=sync)
+        was["emit"] = app.state.emit
+        return app
+    build.close = chat.close
+    return build
 
 
 def free_port():
@@ -1272,7 +1461,10 @@ def _remove_discovery():
 
 
 def add_pedal_options(ap):
-    ap.add_argument("--scratch", type=int, default=150, help="slot used for auditions (default 150)")
+    ap.add_argument("--pedal", default="", metavar="KEY",
+                    help="the pedal to start on: g3xn (guitar) or b1xfour (bass). Default: the mode (g3xn mode)")
+    ap.add_argument("--scratch", type=int, default=None,
+                    help="slot used for auditions (default: 150 on the G3Xn, 50 on the B1X FOUR)")
     ap.add_argument("--sim", nargs="?", const="", metavar="BACKUP",
                     help="use a virtual pedal, loaded from a backup folder (default data/pedal_dump if present)")
 
@@ -1293,18 +1485,35 @@ def _effect_in(chain, which):
     raise ValueError("this patch has no %s (it has %s)" % (which, ", ".join(fx.name for fx in chain)))
 
 
+def first_pedal(args):
+    """The pedal to start on: --pedal, else the mode."""
+    return models.get(args.pedal) if args.pedal else models.active()
+
+
 def pedal_factory(args):
-    """() -> Pedal for the options from add_pedal_options: the real pedal, or a virtual one."""
-    if args.sim is None:
-        return lambda: Pedal(scratch=args.scratch, model="g3xn")      # the app is G3Xn only for now
-    from .sim import VirtualPedal
-    folder = args.sim or os.path.join(REPO, "data", "pedal_dump")
-    device = VirtualPedal.from_backup(folder) if os.path.isdir(folder) else VirtualPedal()
-    return lambda: Pedal(scratch=args.scratch, device=device)
+    """model -> (() -> Pedal) for the options from add_pedal_options: the real pedal, or a virtual
+    one. Each pedal has its own virtual device, kept for as long as this program runs."""
+    devices = {}
+
+    def scratch(model):
+        return args.scratch if args.scratch and args.scratch <= model.patch_count else None
+
+    def for_model(model):
+        model = models.get(model)
+        if args.sim is None:
+            return lambda: Pedal(scratch=scratch(model), model=model.key)
+        if model.key not in devices:
+            from .sim import VirtualPedal
+            dump = os.path.join(REPO, "data", "pedal_dump" if model.key == "g3xn" else os.path.join(model.key, "pedal_dump"))
+            folder = args.sim if args.sim and not devices else dump       # a named backup is the first pedal's
+            devices[model.key] = (VirtualPedal.from_backup(folder, model.key) if os.path.isdir(folder)
+                                  else VirtualPedal(model=model.key))
+        device = devices[model.key]
+        return lambda: Pedal(scratch=scratch(model), device=device)
+    return for_model
 
 
 def main(argv=None):
-    models.pin("g3xn")      # the app is G3Xn only, whatever mode Claude left this computer in
     ap = argparse.ArgumentParser(prog="g3xn-daemon", description=__doc__.split("\n\n")[0])
     ap.add_argument("--port", type=int, default=DEFAULT_PORT)
     ap.add_argument("--remote", action="store_true", help="start the phone remote (listen on the local network)")
@@ -1312,16 +1521,13 @@ def main(argv=None):
     add_pedal_options(ap)
     args = ap.parse_args(argv)
 
-    real = args.sim is None
-    app = create_app(pedal_factory(args), args.port, announce=real, history_file=HISTORY_FILE if real else None,
-                     gigs_folder=GIGS_FOLDER if real else None, backups_folder=service.BACKUP_ROOT if real else None,
-                     tracks_folder=TRACKS_FOLDER if real else tempfile.mkdtemp(prefix="g3xn-tracks-"),
-                     guitars_file=GUITARS_FILE if real else None,
-                     remote=Remote(REMOTE_FILE if real else None, port=args.remote_port, use_tailscale=real), remote_on=args.remote,
-                     footswitches=Footswitches(MIDI_FILE if real else None))
-    print("g3xn daemon on http://127.0.0.1:%d (API docs at /docs)%s" % (args.port, "" if os.path.isdir(UI_DIR) else
-          "; build the app with: cd app && npm install && npm run build"))
-    uvicorn.run(app, host="127.0.0.1", port=args.port, log_level="warning")
+    first = first_pedal(args)
+    if args.pedal and args.sim is None:
+        models.use(first.key)           # started on a named pedal: Claude and the command line follow
+    print("g3xn daemon on http://127.0.0.1:%d, on the %s (API docs at /docs)%s" % (
+        args.port, first.name, "" if os.path.isdir(UI_DIR) else
+        "; build the app with: cd app && npm install && npm run build"))
+    ModeServer(app_builder(args), args.port, first.key).run()
 
 
 if __name__ == "__main__":

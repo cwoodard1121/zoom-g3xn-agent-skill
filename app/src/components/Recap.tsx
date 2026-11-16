@@ -14,7 +14,7 @@ export interface Played {
 }
 
 export function Recap({ gig, played, onClose }: { gig: Gig; played: Played[]; onClose: () => void }) {
-  const { act } = usePedal();
+  const { act, num } = usePedal();
   const [changed, setChanged] = useState<GigChange[] | null>(null);
   const [putting, setPutting] = useState(false);
 
@@ -23,9 +23,8 @@ export function Recap({ gig, played, onClose }: { gig: Gig; played: Played[]; on
   }, [gig.id]);
 
   const putBack = async () => {
-    if (!window.confirm(`Put ${changed!.length} patch${changed!.length === 1 ? "" : "es"} back the way ${gig.name} loaded them? The changed versions are backed up first.`)) return;
     setPutting(true);
-    const r = await act(() => api.restoreGig(gig.id!), (r) => `Put back ${r.restored.length} patch${r.restored.length === 1 ? "" : "es"}`);
+    const r = await act(() => api.restoreGig(gig.id!), (r) => `Put back ${r.restored.length} patch${r.restored.length === 1 ? "" : "es"}. The changed versions are backed up`);
     setPutting(false);
     if (r) setChanged([]);
   };
@@ -104,7 +103,7 @@ export function Recap({ gig, played, onClose }: { gig: Gig; played: Played[]; on
             <>
               <ul>
                 {changed.map((c) => (
-                  <li key={c.slot}><b>{c.song}</b> <span className="dim">slot {c.slot}</span> {c.change ?? `now ${c.now}`}</li>
+                  <li key={c.slot}><b>{c.song}</b> <span className="dim">slot {num(c.slot)}</span> {c.change ?? `now ${c.now}`}</li>
                 ))}
               </ul>
               <button className="button danger" disabled={putting} onClick={putBack}>

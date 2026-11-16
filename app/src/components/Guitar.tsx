@@ -15,8 +15,9 @@ export function GuitarNames() {
 
 /** A box naming the guitar for `slot`'s tone; it's kept when you leave the box or press Enter. */
 export function GuitarField({ slot, className = "" }: { slot: number; className?: string }) {
-  const { guitars, setGuitar } = usePedal();
+  const { guitars, setGuitar, model } = usePedal();
   const kept = guitars.slots[slot] ?? "";
+  const instrument = model.kind === "bass" ? "Bass" : "Guitar";
   const [text, setText] = useState(kept);
   useEffect(() => setText(kept), [kept, slot]);
   const commit = () => {
@@ -24,10 +25,10 @@ export function GuitarField({ slot, className = "" }: { slot: number; className?
   };
   return (
     <label className={`guitar-field ${className}`}>
-      <span>Guitar</span>
+      <span>{instrument}</span>
       <input
         list="guitars"
-        placeholder="Which guitar?"
+        placeholder={`Which ${instrument.toLowerCase()}?`}
         maxLength={40}
         value={text}
         onChange={(e) => setText(e.target.value)}

@@ -125,6 +125,8 @@ class Remote:
             return 403, "g3xn only answers its own pages"
         if path.startswith("/api/remote"):
             return 403, "pairing is managed from the computer"
+        if path.startswith("/api/github"):
+            return 403, "GitHub is managed from the computer"
         if path == "/api/pair":
             return None
         if (path.startswith("/api/") or path in ("/docs", "/redoc", "/openapi.json")) and not self.device(

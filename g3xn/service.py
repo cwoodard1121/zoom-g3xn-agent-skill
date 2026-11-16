@@ -14,6 +14,7 @@ Tone JSON (what audition / write_tone / gigs take):
      "chain": [{"effect": "TS Drive", "on": true, "knobs": {"Gain": 40}}, ...]}
 """
 import datetime
+import json
 import os
 import time
 
@@ -32,6 +33,27 @@ def _backup_root(pedal):
         return pedal.device.backup_root
     model = getattr(pedal, "model", None)
     return BACKUP_ROOT if model is None or model.key == "g3xn" else model.backup_root
+
+
+def backup_root_of(model):
+    """Where a pedal's whole-pedal backups are kept."""
+    return BACKUP_ROOT if model is None or model.key == "g3xn" else model.backup_root
+
+
+def tell_app(key):
+    """Switch a running g3xn app (its daemon says where in ~/.g3xn/daemon.json) to pedal `key`.
+    True if an app was told, False if none is running."""
+    import urllib.error
+    import urllib.request
+    try:
+        with open(os.path.join(models.HOME, "daemon.json")) as f:
+            url = json.load(f)["url"]
+        req = urllib.request.Request(url + "/api/mode", method="POST", data=json.dumps({"pedal": key}).encode(),
+                                     headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=5):
+            return True
+    except (OSError, ValueError, KeyError):
+        return False
 
 
 def mode(pedal=""):
