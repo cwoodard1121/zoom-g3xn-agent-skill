@@ -1,5 +1,6 @@
 """The ghost band's recordings: kept per song, replaced, refused when they aren't audio, and
 served so an <audio> element can seek."""
+import pin_mode  # noqa: F401  (G3Xn mode for these tests)
 import json
 import os
 import shutil

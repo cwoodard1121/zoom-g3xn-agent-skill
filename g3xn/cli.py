@@ -1,5 +1,6 @@
-"""Command line for the Zoom G3n / G3Xn.
+"""Command line for the Zoom G3n / G3Xn, and the B1X FOUR bass pedal (g3xn mode b1xfour).
 
+    g3xn mode [g3xn|b1xfour]          which pedal to drive (guitar or bass); shows it without one
     g3xn info                         pedal, firmware, current patch
     g3xn list                         every slot's name
     g3xn show 121                     a slot's chain and knobs (as the pedal displays them)
@@ -23,7 +24,8 @@
     g3xn tuner [seconds]              live tuner readout
 
 Add --json to any command for machine-readable output.
-Live edits only ever touch the scratch slot (default 150, --scratch N).
+Live edits only ever touch the scratch slot (150 on the G3Xn, 50 on the B1X FOUR; --scratch N).
+--pedal b1xfour drives the bass pedal for one command without changing the mode.
 """
 import argparse
 import datetime
@@ -31,14 +33,17 @@ import json
 import os
 import sys
 
-from . import Patch, Pedal, PedalError, catalog
+from . import Patch, Pedal, PedalError, catalog, models
 
 
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="g3xn", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--json", action="store_true", help="machine-readable output")
-    ap.add_argument("--scratch", type=int, default=150, help="slot used for auditions (default 150)")
+    ap.add_argument("--scratch", type=int, default=None, help="slot used for auditions (default: the pedal's, 150 or 50)")
+    ap.add_argument("--pedal", help="g3xn or b1xfour for this command (default: the mode)")
     sub = ap.add_subparsers(dest="cmd", required=True)
+
+    sub.add_parser("mode").add_argument("pedal", nargs="?", default="")
 
     sub.add_parser("info")
     sub.add_parser("list")
@@ -75,6 +80,8 @@ def main(argv=None):
     sub.add_parser("tuner").add_argument("seconds", nargs="?", type=float, default=10)
 
     a = ap.parse_args(argv)
+    if a.pedal:
+        os.environ["G3XN_PEDAL"] = models.get(a.pedal).key     # this command only
     try:
         result = COMMANDS[a.cmd](a)
     except (PedalError, KeyError, ValueError, IndexError, FileNotFoundError) as err:
@@ -91,11 +98,16 @@ def main(argv=None):
 
 # --- commands (each returns plain data; render() makes it readable) ---
 
+def cmd_mode(a):
+    from . import service
+    return service.mode(a.pedal)
+
+
 def cmd_info(a):
     with Pedal(a.scratch) as pedal:
         info = pedal.identity()
         n = pedal.current()
-        info.update(current=n, current_name=pedal.read(n).name, scratch=a.scratch)
+        info.update(current=n, current_name=pedal.read(n).name, scratch=pedal.scratch)
         return info
 
 
@@ -138,12 +150,12 @@ def cmd_audition(a):
     with Pedal(a.scratch) as pedal:
         patch = pedal.read(int(a.source)) if a.source.isdigit() else load_patch(a.source)
         pedal.audition(patch)
-        return {"auditioning": patch.name, "scratch": a.scratch, **patch.to_dict()}
+        return {"auditioning": patch.name, "scratch": pedal.scratch, **patch.to_dict()}
 
 
 def _live(a, change):
     with Pedal(a.scratch) as pedal:
-        if pedal.current() != a.scratch:
+        if pedal.current() != pedal.scratch:
             raise PedalError("nothing is being auditioned; run `g3xn audition ...` first")
         patch = pedal.edit_buffer()
         change(patch)

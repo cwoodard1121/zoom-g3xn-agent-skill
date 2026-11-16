@@ -1,4 +1,5 @@
 """Tailscale serve left over by a force-stopped g3xn is stopped; a running g3xn's isn't."""
+import pin_mode  # noqa: F401  (G3Xn mode for these tests)
 import os
 import unittest
 from unittest import mock

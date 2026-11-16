@@ -1,4 +1,5 @@
 """Offline tests (no pedal needed):  python -m unittest discover tests"""
+import pin_mode  # noqa: F401  (G3Xn mode for these tests)
 import glob
 import os
 import unittest

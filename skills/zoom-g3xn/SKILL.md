@@ -1,6 +1,6 @@
 ---
 name: zoom-g3xn
-description: Design, audition and tweak guitar tones on a connected Zoom G3n/G3Xn pedal, live. Use whenever the user wants a guitar tone or patch ("make me the Sultans of Swing tone", "less fizzy", "more gain on the solo", "turn the delay off"), wants to hear or change what's on their Zoom pedal, back it up, tune, or load patches for a gig/setlist.
+description: Design, audition and tweak guitar tones on a connected Zoom G3n/G3Xn pedal, and bass tones on a Zoom B1X FOUR, live. Use whenever the user wants a guitar or bass tone or patch ("make me the Sultans of Swing tone", "less fizzy", "more gain on the solo", "turn the delay off"), wants to hear or change what's on their Zoom pedal, back it up, tune, or load patches for a gig/setlist.
 ---
 
 # Zoom G3Xn tone designer
@@ -11,6 +11,7 @@ You drive a real guitar pedal. The user is usually holding a guitar and listenin
 
 | Tool | Use it to |
 |---|---|
+| `pedal_mode(pedal)` | see which pedal g3xn drives, or switch: `"b1xfour"` (B1X FOUR, bass) or `"g3xn"` (guitar) |
 | `pedal_status` | see firmware, the current slot, whether something is being auditioned |
 | `list_patches` / `get_patch(slot)` | see what's stored (slots 1-75 are Zoom demos, "Empty" = free) |
 | `find_effects(query, group)` / `effect_details(name)` | pick effects and learn their knobs (range, default, meaning) |
@@ -24,6 +25,18 @@ You drive a real guitar pedal. The user is usually holding a guitar and listenin
 | `edit_gig(id, edit)` | one change to every song of a saved gig (preview first, then `save=true`) |
 | `load_saved_gig(id)` / `check_gig(id)` | put a saved gig on the pedal; find (and with `restore=true` undo) changes made on the pedal since |
 | `backup_pedal` / `select_patch` / `tuner` | housekeeping |
+
+## Bass mode (Zoom B1X FOUR)
+
+g3xn drives one pedal at a time. When the user talks about their bass, the B1X FOUR or a bass tone, call `pedal_mode("b1xfour")` first. A tool error that says "the pedal on USB is a B1X FOUR" means the same thing.
+
+In bass mode:
+- `find_effects` lists the B1X FOUR's 80 bass effects (amps such as AMPG SVT, SMR400, BMAN100; cabs such as SVT8x10; bass drives, compressors, synths). Guitar effect names do not exist there.
+- A patch holds 5 effects. Amps fill two screens but count as one effect.
+- The scratch slot is 50. Slots 1-41 hold patches (factory ones and the user's own); 42-50 were Empty on 2026-11-15.
+- Gigs, the desktop app and the tuner are G3Xn only for now. Screen text (`shown`) is not available on the bass pedal yet.
+
+Switch back with `pedal_mode("g3xn")` when the user picks up a guitar.
 
 If the MCP tools are missing, the same things work from a shell: `uv run --directory <plugin root> g3xn --json <command>` (`g3xn --help` lists them).
 

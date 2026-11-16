@@ -1,4 +1,5 @@
 """The real Pedal class against the virtual pedal (no hardware needed)."""
+import pin_mode  # noqa: F401  (G3Xn mode for these tests)
 import unittest
 
 from g3xn import Patch, Pedal, PedalError
