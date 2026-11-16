@@ -1,5 +1,5 @@
 """MCP server: lets any MCP client (Claude Code, Claude Desktop, ...) design
-and play tones on a connected Zoom G3n / G3Xn.
+and play tones on a connected Zoom G3n / G3Xn, or a B1X FOUR bass pedal (pedal_mode).
 
     g3xn-mcp            # stdio transport
 
@@ -17,14 +17,17 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from . import Pedal, PedalError, gig, service
+from . import Pedal, PedalError, gig, models, service
 
 try:
     from mcp.server.mcpserver import MCPServer as _Server   # mcp >= 2
 except ImportError:
     from mcp.server.fastmcp import FastMCP as _Server       # mcp 1.x
 
-INSTRUCTIONS = """Controls a Zoom G3Xn guitar pedal over USB.
+INSTRUCTIONS = """Controls a Zoom pedal over USB: a G3Xn guitar pedal, or a B1X FOUR bass pedal.
+One at a time: pedal_mode shows which one, and switches when the user says which pedal they are on
+(bass, B1X FOUR -> "b1xfour"; guitar, G3Xn -> "g3xn"). pedal_status gives that pedal's chain size and
+scratch slot; build tones for that pedal with its own effects (find_effects).
 Workflow: audition(tone) to hear a tone on the scratch slot, tweak(...) to adjust it live while the
 user plays, save_to_slot(n) only when the user says to keep it. Never write over a slot that holds
 one of the user's patches without asking. Knob values are the raw numbers the pedal stores; each
@@ -33,7 +36,7 @@ Gigs saved in the g3xn app: saved_gigs, get_gig, edit_gig (one change to every s
 first), load_saved_gig, and check_gig to find and undo changes made on the pedal during a show."""
 
 DAEMON_FILE = os.path.join(os.path.expanduser("~"), ".g3xn", "daemon.json")
-GIGS_FOLDER = gig.FOLDER    # the app's saved gigs
+GIGS_FOLDER = gig.FOLDER    # the app's saved gigs (G3Xn); the bass pedal keeps its own
 open_pedal = Pedal          # tests swap in a virtual pedal
 
 server = _Server("g3xn", instructions=INSTRUCTIONS)
@@ -42,8 +45,9 @@ server = _Server("g3xn", instructions=INSTRUCTIONS)
 def _pedal(direct, method, path, body=None, needs_pedal=True):
     """Run a tool through the g3xn daemon when it is running (the app owns the pedal then),
     otherwise open the pedal for this one call (needs_pedal=False: call direct(None)).
+    The app drives the G3Xn only, so in bass mode every call opens the B1X FOUR directly.
     Errors come back as {"error": ...}."""
-    url = _daemon_url()
+    url = _daemon_url() if models.active().key == "g3xn" else None
     if url:
         try:
             return _http(url, method, path, body)
@@ -92,6 +96,16 @@ def _status_from_daemon(snap):
 # --- looking around ---
 
 @server.tool()
+def pedal_mode(pedal: str = "") -> dict:
+    """Which pedal g3xn drives: "g3xn" (G3Xn, guitar) or "b1xfour" (B1X FOUR, bass). Pass `pedal` to
+    switch when the user says which one is plugged in. Each keeps its own effects, scratch slot and backups."""
+    try:
+        return service.mode(pedal)
+    except ValueError as err:
+        return {"error": str(err)}
+
+
+@server.tool()
 def pedal_status() -> dict:
     """Pedal model, firmware, the patch it is on, and the scratch slot used for auditions."""
     result = _pedal(service.status, "GET", "/api/status")
@@ -100,7 +114,8 @@ def pedal_status() -> dict:
 
 @server.tool()
 def list_patches() -> dict:
-    """Every slot number and patch name ("Empty" = free slot). Slots 1-75 are Zoom factory demos."""
+    """Every slot number and patch name ("Empty" = free slot). On the G3Xn slots 1-75 are Zoom factory
+    demos; on the B1X FOUR the factory patches fill the first slots."""
     return _pedal(service.list_patches, "GET", "/api/patches")
 
 
@@ -113,9 +128,10 @@ def get_patch(slot: int) -> dict:
 
 @server.tool()
 def find_effects(query: str = "", group: str = "") -> dict:
-    """Search the pedal's 162 effects by name or description (e.g. "fuzz", "Marshall", "spring").
-    group: DYNAMICS, FILTER, DRIVE, AMP, CABINET, MODULATION, SFX, DELAY, REVERB, PEDAL, LOOPER, RHYTHM.
-    Amps and some big effects take 2 of the 7 chain positions."""
+    """Search the active pedal's effects by name or description (e.g. "fuzz", "SVT", "spring"): 162 on
+    the G3Xn, 80 on the B1X FOUR. group: DYNAMICS, FILTER, DRIVE, AMP, CABINET, MODULATION, SFX, DELAY,
+    REVERB, PEDAL (and LOOPER, RHYTHM on the G3Xn). `positions` 2 = a two-screen effect: on the G3Xn it
+    takes 2 of the 7 chain positions; the B1X FOUR holds 5 effects whatever their size."""
     return service.find_effects(query, group)
 
 
@@ -229,7 +245,8 @@ def export_gig(first_slot: int, last_slot: int, name: str = "Exported gig") -> d
 # --- the app's saved gigs ---
 
 def _library():
-    return gig.GigLibrary(GIGS_FOLDER)
+    model = models.active()
+    return gig.GigLibrary(GIGS_FOLDER if model.key == "g3xn" else os.path.join(models.HOME, model.key, "gigs"))
 
 
 def _saved(gig_id):

@@ -1,4 +1,5 @@
 """The daemon end to end: a real HTTP server on a virtual pedal."""
+import pin_mode  # noqa: F401  (G3Xn mode for these tests)
 import json
 import threading
 import time

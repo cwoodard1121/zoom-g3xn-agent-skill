@@ -1,4 +1,5 @@
 """MCP tools on a virtual pedal: opening the pedal directly, and through a running daemon."""
+import pin_mode  # noqa: F401  (G3Xn mode for these tests)
 import json
 import os
 import tempfile

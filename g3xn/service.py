@@ -18,11 +18,28 @@ import os
 import time
 
 from . import gig as gigs
+from . import models
 from .catalog import catalog
 from .patch import Patch
 from .pedal import PedalError
 
-BACKUP_ROOT = os.path.join(os.path.expanduser("~"), "g3xn-backups")
+BACKUP_ROOT = os.path.join(os.path.expanduser("~"), "g3xn-backups")   # the G3Xn's; each pedal has its own
+
+
+def _backup_root(pedal):
+    """Where this pedal's backups go: a virtual pedal's own folder, else the pedal model's."""
+    if getattr(pedal.device, "backup_root", None):
+        return pedal.device.backup_root
+    model = getattr(pedal, "model", None)
+    return BACKUP_ROOT if model is None or model.key == "g3xn" else model.backup_root
+
+
+def mode(pedal=""):
+    """Which pedal g3xn drives (one at a time), or switch it: "g3xn" (guitar) or "b1xfour" (bass).
+    Each pedal keeps its own effects, scratch slot and backups."""
+    model = models.use(pedal) if pedal else models.active()
+    return dict(model.limits(), mode=model.key, switched=bool(pedal),
+                choices={m.key: "%s (%s)" % (m.name, m.kind) for m in models.MODELS.values()})
 
 
 # --- tone JSON ---
@@ -50,11 +67,17 @@ def status(pedal):
     n = pedal.current()
     info.update(current_slot=n, current_name=pedal.read(n).name, scratch_slot=pedal.scratch,
                 auditioning=n == pedal.scratch)
+    if getattr(pedal, "model", None):
+        info.update(pedal.model.limits(), scratch_slot=pedal.scratch)
     return info
 
 
 def list_patches(pedal):
-    return {"patches": [{"slot": n, "name": pedal.read(n).name} for n in range(1, pedal.patch_count + 1)]}
+    """Every slot's name. On a pedal whose screen numbers patches differently (the B1X FOUR shows
+    slot 1 as 10), each entry also has `screen`, the number the user sees."""
+    offset = pedal.model.screen_offset if getattr(pedal, "model", None) else 0
+    return {"patches": [dict({"slot": n, "name": pedal.read(n).name}, **({"screen": n + offset} if offset else {}))
+                        for n in range(1, pedal.patch_count + 1)]}
 
 
 def get_patch(pedal, slot):
@@ -77,7 +100,7 @@ def effect_details(name):
 
 def audition(pedal, tone=None, slot=None):
     """Play a tone (or a copy of a stored slot) on the scratch slot."""
-    patch = pedal.read(slot) if slot else Patch.from_dict(tone or {})
+    patch = pedal.read(slot) if slot else Patch.from_dict(tone or {}, pedal.model)
     problems = patch.problems()
     if problems:
         raise PedalError("; ".join(problems))
@@ -109,7 +132,7 @@ def play(pedal, tone):
     """Make the scratch slot sound like `tone` as fast as possible: live edits when only
     knobs, on/off, volume or name differ from what is playing, else a full audition.
     (Undo, the time machine and A/B use this.)"""
-    patch = Patch.from_dict(tone)
+    patch = Patch.from_dict(tone, pedal.model)
     problems = patch.problems()
     if problems:
         raise PedalError("; ".join(problems))
@@ -123,7 +146,7 @@ def morph(pedal, to, seconds=3.0, steps_per_second=12):
     with named settings like Tail OFF/ON) flip halfway; the patch volume lands at the end."""
     if pedal.current() != pedal.scratch:
         raise PedalError("nothing is being auditioned; audition a tone first")
-    start, target = pedal.edit_buffer(), Patch.from_dict(to)
+    start, target = pedal.edit_buffer(), Patch.from_dict(to, pedal.model)
     if [s.id for s in start.slots] != [s.id for s in target.slots]:
         raise PedalError("morphing needs the same effects in the same order (%s vs %s)" % (
             " > ".join(c.name for c in start.chain), " > ".join(c.name for c in target.chain)))
@@ -136,7 +159,7 @@ def morph(pedal, to, seconds=3.0, steps_per_second=12):
         for pos, (a, b) in enumerate(zip(start.slots, target.slots)):
             if b.is_empty or b.is_continuation:
                 continue
-            effect = catalog().find(b.id)
+            effect = catalog(pedal.model).find(b.id)
             for k, (va, vb) in enumerate(zip(a.knobs, b.knobs)):
                 param = effect.params[k] if effect and k < len(effect.params) else None
                 if va == vb or param is None:
@@ -152,6 +175,9 @@ def morph(pedal, to, seconds=3.0, steps_per_second=12):
         time.sleep(max(0.0, t0 + seconds * f - time.time()))
     if start.volume != target.volume:
         pedal.set_volume(target.volume)
+    if getattr(pedal, "model", None) and pedal.model.check_live_edits:
+        target.name = start.name
+        pedal.push(target)              # check the edits landed
     return live_view(pedal)
 
 
@@ -171,7 +197,7 @@ def write_tone(pedal, tone, slot, replace=False):
     """Write a tone straight into a slot without auditioning it. A patch it replaces is kept
     as a file first ("kept" in the result)."""
     kept = _keep_or_refuse(pedal, slot, replace)
-    patch = Patch.from_dict(tone)
+    patch = Patch.from_dict(tone, pedal.model)
     pedal.write(slot, patch)
     return dict({"written": patch.name, "slot": slot}, **kept)
 
@@ -275,7 +301,7 @@ def _keep_or_refuse(pedal, slot, replace):
     name = Patch.decode(data).name
     if name == "Empty":
         return {}
-    folder = os.path.join(getattr(pedal.device, "backup_root", BACKUP_ROOT), "replaced")
+    folder = os.path.join(_backup_root(pedal), "replaced")
     os.makedirs(folder, exist_ok=True)
     plain = "".join(c if c.isalnum() or c in " -_" else "_" for c in name).strip() or "blank"
     path = os.path.join(folder, "%s_%03d_%s.zptc" % (datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S"), slot, plain))
@@ -285,5 +311,5 @@ def _keep_or_refuse(pedal, slot, replace):
 
 
 def _backup_folder(pedal):
-    root = getattr(pedal.device, "backup_root", BACKUP_ROOT)     # a virtual pedal backs up elsewhere
+    root = _backup_root(pedal)     # a virtual pedal backs up elsewhere; each model has its own
     return os.path.join(root, datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S"))

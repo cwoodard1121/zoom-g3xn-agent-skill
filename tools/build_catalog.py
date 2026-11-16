@@ -2,6 +2,7 @@
 
     python tools/pull_from_pedal.py data/            # .ZD2 files, patch backup, templates
     python tools/build_catalog.py data/ > g3xn/data/effects.json
+    python tools/build_catalog.py data/b1xfour > g3xn/data/effects_b1xfour.json   # the bass pedal
 
 Inputs (all inside the data folder):
     pedal_files/*.ZD2   effect binaries read off the pedal
@@ -130,6 +131,8 @@ def main():
         e = parse_zd2(path)
         effects[e["id"]] = e
     for k, (name, group, knobs) in BUILTINS.items():
+        if k not in templates:          # not harvested: the B1X FOUR has no rhythm/looper templates
+            continue
         t = templates[k]
         effects[k] = {"id": k, "name": name, "group": group, "file": None, "version": None, "dsp": 0.0,
                       "description": "Built into the firmware.",

@@ -1,4 +1,5 @@
 """Claude in the app and push to talk, with a fake claude, a fake microphone and fake speech-to-text."""
+import pin_mode  # noqa: F401  (G3Xn mode for these tests)
 import json
 import os
 import queue

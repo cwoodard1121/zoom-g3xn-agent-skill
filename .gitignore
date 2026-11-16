@@ -21,3 +21,7 @@ desktop/out/
 # deep-research working folders (the finished reports are copied into docs/research/)
 /research_notes/
 /reports/
+
+# the B1X FOUR bass pedal's own files and backups (same reasons)
+data/*/pedal_files/
+data/*/pedal_dump/

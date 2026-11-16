@@ -1,4 +1,6 @@
-"""Zoom G3n / G3Xn patches: the 736-byte PTCF image stored in each slot.
+"""Zoom patches: the PTCF image stored in each slot (736 bytes on the G3n / G3Xn,
+760 on the B1X FOUR). A Patch knows which pedal it is for (`patch.model`): from
+the PTCF target when decoded, from the active mode when built.
 
     from g3xn import Patch
 
@@ -29,6 +31,7 @@ followed by a continuation record (id 0x00000001).
 """
 import struct
 
+from . import models
 from .catalog import DSP_BUDGET, MAX_POSITIONS, catalog
 
 SLOT_SIZE = 736
@@ -89,7 +92,7 @@ class ChainEffect:
         self.patch = patch
         self.position = position        # raw chain position 0..6 (what live edits address)
         self.slot = slot
-        self.effect = catalog().find(slot.id)
+        self.effect = catalog(patch.model).find(slot.id)
 
     @property
     def name(self):
@@ -129,24 +132,26 @@ class ChainEffect:
 
 
 class Patch:
-    def __init__(self):
+    def __init__(self, model=None):
+        self.model = models.get(model) if model else models.active()
         self.version = 1
-        self.target = 4
+        self.target = self.model.target
         self.reserved = bytes(6)
         self.name = ""
         self.slots = []
         self.txj1 = b""
-        self.txe1 = b""
-        self.pprm = BLANK_PPRM
-        self.size = SLOT_SIZE
+        self.txe1 = bytes(self.model.empty_txe1)
+        self.pprm = self.model.empty_pprm
+        self.size = self.model.patch_size
 
     # --- construction / serialisation ---
 
     @classmethod
-    def blank(cls, name="NEW PATCH"):
-        p = cls()
+    def blank(cls, name="NEW PATCH", model=None):
+        """An Empty patch for a pedal (default: the active mode's)."""
+        p = cls(model)
         p.name = name
-        p.slots = [Slot() for _ in range(MAX_POSITIONS)]
+        p.slots = [Slot() for _ in range(p.model.base_positions)]
         return p
 
     @classmethod
@@ -163,12 +168,13 @@ class Patch:
             f.write(self.encode())
 
     @classmethod
-    def decode(cls, data):
+    def decode(cls, data, model=None):
         if data[:4] != b"PTCF":
             raise ValueError("not a PTCF patch")
-        p = cls()
-        p.size = max(len(data), SLOT_SIZE)
-        _, p.version, count, p.target = struct.unpack_from("<4I", data, 4)
+        _, version, count, target = struct.unpack_from("<4I", data, 4)
+        p = cls(models.by_target(target) or model)
+        p.size = max(len(data), p.model.patch_size)
+        p.version, p.target = version, target
         if p.version != 1:
             raise ValueError("PTCF version %d is not the G3n/G3Xn format" % p.version)
         p.reserved = bytes(data[20:26])
@@ -208,7 +214,7 @@ class Patch:
         return out.ljust(self.size, b"\x00")
 
     def copy(self):
-        return Patch.decode(self.encode())
+        return Patch.decode(self.encode(), self.model)
 
     # --- patch-level settings (PPRM bits 63..69 = volume, 70..72 = selected slot) ---
 
@@ -242,7 +248,7 @@ class Patch:
             if not 1 <= key <= len(chain):
                 raise IndexError("patch has %d effects; no effect #%d" % (len(chain), key))
             return chain[key - 1]
-        matches = [c for c in chain if c.effect and c.effect is catalog().get(key)]
+        matches = [c for c in chain if c.effect and c.effect is catalog(self.model).get(key)]
         if not matches:
             raise KeyError("%r is not in this patch (%s)" % (key, ", ".join(c.name for c in chain) or "empty"))
         return matches[0]
@@ -252,7 +258,7 @@ class Patch:
         Knobs are matched ignoring case and punctuation (FB=30 sets "F.B"); use
         knobs={"1.6k": 30} for names that aren't valid keywords. Unset knobs keep
         the pedal's defaults."""
-        e = catalog().get(effect)
+        e = catalog(self.model).get(effect)
         if e.template is None:
             raise ValueError("%s has no template; it cannot be built offline" % e.name)
         slot = Slot.unpack(e.template)
@@ -300,10 +306,17 @@ class Patch:
         return groups
 
     def _rebuild(self, groups):
+        """Lay effect groups out the way this pedal stores a chain."""
         slots = [s for g in groups for s in g]
-        if len(slots) > MAX_POSITIONS:
-            raise ValueError("chain needs %d positions; the G3Xn has %d" % (len(slots), MAX_POSITIONS))
-        self.slots = slots + [Slot() for _ in range(MAX_POSITIONS - len(slots))]
+        rule, n = self.model.chain
+        if rule == "effects":           # B1X FOUR: n effects, an Empty place for each one missing
+            if len(groups) > n:
+                raise ValueError("chain has %d effects; the %s holds %d" % (len(groups), self.model.name, n))
+            self.slots = slots + [Slot() for _ in range(n - len(groups))]
+            return
+        if len(slots) > n:
+            raise ValueError("chain needs %d positions; the %s has %d" % (len(slots), self.model.name, n))
+        self.slots = slots + [Slot() for _ in range(n - len(slots))]
 
     # --- checks / reporting ---
 
@@ -313,15 +326,16 @@ class Patch:
 
     @property
     def dsp_percent(self):
-        return round(self.dsp / DSP_BUDGET * 100, 1)
+        return round(self.dsp / self.model.dsp_budget * 100, 1)
 
     def problems(self):
         """Reasons the pedal would reject or mis-play this patch (empty list = fine)."""
         out = []
-        used = sum(1 for s in self.slots if not s.is_empty)
-        if used > MAX_POSITIONS:
-            out.append("uses %d chain positions (max %d)" % (used, MAX_POSITIONS))
-        if self.dsp > DSP_BUDGET:
+        rule, n = self.model.chain
+        used = len(self._groups()) if rule == "effects" else sum(1 for s in self.slots if not s.is_empty)
+        if used > n:
+            out.append("uses %d %s (max %d)" % (used, "effects" if rule == "effects" else "chain positions", n))
+        if self.dsp > self.model.dsp_budget:
             out.append("DSP load %.0f%% exceeds 100%%" % self.dsp_percent)
         for c in self.chain:
             if not c.effect:
@@ -340,15 +354,16 @@ class Patch:
                 "description": self.description, "chain": [c.to_dict() for c in self.chain]}
 
     @classmethod
-    def from_dict(cls, spec):
+    def from_dict(cls, spec, model=None):
         """Build a patch from the JSON tone format:
 
             {"name": "BLUES", "volume": 90,
              "chain": [{"effect": "TS Drive", "on": true, "knobs": {"Gain": 40}},
                        {"effect": "FD TWNR", "knobs": {"Gain": 35}}]}
 
-        Effects go in signal order; unspecified knobs keep the pedal defaults."""
-        p = cls.blank(spec.get("name", "NEW PATCH"))
+        Effects go in signal order; unspecified knobs keep the pedal defaults.
+        model: the pedal it is for (default: the active mode's)."""
+        p = cls.blank(spec.get("name", "NEW PATCH"), model)
         for item in spec.get("chain", []):
             p.add(item.get("effect") or item["name"], enabled=item.get("on", item.get("enabled", True)),
                   knobs=item.get("knobs"))
