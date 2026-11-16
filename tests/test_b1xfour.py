@@ -234,6 +234,45 @@ class ClaudeOnBassTest(unittest.TestCase):
         self.assertEqual((status["pedal"], status["current_slot"]), ("B1X FOUR", 50))
         self.assertIn("error", mcp_server.pedal_mode("ms-50g"))
 
+    def test_tweak_save_and_numbering(self):
+        mcp_server.pedal_mode("b1xfour")
+        mcp_server.audition(BASS)
+        self.vp.live_edits_work = False                         # as if the pedal ignored live knob edits
+        result = mcp_server.tweak([{"effect": "AMPG SVT", "knob": "Gain", "value": 75},
+                                   {"effect": "Room", "on": False}], volume=100)
+        self.assertNotIn("error", result)
+        live = Pedal(device=self.vp).open()
+        try:
+            buffer = live.edit_buffer()
+            self.assertEqual((buffer.effect("AMPG SVT")["Gain"], buffer.effect("Room").enabled, buffer.volume),
+                             (75, False, 100))
+        finally:
+            live.close()
+        saved = mcp_server.save_to_slot(43, name="SVT GRIT")
+        self.assertNotIn("error", saved)
+        self.assertEqual(Patch.decode(self.vp.slots[43]).name, "SVT GRIT")
+        listed = mcp_server.list_patches()["patches"]
+        self.assertEqual((listed[0]["screen"], listed[-1]["screen"]), (10, 59))
+        self.assertIn("subtract 9", mcp_server.pedal_status()["numbering"])
+
+    def test_morph_lands_without_live_edits(self):
+        with bass_mode():
+            pedal = Pedal(device=self.vp).open()
+            try:
+                pedal.audition(Patch.from_dict(BASS, "b1xfour"))
+                self.vp.live_edits_work = False
+                louder = dict(BASS, chain=[dict(BASS["chain"][0]), {"effect": "AMPG SVT", "knobs": {"Gain": 90}},
+                                           dict(BASS["chain"][2]), dict(BASS["chain"][3])])
+                service.morph(pedal, louder, seconds=0.1)
+                self.assertEqual(pedal.edit_buffer().effect("AMPG SVT")["Gain"], 90)
+            finally:
+                pedal.close()
+
+    def test_the_app_stays_on_the_guitar_pedal(self):
+        models.use("b1xfour")
+        models.pin("g3xn")                                      # what g3xn-daemon and g3xn-app do first
+        self.assertEqual(models.active().key, "g3xn")
+
     def test_bass_backups_are_kept_apart(self):
         with bass_mode():
             pedal = Pedal(device=VirtualPedal(model="b1xfour"))

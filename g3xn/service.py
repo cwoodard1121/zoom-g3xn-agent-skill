@@ -73,7 +73,11 @@ def status(pedal):
 
 
 def list_patches(pedal):
-    return {"patches": [{"slot": n, "name": pedal.read(n).name} for n in range(1, pedal.patch_count + 1)]}
+    """Every slot's name. On a pedal whose screen numbers patches differently (the B1X FOUR shows
+    slot 1 as 10), each entry also has `screen`, the number the user sees."""
+    offset = pedal.model.screen_offset if getattr(pedal, "model", None) else 0
+    return {"patches": [dict({"slot": n, "name": pedal.read(n).name}, **({"screen": n + offset} if offset else {}))
+                        for n in range(1, pedal.patch_count + 1)]}
 
 
 def get_patch(pedal, slot):
@@ -171,6 +175,9 @@ def morph(pedal, to, seconds=3.0, steps_per_second=12):
         time.sleep(max(0.0, t0 + seconds * f - time.time()))
     if start.volume != target.volume:
         pedal.set_volume(target.volume)
+    if getattr(pedal, "model", None) and not pedal.model.live_edits_proven:
+        target.name = start.name
+        pedal.push(target)              # live edits untested on this pedal: check they landed
     return live_view(pedal)
 
 

@@ -22,6 +22,8 @@ TITLE = "g3xn"
 
 
 def main(argv=None):
+    from . import models
+    models.pin("g3xn")      # the app is G3Xn only, whatever mode Claude left this computer in
     ap = argparse.ArgumentParser(prog="g3xn-app", description=__doc__.split("\n\n")[0])
     ap.add_argument("--port", type=int, default=daemon.DEFAULT_PORT)
     daemon.add_pedal_options(ap)

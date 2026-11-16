@@ -56,6 +56,7 @@ from .lyrics import LyricsError
 from . import lyrics as lyric_search
 from .remote import COOKIE, Remote
 from .remote import DEFAULT_PORT as REMOTE_PORT
+from . import models
 from .pedal import Pedal, PedalError
 from .voice import Talk
 
@@ -1303,6 +1304,7 @@ def pedal_factory(args):
 
 
 def main(argv=None):
+    models.pin("g3xn")      # the app is G3Xn only, whatever mode Claude left this computer in
     ap = argparse.ArgumentParser(prog="g3xn-daemon", description=__doc__.split("\n\n")[0])
     ap.add_argument("--port", type=int, default=DEFAULT_PORT)
     ap.add_argument("--remote", action="store_true", help="start the phone remote (listen on the local network)")

@@ -25,7 +25,7 @@ MODE_FILE = os.path.join(HOME, "mode.json")
 class Model:
     def __init__(self, key, name, kind, patch_count, patch_size, bank_size, scratch, target, chain,
                  empty_pprm, empty_txe1, catalog_file, home, backup_root, dsp_budget, dsp_proven,
-                 live_edits_proven, has_screen):
+                 live_edits_proven, has_screen, screen_offset=0):
         self.key = key
         self.name = name
         self.kind = kind                      # "guitar" or "bass"
@@ -45,6 +45,7 @@ class Model:
         self.dsp_proven = dsp_proven          # highest factory patch: known to work
         self.live_edits_proven = live_edits_proven
         self.has_screen = has_screen          # 64 02 screen text tested on this pedal
+        self.screen_offset = screen_offset    # the pedal's own screen shows slot n as n + this
 
     @property
     def max_effects(self):
@@ -61,9 +62,15 @@ class Model:
     def limits(self):
         """What Claude needs to know to build a tone for this pedal."""
         rule, n = self.chain
-        return {"pedal": self.name, "kind": self.kind, "patches": self.patch_count, "scratch_slot": self.scratch,
-                "chain": ("%d chain positions; amps and some big effects take 2" % n if rule == "positions"
-                          else "up to %d effects; amps and some big effects fill 2 screens but count as 1" % n)}
+        out = {"pedal": self.name, "kind": self.kind, "patches": self.patch_count, "scratch_slot": self.scratch,
+               "chain": ("%d chain positions; amps and some big effects take 2" % n if rule == "positions"
+                         else "up to %d effects; amps and some big effects fill 2 screens but count as 1" % n)}
+        if self.screen_offset:
+            out["numbering"] = ("tools count slots 1..%d; the pedal's screen shows slot n as n+%d (slot 1 = %d, "
+                                "slot %d = %d). When the user reads a number off the pedal, subtract %d."
+                                % (self.patch_count, self.screen_offset, 1 + self.screen_offset, self.patch_count,
+                                   self.patch_count + self.screen_offset, self.screen_offset))
+        return out
 
     def __repr__(self):
         return "<Model %s>" % self.key
@@ -80,7 +87,8 @@ MODELS = {
     "b1xfour": Model("b1xfour", "B1X FOUR", "bass", 50, 760, 10, 50, 128, ("effects", 5),
                      "000000000000000032000000", 200, os.path.join(_DATA, "effects_b1xfour.json"),
                      os.path.join(HOME, "b1xfour"), os.path.join(os.path.expanduser("~"), "g3xn-backups-b1xfour"),
-                     250.0, 222.5, live_edits_proven=False, has_screen=False),
+                     250.0, 222.5, live_edits_proven=False, has_screen=False,
+                     screen_offset=9),     # Zoom's manual: patches show as 10..59
 }
 ALIASES = {"g3": "g3xn", "g3n": "g3xn", "guitar": "g3xn", "b1": "b1xfour", "b1four": "b1xfour",
            "b1xfour": "b1xfour", "bass": "b1xfour"}
@@ -116,6 +124,11 @@ def active():
             return get(json.load(f)["pedal"])
     except (OSError, ValueError, KeyError, TypeError):
         return MODELS["g3xn"]
+
+
+def pin(key):
+    """Fix this process (and the programs it starts) to one pedal, whatever the mode file says."""
+    os.environ["G3XN_PEDAL"] = get(key).key
 
 
 def use(key):
