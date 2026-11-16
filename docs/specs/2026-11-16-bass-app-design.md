@@ -23,6 +23,17 @@ You open the g3xn app, pick Bass, and edit B1X FOUR tones with the same screens 
 | What does the release hold? | source only / an app that needs the repo / a self-contained app | A zip with the Electron app and a frozen daemon (PyInstaller). No Python and no repo needed. Voice (push to talk) is left out of the zip |
 | Version | keep 0.1.0 and 0.2.0 apart / one number | One number, 0.3.0, for the Python package, the plugin, the app and the tag |
 
+### Added on the same branch
+
+The owner asked for three more changes while this was in progress. Each has its own issue and ships in this release.
+
+| Request | Choice |
+|---|---|
+| "simplify the main app" (#4) | An agent audited every screen. Removed: macro knobs, morph, Shape the set, the tone hint, the Tone view's guitar box, the firmware number. Rack units show move, swap and remove only when open. The meters show only when the pedal is nearly full. Hold to talk shows only where speech to text is installed |
+| "get rid of the chords" (#4) | Removed from the gig editor, Stage and the API types. Old gigs keep the field, and nothing reads it |
+| "less strict about deleting and overwriting" (#4) | No tick boxes and no confirm dialogs. Save over and Load to pedal are one click. Every overwrite keeps the old patch or a backup first, and a deleted gig moves to a `deleted` folder. The daemon still refuses a full slot without `replace=true`, as Claude's guard |
+| "gigs transfer between pedalboards/pcs" through GitHub, "default stuff", "other users login with their github" (#5) | Send and Get in the Gigs view, through the GitHub API (no git needed). Default: a private `<login>/g3xn-gigs` repo made on the first send. Sign in: a pasted token, the GitHub CLI's login, or GitHub's device flow when the app has an OAuth client id (none is registered yet). Send keeps this computer's version, Get keeps GitHub's. Off for a virtual pedal and refused on the phone |
+
 ## Design
 
 **Daemon.** `g3xn-daemon --pedal KEY` picks the pedal (default: the mode). `run_modes` serves one pedal at a time: it builds the FastAPI app for that pedal, and `POST /api/mode {"pedal": KEY}` stops the server and builds it again for the other pedal on the same port. Each build pins the process to its pedal, so the catalog, patches and the Claude chat it starts use that pedal. The real daemon writes the mode file on a switch. A `--sim` daemon does not.

@@ -36,7 +36,8 @@ $ g3xn save 123                    # keep it
 | **Gigs** | A setlist file → consecutive slots, with a plan showing what gets replaced and an automatic backup first. Change every song at once ("every reverb down 10%"), lock a gig for the show, and put back anything a stray knob changed |
 | **AI agent plugin** | Claude Code / Claude Desktop (or any MCP client): design tones by talking, research them on the web, audition and tweak live |
 | **ToneLib import** | Reads `.zg3xn` exports directly |
-| **Desktop app** (early) | Your effect chain as a row of stompboxes with knobs you turn, a patch library, and a big tuner; works in a window, a browser tab or on a phone |
+| **Bass pedal** | The Zoom B1X FOUR too: its 50 slots, 5 effects, live edits and screen text. One switch in the app (or `g3xn mode b1xfour`) moves between guitar and bass |
+| **Desktop app** (early) | Your effect chain as a row of stompboxes with knobs you turn, a patch library, gigs, and a big tuner; works in a window, a browser tab or on a phone. [Download it](https://github.com/cwoodard1121/zoom-g3xn-agent-skill/releases/latest) for Windows |
 
 ## Use it with Claude
 
@@ -81,9 +82,17 @@ The agent's playbook (how to research, translate "too muddy" into knob moves, st
 
 ![The tone view: the effect chain as a row of stompboxes](docs/img/app-tone.png)
 
-The app shows the tone playing now as a pedalboard: each effect is a stompbox coloured by its type, with the knobs the pedal has and the values its screen shows. Drag a knob up or down (or scroll on it, or use the arrow keys) and you hear it straight away; click a footswitch to turn an effect on or off. Your own patches are never edited in place: **Tweak a copy** puts one on the scratch slot, and **Keep it in a slot** saves it, refusing to replace a patch unless you tick the box that names it. **Patches** lists all 150 slots in their banks of three, and **Tuner** is the pedal's tuner, big.
+The app shows the tone playing now as a pedalboard: each effect is a stompbox coloured by its type, with the knobs the pedal has and the values its screen shows. Drag a knob up or down (or scroll on it, or use the arrow keys) and you hear it straight away; click a footswitch to turn an effect on or off. Your own patches are never edited in place: **Tweak a copy** puts one on the scratch slot, and **Keep it in a slot** saves it. **Save over** replaces the patch you started from in one click, and the old one is kept in a file. **Patches** lists every slot in the pedal's banks, and **Tuner** is the pedal's tuner, big. **Guitar** and **Bass** in the top bar switch between the G3Xn and the B1X FOUR.
 
-Add, swap and reorder effects by dragging; **A** and **B** keep two versions to flip between (or morph across); every change is in the history, so undo goes back as far as you like. **Gigs** holds your setlists: pick a patch, tempo, key and notes for each song, see exactly which slots it will use and what it would replace, and load it (the whole pedal is backed up first). **Stage** then shows the song you're on in letters you can read standing up, and follows the pedal as you stomp through the set.
+Add, swap and reorder effects by dragging. **A** and **B** keep two versions to flip between. Every change is in the history, so undo goes back as far as you like. **Gigs** holds your setlists: pick a patch and notes for each song, and **Load to pedal** puts them on in order (the whole pedal is backed up first). **Send my gigs** and **Get gigs** move your gigs between computers through a private repo in your own GitHub. **Stage** then shows the song you're on in letters you can read standing up, and follows the pedal as you stomp through the set.
+
+### Download
+
+The [latest release](https://github.com/cwoodard1121/zoom-g3xn-agent-skill/releases/latest) is a zip for Windows. Unzip it anywhere and run `g3xn.exe`. It needs no Python and no copy of this repo. `g3xn.exe --bass` starts on the bass pedal, and `g3xn.exe --sim` tries it with no pedal plugged in. Push to talk is not in the zip: run the app from the repo with `pip install g3xn[voice]` for that.
+
+### Gigs on GitHub
+
+Sign in once in the Gigs view: paste a GitHub token with the `repo` scope (the app links to the page that makes one), or log in with the [GitHub CLI](https://cli.github.com) (`gh auth login`) and the app uses that. The first **Send my gigs** makes a private repo, `<you>/g3xn-gigs`. On another computer, sign in and press **Get gigs**. Sending keeps this computer's version of each gig; getting keeps GitHub's, and the one it replaces goes to the gigs' `deleted` folder. Which slots a gig was loaded into stays on each computer.
 
 ```bash
 pip install -e ".[app]"
@@ -97,6 +106,7 @@ Or as a desktop app with Electron, which also puts the phone remote on:
 ```bash
 cd desktop && npm install && npm run build        # desktop/out/g3xn-win32-x64/g3xn.exe
 npm start                                         # or run it from here; npm run sim for no pedal
+npm run release                                   # the release zip (needs PyInstaller in .venv)
 ```
 
 `g3xn.exe` starts the daemon from this repo's `.venv` (or uses one that's already running) and stops it when you close the window. **Phone** in the top bar shows a QR code, the address and a six-digit code: open it on the phone (same Wi-Fi, the computer's hotspot, or anywhere with Tailscale), enter the code, and the phone has the whole app until you forget it there.
@@ -219,7 +229,7 @@ Patch format notes live at the top of [`g3xn/patch.py`](g3xn/patch.py).
 ## Roadmap
 
 - ~~**Agent plugin**~~: done (see *Use it with Claude*)
-- **Desktop app**: tone editor as a rack (A/B, history, macros), patch library, gigs and stage view, tuner, and Claude built in: type a change, hold a footswitch and say it, or go hands free with "Hey Claude, …" ("Hey Claude, we're at the chorus" puts the stage where you said it, allowing for the time it took to hear). The computer's mic and a phone's (over https) both listen; speech-to-text runs on your computer: `pip install g3xn[voice]`. Gig tools, the phone remote (local network or Tailscale, pair with a code) and MIDI footswitches are in the daemon, with screens to come. Next: lyrics on stage. Plan: [`docs/APP_PLAN.md`](docs/APP_PLAN.md)
+- **Desktop app**: tone editor as a rack (A/B, history), patch library, guitar and bass, gigs and stage view, tuner, and Claude built in: type a change, hold a footswitch and say it, or go hands free with "Hey Claude, …" ("Hey Claude, we're at the chorus" puts the stage where you said it, allowing for the time it took to hear). The computer's mic and a phone's (over https) both listen; speech-to-text runs on your computer: `pip install g3xn[voice]`. Gig tools, the phone remote (local network or Tailscale, pair with a code) and MIDI footswitches are in the daemon, with screens to come. Next: lyrics on stage. Plan: [`docs/APP_PLAN.md`](docs/APP_PLAN.md)
 
 ## Credits
 

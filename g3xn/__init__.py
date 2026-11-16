@@ -15,4 +15,4 @@ from .patch import ChainEffect, Patch, Slot
 from .pedal import Pedal, PedalError
 
 __all__ = ["Catalog", "ChainEffect", "Effect", "Param", "Patch", "Pedal", "PedalError", "Slot", "catalog"]
-__version__ = "0.1.0"
+__version__ = "0.3.0"
