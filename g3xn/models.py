@@ -40,6 +40,9 @@ class Model:
         self.empty_txe1 = empty_txe1
         self.catalog_file = catalog_file
         self.state_file = os.path.join(home, "state.json")
+        self.history_file = os.path.join(home, "history.json")    # the app's time machine
+        self.gigs_folder = os.path.join(home, "gigs")             # the app's saved gigs
+        self.guitars_file = os.path.join(home, "guitars.json")    # which instrument each slot is for
         self.backup_root = backup_root
         self.dsp_budget = dsp_budget
         self.dsp_proven = dsp_proven          # highest factory patch: known to work
@@ -71,6 +74,12 @@ class Model:
                                 % (self.patch_count, self.screen_offset, 1 + self.screen_offset, self.patch_count,
                                    self.patch_count + self.screen_offset, self.screen_offset))
         return out
+
+    def app_view(self):
+        """What the app's screens need to draw this pedal."""
+        return {"key": self.key, "name": self.name, "kind": self.kind, "patches": self.patch_count,
+                "bank_size": self.bank_size, "scratch_slot": self.scratch,
+                "chain": {"rule": self.chain[0], "max": self.chain[1]}, "screen_offset": self.screen_offset}
 
     def __repr__(self):
         return "<Model %s>" % self.key

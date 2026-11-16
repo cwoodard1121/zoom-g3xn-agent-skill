@@ -34,6 +34,11 @@ def _backup_root(pedal):
     return BACKUP_ROOT if model is None or model.key == "g3xn" else model.backup_root
 
 
+def backup_root_of(model):
+    """Where a pedal's whole-pedal backups are kept."""
+    return BACKUP_ROOT if model is None or model.key == "g3xn" else model.backup_root
+
+
 def mode(pedal=""):
     """Which pedal g3xn drives (one at a time), or switch it: "g3xn" (guitar) or "b1xfour" (bass).
     Each pedal keeps its own effects, scratch slot and backups."""

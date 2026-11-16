@@ -293,9 +293,9 @@ class ClaudeOnBassTest(unittest.TestCase):
             finally:
                 pedal.close()
 
-    def test_the_app_stays_on_the_guitar_pedal(self):
+    def test_a_pin_beats_the_mode_file(self):
         models.use("b1xfour")
-        models.pin("g3xn")                                      # what g3xn-daemon and g3xn-app do first
+        models.pin("g3xn")                                      # what the app's daemon does for its own pedal
         self.assertEqual(models.active().key, "g3xn")
 
     def test_bass_backups_are_kept_apart(self):

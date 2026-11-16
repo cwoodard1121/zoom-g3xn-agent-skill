@@ -23,14 +23,16 @@ import sys
 import tempfile
 import threading
 
+from . import models
+
 TOOL_PREFIX = "mcp__g3xn__"
 # Claude Code's own tools, off in the app's chat: it's there for the pedal, and a misheard
 # footswitch request mustn't be able to run commands or read the user's files.
 BUILT_INS = ("Bash", "PowerShell", "Edit", "Write", "MultiEdit", "NotebookEdit", "Read", "Glob", "Grep",
              "WebFetch", "WebSearch", "Agent", "Task")
 
-SYSTEM_PROMPT = """You are inside the g3xn app, next to the user's Zoom G3Xn guitar pedal.
-They are holding a guitar, often talking through a push-to-talk footswitch, so keep replies
+SYSTEM_PROMPT = """You are inside the g3xn app, next to the user's Zoom %(name)s %(kind)s pedal.
+They are holding a %(kind)s, often talking through a push-to-talk footswitch, so keep replies
 to a sentence or two and do the change rather than describing it. Work on the scratch slot:
 audition, then tweak while they play. Say what you changed in plain words with the numbers
 ("Treble 52 to 45 on the Twin"). Never save over one of their slots unless they say to.
@@ -169,7 +171,8 @@ class Chat:
             json.dump({"mcpServers": {"g3xn": {"command": sys.executable, "args": ["-m", "g3xn.mcp_server"],
                                                "env": {"G3XN_DAEMON": self.daemon_url}}}}, f)
         with open(prompt, "w", encoding="utf-8") as f:
-            f.write(SYSTEM_PROMPT)
+            pedal = models.active()         # the app's own pedal: its daemon pins it
+            f.write(SYSTEM_PROMPT % {"name": pedal.name, "kind": pedal.kind})
         return config, prompt
 
     def _env(self):
