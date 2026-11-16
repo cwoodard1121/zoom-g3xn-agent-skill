@@ -31,8 +31,9 @@ One at a time: pedal_mode shows which one, and switches when the user says which
 (bass, B1X FOUR -> "b1xfour"; guitar, G3Xn -> "g3xn"). pedal_status gives that pedal's chain size and
 scratch slot; build tones for that pedal with its own effects (find_effects).
 Workflow: audition(tone) to hear a tone on the scratch slot, tweak(...) to adjust it live while the
-user plays, save_to_slot(n) only when the user says to keep it. Never write over a slot that holds
-one of the user's patches without asking. Knob values are the raw numbers the pedal stores; each
+user plays, save_to_slot(n) only when the user says to keep it. When the user names a slot that holds
+a patch, or says to save over it, save over it (replace=true): the old patch is kept in a file. Don't
+pick a slot that holds a patch on your own; pick an Empty one or ask. Knob values are the raw numbers the pedal stores; each
 result also has `shown`, the text on the pedal's screen, which is what the user sees.
 Gigs saved in the g3xn app: saved_gigs, get_gig, edit_gig (one change to every song; preview
 first), load_saved_gig, and check_gig to find and undo changes made on the pedal during a show."""
@@ -212,15 +213,17 @@ def change_chain(tone: dict, reason: str = "") -> dict:
 @server.tool()
 def save_to_slot(slot: int, name: str | None = None, replace: bool = False) -> dict:
     """Store the tone being auditioned into `slot` and switch the pedal to it. Only do this when the
-    user asks. A slot that isn't Empty is refused unless replace=true, which needs the user's explicit yes."""
+    user asks. A slot that isn't Empty needs replace=true: pass it when the user named that slot or said
+    to save over it. The old patch is kept in a file first."""
     return _pedal(lambda p: service.save_to_slot(p, slot, name, replace), "POST", "/api/patches/%d/save" % slot,
                   {"name": name, "replace": replace})
 
 
 @server.tool()
 def write_tone(tone: dict, slot: int, replace: bool = False) -> dict:
-    """Write a tone straight into a slot without auditioning it. A slot that isn't Empty is
-    refused unless replace=true, which needs the user's explicit yes."""
+    """Write a tone straight into a slot without auditioning it. A slot that isn't Empty needs
+    replace=true: pass it when the user named that slot or said to save over it. The old patch is
+    kept in a file first."""
     return _pedal(lambda p: service.write_tone(p, tone, slot, replace), "PUT", "/api/patches/%d" % slot,
                   {"tone": tone, "replace": replace})
 

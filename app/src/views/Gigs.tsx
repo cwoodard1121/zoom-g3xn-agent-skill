@@ -342,9 +342,8 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
         <button
           className="button danger"
           onClick={async () => {
-            if (window.confirm(`Delete ${g.name}? The patches on the pedal stay as they are.`)) {
-              if (await act(() => api.deleteGig(g.id!), () => `Deleted ${g.name}`)) onDeleted();
-            }
+            // No question first: the daemon keeps deleted gigs in a "deleted" folder.
+            if (await act(() => api.deleteGig(g.id!), () => `Deleted ${g.name}. The patches on the pedal stay as they are.`)) onDeleted();
           }}
         >
           Delete gig

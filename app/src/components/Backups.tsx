@@ -21,10 +21,10 @@ export function Backups({ onClose }: { onClose: () => void }) {
   }, []);
 
   const putBack = async (from: Backup, slot: number, patch: string | null) => {
-    const ok = window.confirm(
-      `Put slot ${num(slot)} back to “${patch ?? "Empty"}” from ${when(from.time)}?\n\nIt holds “${names[slot] ?? "?"}” now; that's saved first.`,
-    );
-    if (ok && (await act(() => api.restoreSlot(from.name, slot), (r) => `Slot ${num(slot)} is ${r.patch} again`))) load();
+    // No question first: what the slot holds now is saved before it is put back.
+    const was = names[slot] ?? "?";
+    if (await act(() => api.restoreSlot(from.name, slot),
+      (r) => `Slot ${num(slot)} is ${r.patch ?? patch ?? "Empty"} again (from ${when(from.time)}). ${was} is saved in a file.`)) load();
   };
 
   return (

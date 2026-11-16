@@ -23,9 +23,8 @@ export function Recap({ gig, played, onClose }: { gig: Gig; played: Played[]; on
   }, [gig.id]);
 
   const putBack = async () => {
-    if (!window.confirm(`Put ${changed!.length} patch${changed!.length === 1 ? "" : "es"} back the way ${gig.name} loaded them? The changed versions are backed up first.`)) return;
     setPutting(true);
-    const r = await act(() => api.restoreGig(gig.id!), (r) => `Put back ${r.restored.length} patch${r.restored.length === 1 ? "" : "es"}`);
+    const r = await act(() => api.restoreGig(gig.id!), (r) => `Put back ${r.restored.length} patch${r.restored.length === 1 ? "" : "es"}. The changed versions are backed up`);
     setPutting(false);
     if (r) setChanged([]);
   };

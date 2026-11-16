@@ -1,5 +1,5 @@
-// Keep the tone being tried: store it in a slot. A slot that holds a patch is only
-// replaced after ticking the box that names it.
+// Keep the tone being tried: store it in a slot. Saving over a patch is one click; the
+// daemon keeps a copy of the old patch in a file first.
 import { useEffect, useRef, useState } from "react";
 import { api } from "../api";
 import type { Tone } from "../api";
@@ -14,7 +14,6 @@ export function SaveDialog({ tone, over, onClose }: { tone: Tone; over?: CopyOf;
   const firstEmpty = Object.entries(names).find(([n, name]) => name === "Empty" && Number(n) !== scratch)?.[0];
   const [slot, setSlot] = useState(over?.slot ?? (firstEmpty ? Number(firstEmpty) : 1));
   const [name, setName] = useState(tone.name);
-  const [replace, setReplace] = useState(!!over);
   const ref = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -27,7 +26,7 @@ export function SaveDialog({ tone, over, onClose }: { tone: Tone; over?: CopyOf;
 
   const save = async () => {
     const done = await act(
-      () => api.save(slot, name.trim(), taken && replace),
+      () => api.save(slot, name.trim(), taken),
       (r) => `Kept ${r.saved} in slot ${num(r.slot)}${r.kept ? ". The old patch is in a file, just in case" : ""}`,
     );
     if (done) {
@@ -53,26 +52,20 @@ export function SaveDialog({ tone, over, onClose }: { tone: Tone; over?: CopyOf;
             min={1 + offset}
             max={model.patches + offset}
             value={slot + offset}
-            onChange={(e) => { setSlot(Number(e.target.value) - offset); setReplace(false); }}
+            onChange={(e) => setSlot(Number(e.target.value) - offset)}
           />
         </label>
         <p className="field-note">
           {slot === scratch
             ? `Slot ${num(scratch)} is where tones are tried out. Pick another slot.`
             : taken
-              ? `Slot ${num(slot)} holds ${holds}.`
+              ? `Slot ${num(slot)} holds ${holds}. Saving replaces it, and a copy of ${holds} is kept in a file.`
               : `Slot ${num(slot)} is empty.`}
         </p>
-        {taken && slot !== scratch && (
-          <label className="check">
-            <input type="checkbox" checked={replace} onChange={(e) => setReplace(e.target.checked)} />
-            <span>Replace {holds}. A copy of it is kept in a file, just in case.</span>
-          </label>
-        )}
         <div className="dialog-actions">
           <button type="button" className="button" onClick={onClose}>Cancel</button>
-          <button type="submit" className="button primary" disabled={!valid || (taken && !replace)}>
-            Keep in slot {num(slot)}
+          <button type="submit" className="button primary" disabled={!valid}>
+            {taken ? `Replace ${holds}` : `Keep in slot ${num(slot)}`}
           </button>
         </div>
       </form>

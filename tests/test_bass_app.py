@@ -202,5 +202,19 @@ class FilesTest(unittest.TestCase):
             pedal.close()
 
 
+class LessStrictTest(unittest.TestCase):
+    def test_a_deleted_gig_is_kept_in_a_folder(self):
+        from g3xn.gig import GigLibrary
+        lib = GigLibrary(tempfile.mkdtemp())
+        saved = lib.save({"name": "Friday", "start_slot": 10, "patches": []})
+        lib.delete(saved["id"])
+        self.assertEqual(lib.list(), [])
+        kept = os.listdir(os.path.join(lib.folder, "deleted"))
+        self.assertEqual(len(kept), 1)
+        self.assertTrue(kept[0].endswith("_%s.json" % saved["id"]))
+        with self.assertRaises(KeyError):
+            lib.delete(saved["id"])
+
+
 if __name__ == "__main__":
     unittest.main()

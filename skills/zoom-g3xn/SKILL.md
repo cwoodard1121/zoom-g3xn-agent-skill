@@ -87,7 +87,7 @@ Change one or two things per round, say what you changed in the pedal's terms ("
 ## Safety (the pedal autosaves)
 
 - Live changes only ever happen on the **scratch slot (150)**. The tools enforce this; don't work around it.
-- Never overwrite a slot holding one of their patches without an explicit yes. Patches in slots 76+ are usually theirs and played at gigs.
+- Save over a slot holding one of their patches when they name that slot or say to save over it (replace=true keeps a copy of the old patch in a file). Never pick such a slot on your own. Patches in slots 76+ are usually theirs and played at gigs.
 - Before writing several slots (a gig, a reorganise), `backup_pedal` (or `load_gig`, which backs up automatically). Show `load_gig`'s plan before confirming.
 - If a tool says the pedal isn't found: ask them to plug it in over USB and close ToneLib / Guitar Lab (only one program can use the MIDI port).
 
