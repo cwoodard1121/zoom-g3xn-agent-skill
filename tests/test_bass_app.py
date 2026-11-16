@@ -119,6 +119,60 @@ class OnePedalDaemonTest(unittest.TestCase):
             stop()
 
 
+try:
+    from g3xn import mcp_server
+except ImportError:
+    mcp_server = None
+
+
+@unittest.skipIf(daemon is None or mcp_server is None, "needs the mcp and app extras")
+class ClaudeThroughTheAppTest(unittest.TestCase):
+    """While the app runs it owns the pedal: Claude's tools are the app's pedal's, and pedal_mode switches the app."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.saved = daemon.REPO, models.MODE_FILE, os.environ.get("G3XN_DAEMON")
+        daemon.REPO = tempfile.mkdtemp()
+        models.MODE_FILE = os.path.join(tempfile.mkdtemp(), "mode.json")
+        port = daemon.free_port()
+        cls.url, cls.stop, cls.modes = daemon.start_modes_in_thread(daemon.app_builder(sim_args(), port), port, "g3xn")
+        ready(cls.url, "g3xn")
+        os.environ["G3XN_DAEMON"] = cls.url                             # as the app sets for its own chat
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.stop()
+        daemon.REPO, models.MODE_FILE = cls.saved[:2]
+        os.environ.pop("G3XN_DAEMON")
+        if cls.saved[2]:
+            os.environ["G3XN_DAEMON"] = cls.saved[2]
+        os.environ["G3XN_PEDAL"] = "g3xn"
+
+    def test_1_pedal_mode_is_the_apps_pedal(self):
+        now = mcp_server.pedal_mode()
+        self.assertEqual((now["mode"], now["switched"], now["via"]), ("g3xn", False, "g3xn app"))
+        self.assertEqual(now["choices"], {"g3xn": "G3Xn (guitar)", "b1xfour": "B1X FOUR (bass)"})
+
+    def test_2_pedal_mode_switches_the_app_and_the_tools_follow(self):
+        now = mcp_server.pedal_mode("bass")
+        self.assertEqual((now["mode"], now["switched"], now["scratch_slot"]), ("b1xfour", True, 50))
+        self.assertIn("numbering", now)
+        ready(self.url, "b1xfour")
+        self.assertIn("AMPG SVT", [e["name"] for e in mcp_server.find_effects("svt")["effects"]])
+        self.assertEqual(mcp_server.effect_details("AMPG SVT")["name"], "AMPG SVT")
+        self.assertIn("error", mcp_server.effect_details("TS Drive"))  # a guitar effect
+        view = mcp_server.audition(BASS)
+        self.assertEqual((view["slot"], view["name"]), (50, "BASS"), view)
+        self.assertEqual(mcp_server.pedal_status()["model"], "B1X FOUR")
+
+    def test_3_and_back(self):
+        self.assertEqual(mcp_server.pedal_mode("guitar")["mode"], "g3xn")
+        ready(self.url, "g3xn")
+        self.assertNotIn("AMPG SVT", [e["name"] for e in mcp_server.find_effects("svt")["effects"]])
+        self.assertEqual(mcp_server.effect_details("TS Drive")["name"], "TS Drive")
+        self.assertIn("error", mcp_server.pedal_mode("ukulele"))
+
+
 class FilesTest(unittest.TestCase):
     def test_each_pedal_keeps_its_own_app_files(self):
         guitar, bass = models.get("g3xn"), models.get("b1xfour")

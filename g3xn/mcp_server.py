@@ -5,7 +5,8 @@ and play tones on a connected Zoom G3n / G3Xn, or a B1X FOUR bass pedal (pedal_m
 
 While the g3xn daemon (the desktop app) is running it owns the pedal, so tool
 calls go through it and the app shows every change; otherwise each call opens
-the pedal itself.
+the pedal itself. The app drives one pedal at a time too: pedal_mode shows the
+app's pedal and switches the app.
 
 Tones use the same JSON format as the CLI:
     {"name": "BLUES", "volume": 90,
@@ -13,6 +14,7 @@ Tones use the same JSON format as the CLI:
 """
 import json
 import os
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -45,9 +47,9 @@ server = _Server("g3xn", instructions=INSTRUCTIONS)
 def _pedal(direct, method, path, body=None, needs_pedal=True):
     """Run a tool through the g3xn daemon when it is running (the app owns the pedal then),
     otherwise open the pedal for this one call (needs_pedal=False: call direct(None)).
-    The app drives the G3Xn only, so in bass mode every call opens the B1X FOUR directly.
+    The app is on one pedal (guitar or bass) and its tools are that pedal's, whatever the mode file says.
     Errors come back as {"error": ...}."""
-    url = _daemon_url() if models.active().key == "g3xn" else None
+    url = _daemon_url()
     if url:
         try:
             return _http(url, method, path, body)
@@ -100,9 +102,43 @@ def pedal_mode(pedal: str = "") -> dict:
     """Which pedal g3xn drives: "g3xn" (G3Xn, guitar) or "b1xfour" (B1X FOUR, bass). Pass `pedal` to
     switch when the user says which one is plugged in. Each keeps its own effects, scratch slot and backups."""
     try:
-        return service.mode(pedal)
+        want = models.get(pedal).key if pedal else ""
+        return _app_mode(want) or service.mode(want)
     except ValueError as err:
         return {"error": str(err)}
+
+
+def _app_mode(want=""):
+    """pedal_mode through the running app: its pedal, or switch it and wait until it is back on
+    the other pedal. None when no app is running."""
+    url = _daemon_url()
+    if not url:
+        return None
+    try:
+        if want and _http(url, "POST", "/api/mode", {"pedal": want})["restarting"]:
+            deadline = time.time() + 30
+            while time.time() < deadline:               # the app restarts its pedal side on the same address
+                time.sleep(0.3)
+                try:
+                    if _http(url, "GET", "/api/mode", None)["mode"] == want:
+                        break
+                except (urllib.error.URLError, OSError, KeyError):
+                    pass
+            else:
+                return {"error": "the g3xn app did not come back on the %s" % models.get(want).name}
+        now = _http(url, "GET", "/api/mode", None)
+    except urllib.error.HTTPError as err:
+        reply = json.loads(err.read() or b"{}")
+        return {"error": reply.get("error") or str(reply.get("detail") or err)}
+    except (urllib.error.URLError, OSError):
+        if os.environ.get("G3XN_DAEMON"):
+            return {"error": "the g3xn app isn't running any more"}
+        return None                                     # stale daemon.json: no app running
+    if os.environ.get("G3XN_PEDAL"):
+        models.pin(now["mode"])                         # the app's own chat: follow its pedal
+    choices = {m["key"]: "%s (%s)" % (m["name"], m["kind"]) for m in now.pop("modes")}
+    now.pop("name", None)
+    return dict(now, switched=bool(want), choices=choices, via="g3xn app")
 
 
 @server.tool()
@@ -132,16 +168,15 @@ def find_effects(query: str = "", group: str = "") -> dict:
     the G3Xn, 80 on the B1X FOUR. group: DYNAMICS, FILTER, DRIVE, AMP, CABINET, MODULATION, SFX, DELAY,
     REVERB, PEDAL (and LOOPER, RHYTHM on the G3Xn). `positions` 2 = a two-screen effect: on the G3Xn it
     takes 2 of the 7 chain positions; the B1X FOUR holds 5 effects whatever their size."""
-    return service.find_effects(query, group)
+    return _pedal(lambda p: service.find_effects(query, group), "GET",
+                  "/api/effects?" + urllib.parse.urlencode({"query": query, "group": group}), needs_pedal=False)
 
 
 @server.tool()
 def effect_details(name: str) -> dict:
     """One effect's knobs: name, range (0..max), the pedal's default, and what each knob does."""
-    try:
-        return service.effect_details(name)
-    except KeyError as err:
-        return {"error": err.args[0]}
+    return _pedal(lambda p: service.effect_details(name), "GET", "/api/effects/" + urllib.parse.quote(name, safe=""),
+                  needs_pedal=False)
 
 
 # --- hearing tones ---

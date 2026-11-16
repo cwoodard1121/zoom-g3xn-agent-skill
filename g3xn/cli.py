@@ -100,7 +100,10 @@ def main(argv=None):
 
 def cmd_mode(a):
     from . import service
-    return service.mode(a.pedal)
+    out = service.mode(a.pedal)
+    if a.pedal and service.tell_app(out["mode"]):
+        out["app"] = "the g3xn app switched too"
+    return out
 
 
 def cmd_info(a):
