@@ -284,7 +284,7 @@ def render(data):
     """Human-readable text for command results."""
     if isinstance(data, list):
         return "\n".join(_row(x) for x in data)
-    if "chain" in data:
+    if isinstance(data.get("chain"), list):           # a tone (a pedal's "chain" rule is text)
         lines = ["%s  (volume %s, DSP %s%%)" % (data["name"], data["volume"], data["dsp_percent"])]
         for i, fx in enumerate(data["chain"], 1):
             knobs = fx.get("shown") or fx["knobs"]

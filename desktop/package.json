@@ -1,7 +1,7 @@
 {
   "name": "g3xn-desktop",
   "private": true,
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "The g3xn app in its own window, with the daemon and the phone remote running behind it",
   "main": "main.js",
   "scripts": {

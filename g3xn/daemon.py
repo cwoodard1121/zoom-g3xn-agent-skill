@@ -979,7 +979,8 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
 
     @app.post("/api/github/sign-in", tags=["gigs"])
     async def github_sign_in():
-        """Start signing in to GitHub: type the code it returns at the address it returns."""
+        """Sign in through the GitHub CLI (`gh auth login --web`): it opens the page, and the user
+        types the code this returns there. Needs the GitHub CLI installed."""
         return await asyncio.to_thread(need_sync().sign_in)
 
     @app.put("/api/github", tags=["gigs"])
@@ -1354,6 +1355,9 @@ class ModeServer:
 
     def stop(self):
         self._stopped = True
+        interrupt = getattr(self.build, "interrupt", None)   # a sign-in waiting on the GitHub CLI
+        if interrupt:
+            interrupt()
         if self.server:
             self.server.should_exit = True
 
@@ -1425,7 +1429,12 @@ def app_builder(args, port=None):
                          model=model, switch=change, gig_sync=sync)
         was["emit"] = app.state.emit
         return app
-    build.close = chat.close
+    def close():
+        chat.close()
+        if sync:
+            sync.close()          # a GitHub CLI sign-in still waiting
+    build.close = close
+    build.interrupt = sync.close if sync else None
     return build
 
 

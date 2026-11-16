@@ -1,6 +1,6 @@
 // Gigs on GitHub: send this computer's gigs to the user's own private repo, and get them on
-// another computer or pedalboard. Signing in: GitHub's code page, a pasted token, or the
-// GitHub CLI's own login.
+// another computer or pedalboard. Signing in: the GitHub CLI's own login (the app starts it and
+// shows its code), or a pasted token when the CLI isn't installed.
 import { useCallback, useEffect, useState } from "react";
 import { api } from "../api";
 import type { GitHubStatus, SyncResult } from "../api";
@@ -20,7 +20,8 @@ export function GitHubGigs() {
   const { act } = usePedal();
   const [gh, setGh] = useState<GitHubStatus | null>(null);
   const [token, setToken] = useState("");
-  const [busy, setBusy] = useState<"send" | "get" | null>(null);
+  const [pasting, setPasting] = useState(false); // the token box, when the GitHub CLI is there too
+  const [busy, setBusy] = useState<"send" | "get" | "sign-in" | null>(null);
 
   const load = useCallback(() => api.github().then(setGh, () => setGh(null)), []);
   useEffect(() => {
@@ -69,12 +70,29 @@ export function GitHubGigs() {
         <p className="github-note">
           Type <b className="github-code">{gh.signing_in.code}</b> at{" "}
           <a href={gh.signing_in.url} target="_blank" rel="noreferrer">{gh.signing_in.url.replace("https://", "")}</a>
+          , then say yes. Your browser opened it.
         </p>
       ) : (
         <>
           <p className="github-note">Keep your gigs in your own GitHub and get them on another computer.</p>
           {gh.can_sign_in ? (
-            <button className="button primary" onClick={() => act(() => api.githubSignIn()).then(load)}>Sign in with GitHub</button>
+            <button
+              className="button primary"
+              disabled={busy === "sign-in"}
+              onClick={async () => {
+                setBusy("sign-in");
+                const started = await act(() => api.githubSignIn());
+                setBusy(null);
+                // show the code straight away, then let the status take over
+                if (started) setGh((g) => g && { ...g, signing_in: started });
+                load();
+              }}
+            >
+              {busy === "sign-in" ? "Starting…" : "Sign in with GitHub"}
+            </button>
+          ) : null}
+          {gh.can_sign_in && !pasting ? (
+            <button className="link-button" onClick={() => setPasting(true)}>Paste a token instead</button>
           ) : (
             <form
               className="github-token"
@@ -96,7 +114,18 @@ export function GitHubGigs() {
               />
               <button className="button" type="submit" disabled={!token.trim()}>Sign in</button>
               <a className="github-note" href={gh.token_page} target="_blank" rel="noreferrer">Make a token (tick “repo”)</a>
+              {!gh.can_sign_in && (
+                <a className="github-note" href={gh.gh_page} target="_blank" rel="noreferrer">
+                  Or install the GitHub CLI and sign in with it
+                </a>
+              )}
             </form>
+          )}
+          {gh.via === "app" && (
+            // a pasted token GitHub no longer takes: forget it, so the CLI's login (or a new token) is used
+            <button className="link-button" onClick={() => act(() => api.githubSignOut()).then((s) => s && setGh({ ...s, available: true }))}>
+              Forget the saved token
+            </button>
           )}
           {gh.problem && <p className="github-note error">{gh.problem}</p>}
         </>

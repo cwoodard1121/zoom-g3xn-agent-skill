@@ -16,15 +16,17 @@ It works file by file, both ways:
         the gigs' "deleted" folder). A gig deleted there since the last sync is moved to
         "deleted" here.
 
-Signing in, in this order: GitHub's device flow (a code to type at github.com/login/device) when
-the app has an OAuth client id (G3XN_GITHUB_CLIENT_ID, or CLIENT_ID below); a token pasted in
-(github.com/settings/tokens, "repo" scope); or the GitHub CLI's own login (`gh auth login`).
-The sign-in is kept in ~/.g3xn/github.json. No git needed: it talks to GitHub's API.
+Signing in: the GitHub CLI's own login. "Sign in with GitHub" runs `gh auth login --web` for
+the user (a code to type at github.com/login/device), so g3xn needs no GitHub app of its own.
+Without the CLI, a token pasted in (github.com/settings/tokens, "repo" scope) works too, and is
+kept in ~/.g3xn/github.json. No git needed: it talks to GitHub's API.
 """
 import base64
 import hashlib
 import json
 import os
+import queue
+import re
 import shutil
 import subprocess
 import threading
@@ -32,32 +34,72 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+import webbrowser
 
 from . import models
 
 API = "https://api.github.com"
-CLIENT_ID = ""                  # the g3xn OAuth app's client id, for "Sign in with GitHub" (device flow)
 STATE_FILE = os.path.join(models.HOME, "github.json")
 REPO_NAME = "g3xn-gigs"
 TOKEN_PAGE = "https://github.com/settings/tokens/new?scopes=repo&description=g3xn%20gigs"
+GH_PAGE = "https://cli.github.com"
+NO_WINDOW = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
+CODE_LINE = re.compile(r"one-time code:\s*([A-Z0-9]{4}-[A-Z0-9]{4})")
+PAGE_LINE = re.compile(r"(https://github\.com/login/device)\b")
+COLOUR = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
+CODE_WAIT = 30                  # seconds for the GitHub CLI to print its code
 
 
 class SyncError(RuntimeError):
     pass
 
 
-def client_id():
-    return os.environ.get("G3XN_GITHUB_CLIENT_ID") or CLIENT_ID
+def find_gh():
+    """The GitHub CLI's program: on PATH, or where its installers put it (it may be installed
+    while g3xn runs, and then g3xn's PATH doesn't have it yet)."""
+    found = shutil.which("gh")
+    if found:
+        return found
+    env = os.environ.get
+    places = [os.path.join(env("ProgramFiles", r"C:\Program Files"), "GitHub CLI", "gh.exe"),
+              os.path.join(env("LOCALAPPDATA", ""), "Programs", "GitHub CLI", "gh.exe"),
+              os.path.join(env("LOCALAPPDATA", ""), "Microsoft", "WinGet", "Links", "gh.exe"),
+              os.path.join(os.path.expanduser("~"), "scoop", "shims", "gh.exe")] if os.name == "nt" else \
+             ["/opt/homebrew/bin/gh", "/usr/local/bin/gh", "/usr/bin/gh"]
+    return next((p for p in places if os.path.isfile(p)), None)
+
+
+def has_gh():
+    return bool(find_gh())
+
+
+def _gh_env():
+    """The CLI's environment, without colour: its codes would hide the one-time code from CODE_LINE."""
+    env = {k: v for k, v in os.environ.items() if k not in ("CLICOLOR_FORCE", "GH_FORCE_TTY")}
+    env["NO_COLOR"] = "1"
+    return env
+
+
+def gh_login():
+    """Start `gh auth login --web` with no terminal: it prints a one-time code and the page to type
+    it at, then waits until the user says yes there (or the code runs out, after 15 minutes).
+    None when the GitHub CLI isn't installed. No --git-protocol: that would overwrite the user's."""
+    gh = find_gh()
+    if not gh:
+        return None
+    return subprocess.Popen([gh, "auth", "login", "--hostname", "github.com", "--web", "--scopes", "repo"],
+                            stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                            text=True, encoding="utf-8", errors="replace", creationflags=NO_WINDOW, env=_gh_env())
 
 
 def gh_token():
     """The GitHub CLI's token, if it is installed and signed in."""
-    gh = shutil.which("gh")
+    gh = find_gh()
     if not gh:
         return None
     try:
-        out = subprocess.run([gh, "auth", "token"], capture_output=True, text=True, timeout=10,
-                             creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
+        out = subprocess.run([gh, "auth", "token", "--hostname", "github.com"], capture_output=True, text=True,
+                             timeout=10, creationflags=NO_WINDOW, env=_gh_env())
     except (OSError, subprocess.SubprocessError):
         return None
     return out.stdout.strip() if out.returncode == 0 and out.stdout.strip() else None
@@ -78,15 +120,23 @@ def blob_sha(data):
 
 
 class GigSync:
-    def __init__(self, libraries, state_file=STATE_FILE, api=None, gh=gh_token):
+    def __init__(self, libraries, state_file=STATE_FILE, api=None, gh=gh_token, login=gh_login,
+                 can_login=has_gh, open_page=webbrowser.open):
         """libraries: {pedal key: GigLibrary}. api(method, url, body, token) -> (status, JSON):
-        tests swap in a fake GitHub. gh: () -> the GitHub CLI's token or None."""
+        tests swap in a fake GitHub. gh: () -> the GitHub CLI's token or None. login: () -> a
+        running `gh auth login --web` (a Popen) or None. can_login: () -> the CLI is installed.
+        open_page(url): show the page where the code is typed."""
         self.libraries = libraries
         self.state_file = state_file
         self._api_call = api or _http
         self._gh = gh
+        self._start_login = login
+        self._can_login = can_login
+        self._open_page = open_page
         self._lock = threading.Lock()
-        self._signing_in = None        # {"code", "url", "expires"} while a device-flow sign-in waits
+        self._signing_in = None        # {"code", "url"} while the GitHub CLI waits for the user
+        self._login_process = None
+        self._closed = False
         self._sign_in_problem = ""
         self._login = None
         self._branch = "main"
@@ -94,52 +144,99 @@ class GigSync:
     # --- signing in ---
 
     def status(self):
+        """Signed in or not (a token GitHub rejects is not signed in), the sign-in waiting for the
+        user if there is one, and the last send or get."""
         token, via = self._token()
+        signing = self._signing_in
         out = {"signed_in": False, "via": via, "login": None, "repo": None,
-               "can_sign_in": bool(client_id()), "token_page": TOKEN_PAGE,
-               "signing_in": self._signing_in and {k: self._signing_in[k] for k in ("code", "url")},
-               "problem": self._sign_in_problem, "last": self._state().get("last")}
+               "can_sign_in": bool(self._can_login()), "token_page": TOKEN_PAGE, "gh_page": GH_PAGE,
+               "signing_in": None, "problem": self._sign_in_problem, "last": self._state().get("last")}
         if token:
             try:
-                out.update(signed_in=True, login=self.login(), repo=self.repo())
+                out.update(signed_in=True, login=self.login(), repo=self.repo(), problem="")
             except SyncError as err:
                 out["problem"] = str(err)
+        if signing and not out["signed_in"]:
+            out["signing_in"] = dict(signing)
         return out
 
     def sign_in(self):
-        """Start GitHub's device flow: returns the code to type at the address. A thread waits for
-        the user to say yes, then keeps the token."""
-        cid = client_id()
-        if not cid:
-            raise SyncError("this g3xn has no GitHub app to sign in with: paste a token (%s), or run "
-                            "`gh auth login`" % TOKEN_PAGE)
-        status, r = self._api_call("POST", "https://github.com/login/device/code",
-                                   {"client_id": cid, "scope": "repo"}, None)
-        if status != 200 or "device_code" not in r:
-            raise SyncError("GitHub didn't start the sign-in: %s" % (r.get("error_description") or status))
-        self._signing_in = {"code": r["user_code"], "url": r["verification_uri"],
-                            "expires": time.time() + r.get("expires_in", 900)}
-        self._sign_in_problem = ""
-        threading.Thread(target=self._wait_for_yes, args=(cid, r["device_code"], r.get("interval", 5)),
-                         name="g3xn-github", daemon=True).start()
-        return {"code": r["user_code"], "url": r["verification_uri"]}
+        """Sign in through the GitHub CLI: start `gh auth login --web`, open the page where its
+        one-time code is typed, and return {"code", "url"}. A thread waits for the CLI to finish;
+        from then on its login is the one used (a pasted token kept before is dropped). A second
+        call while it waits returns the same code. close() stops it, even before the code shows."""
+        with self._lock:
+            if self._signing_in:
+                return dict(self._signing_in)
+            if self._closed:
+                raise SyncError("g3xn is closing")
+            proc = self._start_login()
+            if proc is None:
+                raise SyncError("install the GitHub CLI (%s) to sign in, or paste a token" % GH_PAGE)
+            self._login_process = proc             # close() can stop it while the code is awaited
+            self._sign_in_problem = ""
+            lines = queue.Queue()
+            threading.Thread(target=_read_lines, args=(proc, lines), name="g3xn-gh-out", daemon=True).start()
+            code, url, said = None, None, []
+            deadline = time.monotonic() + CODE_WAIT
+            while not (code and url):
+                try:
+                    line = lines.get(timeout=max(0.0, deadline - time.monotonic()))
+                except queue.Empty:
+                    break
+                if line is None:                   # the CLI stopped without a code
+                    break
+                line = COLOUR.sub("", line)
+                said.append(line.strip())
+                found = CODE_LINE.search(line)
+                code = code or (found and found.group(1))
+                found = PAGE_LINE.search(line)
+                url = url or (found and found.group(1))
+            if not (code and url) or self._closed:
+                _stop(proc)
+                self._login_process = None
+                if self._closed:
+                    raise SyncError("g3xn is closing")
+                told = " ".join(s for s in said if s)[-300:]
+                raise SyncError("the GitHub CLI didn't start a sign-in%s" % (": " + told if told else ""))
+            self._signing_in = {"code": code, "url": url}
+            self._login = None
+        threading.Thread(target=self._wait_for_gh, args=(proc, lines), name="g3xn-github", daemon=True).start()
+        try:
+            self._open_page(url)
+        except Exception:                         # no browser: the app shows the page as a link
+            pass
+        return {"code": code, "url": url}
 
-    def _wait_for_yes(self, cid, device_code, interval):
-        while self._signing_in and time.time() < self._signing_in["expires"]:
-            time.sleep(interval)
-            _, r = self._api_call("POST", "https://github.com/login/oauth/access_token",
-                                  {"client_id": cid, "device_code": device_code,
-                                   "grant_type": "urn:ietf:params:oauth:grant-type:device_code"}, None)
-            if r.get("access_token"):
-                self._keep(token=r["access_token"])
-                self._signing_in = None
-                return
-            if r.get("error") == "slow_down":
-                interval += 5
-            elif r.get("error") != "authorization_pending":
-                self._sign_in_problem = r.get("error_description") or r.get("error") or "the sign-in failed"
+    def _wait_for_gh(self, proc, lines):
+        said = []
+        while True:
+            line = lines.get()
+            if line is None:
                 break
-        self._signing_in = None
+            said.append(COLOUR.sub("", line).strip())
+        ok = proc.wait() == 0
+        with self._lock:
+            self._login = None
+            if ok:
+                # the CLI's login is the one to use now: a pasted token kept before would win over
+                # it in _token(), and may be the very one GitHub rejects
+                state = self._state()
+                if state.pop("token", None) is not None:
+                    self._save(state)
+                self._sign_in_problem = ""
+            elif not self._closed:
+                last = next((s for s in reversed(said) if s), "")
+                self._sign_in_problem = "the GitHub sign-in didn't finish" + (": " + last if last else "")
+            self._signing_in = None
+            self._login_process = None
+
+    def close(self):
+        """Stop a GitHub CLI sign-in still waiting, or still starting (the app is closing)."""
+        self._closed = True
+        proc = self._login_process
+        if proc is not None:
+            _stop(proc)
 
     def use_token(self, token):
         """Sign in with a token pasted in (it needs the "repo" scope)."""
@@ -327,20 +424,32 @@ def _quote(path):
     return urllib.parse.quote(path, safe="/")
 
 
+def _read_lines(proc, lines):
+    """Pass the GitHub CLI's output on line by line; None when it closes."""
+    try:
+        for line in proc.stdout:
+            lines.put(line)
+    except (OSError, ValueError):
+        pass
+    lines.put(None)
+
+
+def _stop(proc):
+    try:
+        proc.kill()
+    except OSError:
+        pass
+
+
 def _http(method, url, body, token):
-    """(status, JSON reply) from GitHub. The device-flow addresses take a form, the API takes JSON."""
-    headers = {"Accept": "application/json" if "github.com/login/" in url else "application/vnd.github+json",
-               "User-Agent": "g3xn", "X-GitHub-Api-Version": "2022-11-28"}
+    """(status, JSON reply) from GitHub's API."""
+    headers = {"Accept": "application/vnd.github+json", "User-Agent": "g3xn", "X-GitHub-Api-Version": "2022-11-28"}
     if token:
         headers["Authorization"] = "Bearer " + token
     data = None
     if body is not None:
-        if "github.com/login/" in url:
-            data = urllib.parse.urlencode(body).encode()
-            headers["Content-Type"] = "application/x-www-form-urlencoded"
-        else:
-            data = json.dumps(body).encode()
-            headers["Content-Type"] = "application/json"
+        data = json.dumps(body).encode()
+        headers["Content-Type"] = "application/json"
     req = urllib.request.Request(url, data=data, method=method, headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=30) as r:
