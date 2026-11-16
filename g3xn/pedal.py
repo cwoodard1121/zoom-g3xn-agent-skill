@@ -277,8 +277,18 @@ class Pedal:
             self.set_volume(patch.volume)
         if live.name != patch.name:
             self.set_name(patch.name)
-        if self.model and not self.model.live_edits_proven and not same_sound(self.edit_buffer(), patch):
-            self.audition(patch)        # live edits untested on this pedal: when they did not stick, rewrite
+        if self.model and self.model.check_live_edits and not self._landed(patch):
+            self.audition(patch)        # an edit did not land: rewrite the slot
+
+    def _landed(self, patch, tries=3, wait=0.1):
+        """The live edits are in the edit buffer. The B1X FOUR's buffer can read up to 45 ms behind
+        just after a patch change, so a miss is read again before it counts."""
+        for n in range(tries):
+            if same_sound(self.edit_buffer(), patch):
+                return True
+            if n < tries - 1:
+                time.sleep(wait)
+        return False
 
     def save_scratch(self, location):
         """Store what you are hearing on the scratch slot into a real slot, then
@@ -407,13 +417,13 @@ class Pedal:
         """Every effect's knobs as the pedal shows them (e.g. delay time in ms):
         [{"position", "effect", "on", "knobs": {label: text}}]."""
         if self.model and not self.model.has_screen:
-            return []                   # screen text not tested on this pedal yet
+            return []                   # this pedal has no screen text
         out = []
         for pos, slot in enumerate(self.edit_buffer().slots):
             if slot.is_empty:
                 continue
             cells = self.screen(pos)
-            knobs = {c["label"]: c["text"] for c in cells[2:] if c["label"]}
+            knobs = {c["label"]: c["text"] for c in cells[2:] if c["label"] and c["label"] != "Dummy"}
             if slot.is_continuation and out:
                 out[-1]["knobs"].update(knobs)       # second screen of a two-position effect
             else:

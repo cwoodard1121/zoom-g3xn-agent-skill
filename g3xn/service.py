@@ -175,9 +175,9 @@ def morph(pedal, to, seconds=3.0, steps_per_second=12):
         time.sleep(max(0.0, t0 + seconds * f - time.time()))
     if start.volume != target.volume:
         pedal.set_volume(target.volume)
-    if getattr(pedal, "model", None) and not pedal.model.live_edits_proven:
+    if getattr(pedal, "model", None) and pedal.model.check_live_edits:
         target.name = start.name
-        pedal.push(target)              # live edits untested on this pedal: check they landed
+        pedal.push(target)              # check the edits landed
     return live_view(pedal)
 
 

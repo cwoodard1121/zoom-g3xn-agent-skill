@@ -170,9 +170,34 @@ class VirtualB1XTest(unittest.TestCase):
         self.assertEqual(p.edit_buffer().effect("AMPG SVT")["Gain"], 70)
         self.assertEqual(p.current(), 50)
 
-    def test_no_screen_text_yet(self):
+    def test_screen_text_names_each_effect_once(self):
         self.pedal.audition(Patch.from_dict(BASS, "b1xfour"))
-        self.assertEqual(self.pedal.display(), [])
+        shown = self.pedal.display()
+        self.assertEqual([d["effect"] for d in shown], ["OptComp", "AMPG SVT", "SVT8x10", "Room"])
+        self.assertNotIn("Dummy", shown[1]["knobs"])
+
+    def test_a_late_read_is_read_again_before_a_rewrite(self):
+        """The real pedal's edit buffer can read 45 ms behind just after a patch change."""
+        p = self.pedal
+        tone = Patch.from_dict(BASS, "b1xfour")
+        p.audition(tone)
+        tone.effect("AMPG SVT")["Gain"] = 70
+        real, calls = p.edit_buffer, []
+
+        def late():
+            calls.append(1)
+            if len(calls) == 2:                 # the read straight after the edit is one edit behind
+                old = real()
+                old.effect("AMPG SVT")["Gain"] = 40
+                return old
+            return real()
+        p.edit_buffer = late
+        writes = []
+        write = p.write
+        p.write = lambda *a: (writes.append(a[0]), write(*a))
+        p.push(tone)
+        self.assertEqual(writes, [])            # no rewrite: the second read was right
+        self.assertEqual(real().effect("AMPG SVT")["Gain"], 70)
 
 
 class UsbPortTest(unittest.TestCase):

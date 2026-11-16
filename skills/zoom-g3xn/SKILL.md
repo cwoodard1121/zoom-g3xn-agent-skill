@@ -35,7 +35,7 @@ In bass mode:
 - A patch holds 5 effects. Amps fill two screens but count as one effect.
 - The scratch slot is 50. Slots 1-41 hold patches (factory ones and the user's own); 42-50 were Empty on 2026-11-15.
 - Numbering: the tools count slots 1-50, but the pedal's screen shows them as 10-59 (slot 1 = 10, slot 50 = 59). When the user names a number from the pedal ("save it on 52"), subtract 9 (slot 43). `list_patches` gives both (`slot` and `screen`).
-- Gigs, the desktop app and the tuner are G3Xn only for now. Screen text (`shown`) is not available on the bass pedal yet.
+- Gigs, the desktop app and the tuner are G3Xn only for now. Live tweaks and screen text (`shown`) work on the bass pedal (run on the real pedal on 2026-11-16).
 
 Switch back with `pedal_mode("g3xn")` when the user picks up a guitar.
 

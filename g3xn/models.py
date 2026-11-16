@@ -25,7 +25,7 @@ MODE_FILE = os.path.join(HOME, "mode.json")
 class Model:
     def __init__(self, key, name, kind, patch_count, patch_size, bank_size, scratch, target, chain,
                  empty_pprm, empty_txe1, catalog_file, home, backup_root, dsp_budget, dsp_proven,
-                 live_edits_proven, has_screen, screen_offset=0):
+                 check_live_edits, has_screen, screen_offset=0):
         self.key = key
         self.name = name
         self.kind = kind                      # "guitar" or "bass"
@@ -43,8 +43,8 @@ class Model:
         self.backup_root = backup_root
         self.dsp_budget = dsp_budget
         self.dsp_proven = dsp_proven          # highest factory patch: known to work
-        self.live_edits_proven = live_edits_proven
-        self.has_screen = has_screen          # 64 02 screen text tested on this pedal
+        self.check_live_edits = check_live_edits    # read live edits back; rewrite the slot when one is missing
+        self.has_screen = has_screen          # 64 02 screen text works on this pedal
         self.screen_offset = screen_offset    # the pedal's own screen shows slot n as n + this
 
     @property
@@ -82,12 +82,14 @@ MODELS = {
     "g3xn": Model("g3xn", "G3Xn", "guitar", 150, 736, 3, 150, 4, ("positions", 7),
                   "000000000000000032840c00", 0, os.path.join(_DATA, "effects.json"), HOME,
                   os.path.join(os.path.expanduser("~"), "g3xn-backups"), 250.0, 231.3,
-                  live_edits_proven=True, has_screen=True),
-    # read off a B1X FOUR, firmware 2.00, on 2026-11-15; live knob edits and screen text untested
+                  check_live_edits=False, has_screen=True),
+    # read off a B1X FOUR, firmware 2.00, on 2026-11-15. Live edits and screen text ran on it on
+    # 2026-11-16: 235 of 235 knob edits landed, but a read about 0.3 s after a patch change can be
+    # 30 to 45 ms behind, so edits are read back (and read again) before g3xn reports them.
     "b1xfour": Model("b1xfour", "B1X FOUR", "bass", 50, 760, 10, 50, 128, ("effects", 5),
                      "000000000000000032000000", 200, os.path.join(_DATA, "effects_b1xfour.json"),
                      os.path.join(HOME, "b1xfour"), os.path.join(os.path.expanduser("~"), "g3xn-backups-b1xfour"),
-                     250.0, 222.5, live_edits_proven=False, has_screen=False,
+                     250.0, 222.5, check_live_edits=True, has_screen=True,
                      screen_offset=9),     # Zoom's manual: patches show as 10..59
 }
 ALIASES = {"g3": "g3xn", "g3n": "g3xn", "guitar": "g3xn", "b1": "b1xfour", "b1four": "b1xfour",
