@@ -2,11 +2,14 @@
 
 Built from the .ZD2 files on the pedal (see tools/build_catalog.py) plus a
 per-effect template recorded by loading each effect on the pedal
-(tools/harvest_templates.py). Ships as g3xn/data/effects.json.
+(tools/pull_from_pedal.py). One per pedal: g3xn/data/effects.json for the
+G3Xn, effects_b1xfour.json for the B1X FOUR. catalog() is the active mode's.
 """
 import json
 import os
 import re
+
+from . import models
 
 DATA = os.path.join(os.path.dirname(__file__), "data", "effects.json")
 
@@ -58,7 +61,7 @@ class Param:
 
 
 class Effect:
-    def __init__(self, d):
+    def __init__(self, d, budget=DSP_BUDGET):
         self.id = int(d["id"], 16)
         self.name = d["name"]
         self.group = d["group"]
@@ -67,10 +70,11 @@ class Effect:
         self.positions = d["slots"]
         self.params = [Param(i, p) for i, p in enumerate(d.get("params", []))]
         self.template = bytes.fromhex(d["template"]) if d.get("template") else None
+        self.budget = budget
 
     @property
     def dsp_percent(self):
-        return round(self.dsp / DSP_BUDGET * 100, 1)
+        return round(self.dsp / self.budget * 100, 1)
 
     def param(self, name):
         key = _norm(name)
@@ -97,10 +101,11 @@ class Effect:
 
 
 class Catalog:
-    def __init__(self, path=DATA):
+    def __init__(self, path=DATA, model=None):
+        self.model = models.get(model or "g3xn")
         with open(path, encoding="utf-8") as f:
             raw = json.load(f)
-        self.effects = [Effect(d) for d in raw.values()]
+        self.effects = [Effect(d, self.model.dsp_budget) for d in raw.values()]
         self._by_id = {e.id: e for e in self.effects}
         self._by_name = {_norm(e.name): e for e in self.effects}
 
@@ -138,12 +143,12 @@ def _norm(s):
     return re.sub(r"[^a-z0-9]", "", s.lower())
 
 
-_default = None
+_loaded = {}
 
 
-def catalog():
-    """The shared catalog instance (loaded on first use)."""
-    global _default
-    if _default is None:
-        _default = Catalog()
-    return _default
+def catalog(model=None):
+    """The shared catalog for a pedal (default: the active mode's), loaded on first use."""
+    m = models.get(model) if model else models.active()
+    if m.key not in _loaded:
+        _loaded[m.key] = Catalog(m.catalog_file, m)
+    return _loaded[m.key]
