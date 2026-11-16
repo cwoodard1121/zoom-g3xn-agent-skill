@@ -3,8 +3,11 @@ import pin_mode  # noqa: F401  (G3Xn mode for these tests)
 import base64
 import json
 import os
+import queue
 import re
 import tempfile
+import threading
+import time
 import unittest
 
 from g3xn.gig import GigLibrary
@@ -12,23 +15,16 @@ from g3xn.gigsync import GigSync, SyncError, blob_sha
 
 
 class FakeGitHub:
-    """Just enough of GitHub's API: one user, repos, the default branch's files, the device flow."""
+    """Just enough of GitHub's API: one user, repos, the default branch's files."""
 
     def __init__(self, login="player", token="t0ken"):
         self.login, self.token = login, token
         self.repos = {}                  # "owner/name" -> {path: bytes}
         self.private = {}
         self.calls = []
-        self.device_polls = 0
 
     def __call__(self, method, url, body, token):
         self.calls.append((method, url))
-        if url == "https://github.com/login/device/code":
-            return 200, {"device_code": "dev", "user_code": "ABCD-1234", "verification_uri": "https://github.com/login/device",
-                         "interval": 0, "expires_in": 60}
-        if url == "https://github.com/login/oauth/access_token":
-            self.device_polls += 1
-            return 200, ({"error": "authorization_pending"} if self.device_polls < 2 else {"access_token": self.token})
         if token != self.token:
             return 401, {"message": "Bad credentials"}
         path = url.split("https://api.github.com", 1)[1]
@@ -69,11 +65,67 @@ class FakeGitHub:
         return 404, {"message": "Not Found"}
 
 
-def computer(github, gh=None):
+class FakeLogin:
+    """`gh auth login --web` as the app runs it: prints a code and the page, then waits for the user."""
+
+    GH_SAYS = ["\n", "! First copy your one-time code: 8FFB-DC8D\n",
+               "Open this URL to continue in your web browser: https://github.com/login/device\n"]
+
+    def __init__(self, cli, lines=GH_SAYS):
+        self.cli, self.out, self.code, self.killed = cli, queue.Queue(), None, False
+        for line in lines:
+            self.out.put(line)
+        self.stdout = iter(self.out.get, None)
+
+    def say_yes(self):                       # the user typed the code and said yes
+        self.cli.token = self.cli.github.token
+        self.out.put("✓ Authentication complete.\n")
+        self.code = 0
+        self.out.put(None)
+
+    def give_up(self, why="X Failed to authenticate via web browser: expired_token"):
+        self.out.put(why + "\n")
+        self.code = 1
+        self.out.put(None)
+
+    def wait(self, timeout=None):
+        return self.code
+
+    def kill(self):
+        self.killed = True
+        self.code = 1
+        self.out.put(None)
+
+
+class FakeCli:
+    """The GitHub CLI on a computer: installed or not, signed in or not, and its login runs."""
+
+    def __init__(self, github, installed=True, token=None, lines=FakeLogin.GH_SAYS):
+        self.github, self.installed, self.token, self.lines = github, installed, token, lines
+        self.logins, self.opened = [], []
+
+    def login(self):
+        if not self.installed:
+            return None
+        self.logins.append(FakeLogin(self, self.lines))
+        return self.logins[-1]
+
+
+def computer(github, gh=None, cli=None):
     """A computer with its own gig folders and its own sign-in file."""
     home = tempfile.mkdtemp()
     libs = {"g3xn": GigLibrary(os.path.join(home, "gigs")), "b1xfour": GigLibrary(os.path.join(home, "b1xfour", "gigs"))}
-    return GigSync(libs, state_file=os.path.join(home, "github.json"), api=github, gh=lambda: gh), libs
+    cli = cli or FakeCli(github, installed=False, token=gh)
+    sync = GigSync(libs, state_file=os.path.join(home, "github.json"), api=github, gh=lambda: cli.token,
+                   login=cli.login, can_login=lambda: cli.installed, open_page=cli.opened.append)
+    return sync, libs
+
+
+def until(test, seconds=2):
+    end = time.monotonic() + seconds
+    while not test() and time.monotonic() < end:
+        time.sleep(0.01)
+    return test()
 
 
 FRIDAY = {"name": "Friday", "start_slot": 100, "patches": [{"song": "Sultans", "from_slot": 1, "lyrics": "Way on down south"}]}
@@ -156,35 +208,62 @@ class GigSyncTest(unittest.TestCase):
             self.home.set_repo("not a repo!")
         self.assertEqual(self.home.sign_out()["signed_in"], False)
 
-    def test_device_flow_sign_in(self):
-        saved = os.environ.get("G3XN_GITHUB_CLIENT_ID")
-        os.environ["G3XN_GITHUB_CLIENT_ID"] = "client"
-        try:
-            self.assertTrue(self.home.status()["can_sign_in"])
-            started = self.home.sign_in()
-            self.assertEqual(started, {"code": "ABCD-1234", "url": "https://github.com/login/device"})
-            for _ in range(200):
-                if self.home.status()["signed_in"]:
-                    break
-                import time
-                time.sleep(0.01)
-            status = self.home.status()
-            self.assertEqual((status["signed_in"], status["via"], status["login"]), (True, "app", "player"))
-        finally:
-            if saved is None:
-                os.environ.pop("G3XN_GITHUB_CLIENT_ID")
-            else:
-                os.environ["G3XN_GITHUB_CLIENT_ID"] = saved
+    def test_sign_in_through_the_github_cli(self):
+        cli = FakeCli(self.github)
+        sync, _ = computer(self.github, cli=cli)
+        status = sync.status()
+        self.assertEqual((status["signed_in"], status["can_sign_in"]), (False, True))
+        started = sync.sign_in()
+        self.assertEqual(started, {"code": "8FFB-DC8D", "url": "https://github.com/login/device"})
+        self.assertEqual(cli.opened, ["https://github.com/login/device"])       # the page opens by itself
+        self.assertEqual(sync.status()["signing_in"], started)
+        self.assertEqual(sync.sign_in(), started)                               # a second click: same code
+        self.assertEqual(len(cli.logins), 1)
+        cli.logins[0].say_yes()
+        self.assertTrue(until(lambda: sync.status()["signing_in"] is None))
+        status = sync.status()
+        self.assertEqual((status["signed_in"], status["via"], status["login"], status["problem"]), (True, "gh", "player", ""))
 
-    def test_without_an_app_sign_in_names_the_other_ways(self):
-        saved = os.environ.pop("G3XN_GITHUB_CLIENT_ID", None)
-        try:
-            with self.assertRaises(SyncError) as err:
-                self.home.sign_in()
-            self.assertIn("gh auth login", str(err.exception))
-        finally:
-            if saved:
-                os.environ["G3XN_GITHUB_CLIENT_ID"] = saved
+    def test_a_sign_in_that_runs_out_says_why_and_can_start_again(self):
+        cli = FakeCli(self.github)
+        sync, _ = computer(self.github, cli=cli)
+        sync.sign_in()
+        cli.logins[0].give_up()
+        self.assertTrue(until(lambda: sync.status()["signing_in"] is None))
+        self.assertIn("expired_token", sync.status()["problem"])
+        self.assertEqual(sync.sign_in()["code"], "8FFB-DC8D")
+        self.assertEqual((len(cli.logins), sync.status()["problem"]), (2, ""))
+
+    def test_without_the_github_cli_sign_in_names_the_other_ways(self):
+        status = self.home.status()
+        self.assertEqual((status["can_sign_in"], status["gh_page"]), (False, "https://cli.github.com"))
+        with self.assertRaises(SyncError) as err:
+            self.home.sign_in()
+        self.assertIn("cli.github.com", str(err.exception))
+        self.assertIn("paste a token", str(err.exception))
+
+    def test_a_cli_that_prints_no_code_is_stopped(self):
+        cli = FakeCli(self.github, lines=["error connecting to github.com\n"])
+        sync, _ = computer(self.github, cli=cli)
+        cli_login = cli.login                    # the fake ends its output when it is killed
+        def login():
+            proc = cli_login()
+            proc.out.put(None)
+            return proc
+        sync._start_login = login
+        with self.assertRaises(SyncError) as err:
+            sync.sign_in()
+        self.assertIn("error connecting", str(err.exception))
+        self.assertTrue(cli.logins[0].killed)
+        self.assertIsNone(sync.status()["signing_in"])
+
+    def test_closing_the_app_stops_a_waiting_sign_in(self):
+        cli = FakeCli(self.github)
+        sync, _ = computer(self.github, cli=cli)
+        sync.sign_in()
+        sync.close()
+        self.assertTrue(cli.logins[0].killed)
+        self.assertTrue(until(lambda: sync.status()["signing_in"] is None))
 
     def test_the_token_never_shows_in_the_status(self):
         self.home.use_token(self.github.token)

@@ -92,7 +92,7 @@ The [latest release](https://github.com/cwoodard1121/zoom-g3xn-agent-skill/relea
 
 ### Gigs on GitHub
 
-Sign in once in the Gigs view: paste a GitHub token with the `repo` scope (the app links to the page that makes one), or log in with the [GitHub CLI](https://cli.github.com) (`gh auth login`) and the app uses that. The first **Send my gigs** makes a private repo, `<you>/g3xn-gigs`. On another computer, sign in and press **Get gigs**. Sending keeps this computer's version of each gig; getting keeps GitHub's, and the one it replaces goes to the gigs' `deleted` folder. Which slots a gig was loaded into stays on each computer.
+Sign in once in the Gigs view. **Sign in with GitHub** runs the [GitHub CLI](https://cli.github.com)'s own login: the app shows a code, your browser opens github.com/login/device, and you type the code there. If you already use `gh`, the app is signed in already. Without the CLI, paste a GitHub token with the `repo` scope (the app links to the page that makes one). The first **Send my gigs** makes a private repo, `<you>/g3xn-gigs`. On another computer, sign in and press **Get gigs**. Sending keeps this computer's version of each gig; getting keeps GitHub's, and the one it replaces goes to the gigs' `deleted` folder. Which slots a gig was loaded into stays on each computer.
 
 ```bash
 pip install -e ".[app]"

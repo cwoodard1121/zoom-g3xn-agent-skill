@@ -57,8 +57,9 @@ export interface GitHubStatus {
   via: "app" | "gh" | null; // g3xn's own sign-in, or the GitHub CLI's
   login: string | null;
   repo: string | null;
-  can_sign_in: boolean; // "Sign in with GitHub" works (the app has a GitHub client id)
+  can_sign_in: boolean; // "Sign in with GitHub" works: the GitHub CLI is installed
   token_page: string;
+  gh_page: string; // where to get the GitHub CLI
   signing_in: { code: string; url: string } | null;
   problem: string;
   last: SyncResult | null;
