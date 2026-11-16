@@ -746,7 +746,7 @@ select { cursor: pointer; }
 .song-lyrics-head { display: flex; gap: 8px; }
 .song-lyrics-head input { flex: 1; }
 .song-lyrics textarea { width: 100%; font: 400 14px/1.5 var(--body); resize: vertical; }
-.song-lyrics textarea.song-chords, .song-lyrics textarea.song-cues { font: 400 18px/1.35 var(--readout); }
+.song-lyrics textarea.song-cues { font: 400 18px/1.35 var(--readout); }
 .songs-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .song-head span { font: 400 9px/1.2 var(--engraved); letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-dim); }
 .song-number {
@@ -865,9 +865,9 @@ select { cursor: pointer; }
 /* Only the named blocks move; the rest of the page just changes, so nothing ghosts. */
 ::view-transition-old(root) { animation: none; display: none; }
 ::view-transition-new(root) { animation: none; }
-::view-transition-old(stage-words), ::view-transition-old(stage-chords), ::view-transition-old(stage-notes),
+::view-transition-old(stage-words), ::view-transition-old(stage-notes),
 ::view-transition-old(stage-stomps), ::view-transition-old(stage-where), ::view-transition-old(stage-patch) { animation: vt-fade-out 0.14s ease-out both; }
-::view-transition-new(stage-words), ::view-transition-new(stage-chords), ::view-transition-new(stage-notes),
+::view-transition-new(stage-words), ::view-transition-new(stage-notes),
 ::view-transition-new(stage-where), ::view-transition-new(stage-patch) { animation: vt-rise 0.45s 0.12s cubic-bezier(0.16, 1, 0.3, 1) both; }
 ::view-transition-new(stage-stomps) { animation: none; }
 ::view-transition-old(stage-song), ::view-transition-new(stage-song) {
@@ -890,10 +890,6 @@ select { cursor: pointer; }
   .stage-stomps li, .stage-stomps li.on .stage-stomp-led { animation: none; }
 }
 
-.stage-chords { margin: 22px 0 0; display: grid; gap: 6px; }
-.stage-chords div { display: flex; align-items: baseline; gap: 16px; }
-.stage-chords dt { min-width: 92px; font: 400 10px/1 var(--engraved); letter-spacing: 0.24em; text-transform: uppercase; color: var(--vfd-dim); }
-.stage-chords dd { margin: 0; font: 400 clamp(28px, 2.6vw, 38px)/1.05 var(--readout); color: var(--vfd-bright); word-spacing: 0.35em; text-shadow: 0 0 8px var(--vfd-glow); }
 .stage-lyrics-wrap { margin-top: 28px; }
 .lyrics-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-bottom: 10px; }
 .stage .button.lyrics-tap {

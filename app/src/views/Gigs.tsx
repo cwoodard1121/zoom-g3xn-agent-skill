@@ -269,11 +269,11 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
             />
             <span className="song-tools">
               <button
-                className={`song-words${entry.lyrics || entry.chords ? " has" : ""}`}
+                className={`song-words${entry.lyrics ? " has" : ""}`}
                 onClick={() => setWords(words === i ? null : i)}
                 aria-expanded={words === i}
                 aria-label={`Lyrics for song ${i + 1}`}
-                title={entry.lyrics || entry.chords ? "Chords and lyrics" : "No chords or lyrics yet"}
+                title={entry.lyrics ? "Lyrics and cues" : "No lyrics yet"}
               >
                 Aa
               </button>
@@ -294,14 +294,6 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
                     {finding ? "Looking…" : entry.lyrics ? "Find them again" : "Find lyrics"}
                   </button>
                 </div>
-                <textarea
-                  className="song-chords"
-                  aria-label={`Chords for ${entry.song || `song ${i + 1}`}`}
-                  placeholder={"Chords, a section a line:\nVerse: Dm C Bb A\nChorus: F C Bb Dm"}
-                  rows={3}
-                  value={entry.chords ?? ""}
-                  onChange={(e) => setEntry(i, { ...entry, chords: e.target.value || undefined })}
-                />
                 <textarea
                   className="song-cues"
                   aria-label={`Cues for ${entry.song || `song ${i + 1}`}`}
