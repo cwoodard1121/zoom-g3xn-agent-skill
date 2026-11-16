@@ -15,7 +15,7 @@ const BLANK: Gig = { name: "New gig", start_slot: 100, patches: [] };
 const PICKUPS = ["Neck", "Neck + middle", "Middle", "Middle + bridge", "Bridge", "Rhythm", "Both", "Treble"];
 
 export function Gigs({ onStage }: { onStage: () => void }) {
-  const { gigs, names, act } = usePedal();
+  const { gigs, names, act, model, num } = usePedal();
   const [openId, setOpenId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Gig | null>(null);
 
@@ -43,7 +43,7 @@ export function Gigs({ onStage }: { onStage: () => void }) {
               <button className={`gig-item${g.id === openId ? " is-open" : ""}`} onClick={() => setOpenId(g.id)}>
                 <span className="gig-item-name">{g.name}</span>
                 <span className="gig-item-meta">
-                  {g.songs} song{g.songs === 1 ? "" : "s"} · from slot {g.start_slot}
+                  {g.songs} song{g.songs === 1 ? "" : "s"} · from slot {num(g.start_slot)}
                   {g.id === gigs.active && <span className="badge on-pedal">On the pedal</span>}
                 </span>
               </button>
@@ -51,7 +51,7 @@ export function Gigs({ onStage }: { onStage: () => void }) {
           ))}
         </ul>
         <div className="gig-new">
-          <button className="button primary" onClick={() => create({ ...BLANK, start_slot: firstEmpty(names) })}>New gig</button>
+          <button className="button primary" onClick={() => create({ ...BLANK, start_slot: firstEmpty(names, model.scratch_slot) })}>New gig</button>
           <ImportFromSlots onImport={create} />
         </div>
       </div>
@@ -74,7 +74,8 @@ export function Gigs({ onStage }: { onStage: () => void }) {
 }
 
 function ImportFromSlots({ onImport }: { onImport: (g: Gig) => void }) {
-  const { act } = usePedal();
+  const { act, model, num } = usePedal();
+  const offset = model.screen_offset;       // the fields take the numbers the pedal's screen shows
   const [open, setOpen] = useState(false);
   const [first, setFirst] = useState(1);
   const [last, setLast] = useState(10);
@@ -84,14 +85,14 @@ function ImportFromSlots({ onImport }: { onImport: (g: Gig) => void }) {
       className="import-slots"
       onSubmit={async (e) => {
         e.preventDefault();
-        const gig = await act(() => api.exportGig(first, last, `Slots ${first}-${last}`));
+        const gig = await act(() => api.exportGig(first, last, `Slots ${num(first)}-${num(last)}`));
         // Keep the tones but not their slot numbers, so the set can be loaded anywhere.
         if (gig) onImport({ ...gig, start_slot: first, patches: gig.patches.map(({ slot: _slot, ...entry }) => entry) });
         setOpen(false);
       }}
     >
-      <label>Slots <input type="number" min={1} max={150} value={first} onChange={(e) => setFirst(Number(e.target.value))} /></label>
-      <label>to <input type="number" min={1} max={150} value={last} onChange={(e) => setLast(Number(e.target.value))} /></label>
+      <label>Slots <input type="number" min={1 + offset} max={model.patches + offset} value={first + offset} onChange={(e) => setFirst(Number(e.target.value) - offset)} /></label>
+      <label>to <input type="number" min={1 + offset} max={model.patches + offset} value={last + offset} onChange={(e) => setLast(Number(e.target.value) - offset)} /></label>
       <button className="button primary" type="submit">Make gig</button>
       <button className="button" type="button" onClick={() => setOpen(false)}>Cancel</button>
     </form>
@@ -107,7 +108,8 @@ interface EditorProps {
 }
 
 function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
-  const { names, live, act, say, guitars } = usePedal();
+  const { names, live, act, say, guitars, model, num } = usePedal();
+  const offset = model.screen_offset;
   const [g, setG] = useState<Gig>(gig);
   const [dirty, setDirty] = useState(false);
   const [plan, setPlan] = useState<PlanStep[] | null>(null);
@@ -172,7 +174,7 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
         </label>
         <label className="field">
           <span>First slot</span>
-          <input type="number" min={1} max={149} value={g.start_slot} onChange={(e) => update({ ...g, start_slot: Number(e.target.value) })} />
+          <input type="number" min={1 + offset} max={model.patches - 1 + offset} value={g.start_slot + offset} onChange={(e) => update({ ...g, start_slot: Number(e.target.value) - offset })} />
         </label>
       </div>
 
@@ -213,7 +215,7 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
               {!entry.tone && entry.from_slot === undefined && <option value="">Pick a patch…</option>}
               {live && <option value="live">The tone playing now ({live.name})</option>}
               {slotOptions.map(([n, name]) => (
-                <option key={n} value={n}>Slot {n} · {name}</option>
+                <option key={n} value={n}>Slot {num(Number(n))} · {name}</option>
               ))}
             </select>
             <input
@@ -394,9 +396,9 @@ function GigEditor({ gig, active, onSaved, onDeleted, onStage }: EditorProps) {
 }
 
 /** The first Empty slot, where a new gig starts unless you pick another. */
-function firstEmpty(names: Record<number, string>): number {
-  const n = Object.entries(names).find(([slot, name]) => name === "Empty" && Number(slot) < 150);
-  return n ? Number(n[0]) : BLANK.start_slot;
+function firstEmpty(names: Record<number, string>, scratch: number): number {
+  const n = Object.entries(names).find(([slot, name]) => name === "Empty" && Number(slot) !== scratch);
+  return n ? Number(n[0]) : Math.min(BLANK.start_slot, Math.max(1, Object.keys(names).length - 1));
 }
 
 function stripTone(t: { name: string; volume: number; dsp_percent: number; chain: { effect: string; on: boolean; knobs: Record<string, number> }[] }) {

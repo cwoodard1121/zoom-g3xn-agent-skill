@@ -4,10 +4,15 @@
 //
 //     npm start            the real pedal
 //     npm run sim          a virtual pedal, nothing plugged in (its own ports, nothing saved)
-//     npm run build        g3xn.exe in out/g3xn-win32-x64/
+//     npm run build        g3xn.exe in out/g3xn-win32-x64/, on this repo's daemon
+//     npm run release      a zip that runs anywhere: the daemon is frozen into the app
 //
-// The daemon is the repo's own (.venv/Scripts/g3xn-daemon.exe): the repo is G3XN_REPO, else the
-// one this was built from (build-config.json), else the folder above this one.
+//     g3xn.exe --bass      start on the B1X FOUR bass pedal (--guitar: the G3Xn). Without one the
+//                          app starts on the pedal it was on last; the switch is in its status bar.
+//
+// The daemon is the one packed into the app (resources/daemon), else the repo's own
+// (.venv/Scripts/g3xn-daemon.exe): the repo is G3XN_REPO, else the one this was built from
+// (build-config.json), else the folder above this one.
 const { app, BrowserWindow, session, shell } = require("electron");
 const { spawn, execFile } = require("node:child_process");
 const fs = require("node:fs");
@@ -16,6 +21,8 @@ const os = require("node:os");
 const path = require("node:path");
 
 const SIM = process.argv.includes("--sim");
+const PEDAL = process.argv.includes("--bass") ? "b1xfour" : process.argv.includes("--guitar") ? "g3xn" : null;
+const EXE = process.platform === "win32" ? "g3xn-daemon.exe" : "g3xn-daemon";
 const HOME = path.join(os.homedir(), ".g3xn");
 const LOG = path.join(HOME, SIM ? "desktop-sim.log" : "desktop.log");
 const NIGHT = "#050403";
@@ -61,11 +68,20 @@ const freePort = () =>
 
 let daemon = null; // the daemon this window started, if it did
 
-async function startDaemon() {
-  const exe = path.join(repo(), ".venv", "Scripts", process.platform === "win32" ? "g3xn-daemon.exe" : "g3xn-daemon");
+/** The daemon to start, and the folder to start it in. */
+function daemonProgram() {
+  const packed = path.join(process.resourcesPath || "", "daemon", EXE);
+  if (!process.env.G3XN_REPO && fs.existsSync(packed)) return { exe: packed, cwd: path.dirname(packed) };
+  const exe = path.join(repo(), ".venv", process.platform === "win32" ? "Scripts" : "bin", EXE);
   if (!fs.existsSync(exe)) throw new Error(`No g3xn daemon at ${exe}. Set G3XN_REPO to the g3xn folder.`);
+  return { exe, cwd: repo() };
+}
+
+async function startDaemon() {
+  const { exe, cwd } = daemonProgram();
   let port = 8370;
   const args = ["--remote"];
+  if (PEDAL) args.push("--pedal", PEDAL);
   if (SIM) {
     port = await freePort();
     args.push("--sim", "--port", String(port), "--remote-port", String(await freePort()));
@@ -73,7 +89,7 @@ async function startDaemon() {
   fs.mkdirSync(HOME, { recursive: true });
   const log = fs.openSync(LOG, "a");
   fs.writeSync(log, `\n--- ${new Date().toISOString()} g3xn-daemon ${args.join(" ")}\n`);
-  daemon = spawn(exe, args, { cwd: repo(), windowsHide: true, stdio: ["ignore", log, log] });
+  daemon = spawn(exe, args, { cwd, windowsHide: true, stdio: ["ignore", log, log] });
   daemon.on("exit", () => (daemon = null));
   const url = `http://127.0.0.1:${port}`;
   for (let waited = 0; waited < 30000; waited += 250) {
@@ -144,8 +160,19 @@ async function open() {
   try {
     url = (!SIM && (await runningDaemon())) || (await startDaemon());
     if (!daemon) {
-      // Someone else's daemon (g3xn-daemon in a terminal): turn its phone remote on too.
-      await fetch(url + "/api/remote", { method: "POST", headers: { "Content-Type": "application/json" }, body: '{"on":true}' }).catch(() => {});
+      // Someone else's daemon (g3xn-daemon in a terminal): turn its phone remote on too,
+      // and put it on the pedal this window was asked for.
+      const post = (path, body) =>
+        fetch(url + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).catch(() => {});
+      await post("/api/remote", { on: true });
+      if (PEDAL) {
+        await post("/api/mode", { pedal: PEDAL });
+        for (let waited = 0; waited < 15000; waited += 250) {
+          await new Promise((r) => setTimeout(r, 250));
+          const now = await fetch(url + "/api/mode", { signal: AbortSignal.timeout(1500) }).then((r) => r.json(), () => null);
+          if (now && now.mode === PEDAL) break;
+        }
+      }
     }
   } catch (err) {
     win.loadURL(page("g3xn couldn't start", String(err.message || err)));

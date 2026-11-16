@@ -416,10 +416,11 @@ class TalkRequest(BaseModel):
 
 def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, gigs_folder=None,
                remote=None, remote_on=False, footswitches=None, chat=None, talk=None, backups_folder=None,
-               tracks_folder=None, guitars_file=None, model=None, switch=None):
+               tracks_folder=None, guitars_file=None, model=None, switch=None, keep_chat=False):
     """announce: write ~/.g3xn/daemon.json so g3xn-mcp finds this daemon.
     model: the pedal this app drives (default: the mode's). One app drives one pedal;
     switch(key): restart on the other pedal (see ModeServer), None = this daemon can't.
+    keep_chat: the chat outlives this app (it carries on across a pedal switch): don't close it.
     history_file: where the time machine keeps its versions (None = memory only).
     gigs_folder: where saved gigs live (None = a temporary folder).
     remote: the phone remote (a remote.Remote; default: one that forgets phones on exit);
@@ -466,13 +467,15 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
             if announce:
                 _remove_discovery()
             await asyncio.to_thread(remote.stop)
-            await asyncio.to_thread(chat.close)
+            if not keep_chat:
+                await asyncio.to_thread(chat.close)
             await asyncio.to_thread(footswitches.stop)
             await asyncio.to_thread(worker.stop)
 
     app = FastAPI(title="g3xn", version="0.1.0", lifespan=lifespan,
                   description="Control a Zoom G3n / G3Xn: patches, live tone editing, gigs and the tuner.")
     app.state.worker = worker
+    app.state.emit = hub.emit
     loaded = [g for g in gigs.list() if g.get("loaded")]
     state = {"active_gig": max(loaded, key=lambda g: g["loaded"]["time"])["id"] if loaded else None,
              "locked_gig": None}
@@ -1297,13 +1300,18 @@ class ModeServer:
             self.server.should_exit = True
 
     def run(self):
-        while self._next and not self._stopped:
-            self.key, self._next = self._next, None
-            models.pin(self.key)
-            app = self.build(models.get(self.key), self.switch)
-            self.server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=self.port, log_level="warning",
-                                                        timeout_graceful_shutdown=5))
-            self.server.run()
+        try:
+            while self._next and not self._stopped:
+                self.key, self._next = self._next, None
+                models.pin(self.key)
+                app = self.build(models.get(self.key), self.switch)
+                self.server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=self.port,
+                                                            log_level="warning", timeout_graceful_shutdown=5))
+                self.server.run()
+        finally:
+            close = getattr(self.build, "close", None)      # what lives across switches (the chat)
+            if close:
+                close()
 
 
 def start_modes_in_thread(build, port, first):
@@ -1333,19 +1341,32 @@ def app_builder(args, port=None):
     remote = Remote(REMOTE_FILE if real else None, port=getattr(args, "remote_port", REMOTE_PORT), use_tailscale=real)
     footswitches = Footswitches(MIDI_FILE if real else None)
     tracks = TRACKS_FOLDER if real else tempfile.mkdtemp(prefix="g3xn-tracks-")
-    was = {"remote_on": getattr(args, "remote", False)}
+    was = {"remote_on": getattr(args, "remote", False), "emit": None}
+
+    def emit(event):                                # to whichever app is up now
+        with contextlib.suppress(RuntimeError):     # between two apps: nobody to tell
+            if was["emit"]:
+                was["emit"](event)
+    # One conversation with Claude across pedal switches: asking Claude for the bass pedal mustn't
+    # stop Claude mid-answer. It starts again (same conversation) with the new pedal's instructions.
+    chat = Chat("http://127.0.0.1:%d" % port, emit)
 
     def build(model, switch):
         def change(key):
             was["remote_on"] = remote.on            # the phone remote comes back on if it was
             if real:
                 models.use(key)                     # Claude and the command line follow the app
+            chat.refresh()
             switch(key)
-        return create_app(make(model), port, announce=real, history_file=model.history_file if real else None,
-                          gigs_folder=model.gigs_folder if real else None,
-                          backups_folder=service.backup_root_of(model) if real else None, tracks_folder=tracks,
-                          guitars_file=model.guitars_file if real else None, remote=remote,
-                          remote_on=was["remote_on"], footswitches=footswitches, model=model, switch=change)
+        app = create_app(make(model), port, announce=real, history_file=model.history_file if real else None,
+                         gigs_folder=model.gigs_folder if real else None,
+                         backups_folder=service.backup_root_of(model) if real else None, tracks_folder=tracks,
+                         guitars_file=model.guitars_file if real else None, remote=remote,
+                         remote_on=was["remote_on"], footswitches=footswitches, chat=chat, keep_chat=True,
+                         model=model, switch=change)
+        was["emit"] = app.state.emit
+        return app
+    build.close = chat.close
     return build
 
 

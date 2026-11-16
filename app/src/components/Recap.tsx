@@ -14,7 +14,7 @@ export interface Played {
 }
 
 export function Recap({ gig, played, onClose }: { gig: Gig; played: Played[]; onClose: () => void }) {
-  const { act } = usePedal();
+  const { act, num } = usePedal();
   const [changed, setChanged] = useState<GigChange[] | null>(null);
   const [putting, setPutting] = useState(false);
 
@@ -104,7 +104,7 @@ export function Recap({ gig, played, onClose }: { gig: Gig; played: Played[]; on
             <>
               <ul>
                 {changed.map((c) => (
-                  <li key={c.slot}><b>{c.song}</b> <span className="dim">slot {c.slot}</span> {c.change ?? `now ${c.now}`}</li>
+                  <li key={c.slot}><b>{c.song}</b> <span className="dim">slot {num(c.slot)}</span> {c.change ?? `now ${c.now}`}</li>
                 ))}
               </ul>
               <button className="button danger" disabled={putting} onClick={putBack}>

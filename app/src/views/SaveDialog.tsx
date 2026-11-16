@@ -8,8 +8,9 @@ import type { CopyOf } from "../pedal";
 
 /** over: the stored patch this tone is a copy of, when the user asked to save over it. */
 export function SaveDialog({ tone, over, onClose }: { tone: Tone; over?: CopyOf; onClose: () => void }) {
-  const { names, status, act, setCopyOf, guitars, setGuitar } = usePedal();
-  const scratch = status?.scratch_slot ?? 150;
+  const { names, status, act, setCopyOf, guitars, setGuitar, model, num } = usePedal();
+  const scratch = status?.scratch_slot ?? model.scratch_slot;
+  const offset = model.screen_offset;       // the field takes the number the pedal's screen shows
   const firstEmpty = Object.entries(names).find(([n, name]) => name === "Empty" && Number(n) !== scratch)?.[0];
   const [slot, setSlot] = useState(over?.slot ?? (firstEmpty ? Number(firstEmpty) : 1));
   const [name, setName] = useState(tone.name);
@@ -22,12 +23,12 @@ export function SaveDialog({ tone, over, onClose }: { tone: Tone; over?: CopyOf;
 
   const holds = names[slot];
   const taken = holds !== undefined && holds !== "Empty";
-  const valid = slot >= 1 && slot <= 150 && slot !== scratch && name.trim().length > 0;
+  const valid = slot >= 1 && slot <= model.patches && slot !== scratch && name.trim().length > 0;
 
   const save = async () => {
     const done = await act(
       () => api.save(slot, name.trim(), taken && replace),
-      (r) => `Kept ${r.saved} in slot ${r.slot}${r.kept ? ". The old patch is in a file, just in case" : ""}`,
+      (r) => `Kept ${r.saved} in slot ${num(r.slot)}${r.kept ? ". The old patch is in a file, just in case" : ""}`,
     );
     if (done) {
       const scratchGuitar = scratch ? guitars.slots[scratch] : undefined;
@@ -49,18 +50,18 @@ export function SaveDialog({ tone, over, onClose }: { tone: Tone; over?: CopyOf;
           <span>Slot</span>
           <input
             type="number"
-            min={1}
-            max={150}
-            value={slot}
-            onChange={(e) => { setSlot(Number(e.target.value)); setReplace(false); }}
+            min={1 + offset}
+            max={model.patches + offset}
+            value={slot + offset}
+            onChange={(e) => { setSlot(Number(e.target.value) - offset); setReplace(false); }}
           />
         </label>
         <p className="field-note">
           {slot === scratch
-            ? `Slot ${scratch} is where tones are tried out. Pick another slot.`
+            ? `Slot ${num(scratch)} is where tones are tried out. Pick another slot.`
             : taken
-              ? `Slot ${slot} holds ${holds}.`
-              : `Slot ${slot} is empty.`}
+              ? `Slot ${num(slot)} holds ${holds}.`
+              : `Slot ${num(slot)} is empty.`}
         </p>
         {taken && slot !== scratch && (
           <label className="check">
@@ -71,7 +72,7 @@ export function SaveDialog({ tone, over, onClose }: { tone: Tone; over?: CopyOf;
         <div className="dialog-actions">
           <button type="button" className="button" onClick={onClose}>Cancel</button>
           <button type="submit" className="button primary" disabled={!valid || (taken && !replace)}>
-            Keep in slot {slot}
+            Keep in slot {num(slot)}
           </button>
         </div>
       </form>

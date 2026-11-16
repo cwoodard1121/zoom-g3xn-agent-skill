@@ -1,4 +1,4 @@
-// Every slot on the pedal, in its banks of three (the three footswitches).
+// Every slot on the pedal, in its banks (three on the G3Xn, for its three footswitches; ten on the B1X FOUR).
 import { useEffect, useMemo, useState } from "react";
 import { api, effectInfo } from "../api";
 import type { Tone } from "../api";
@@ -7,10 +7,9 @@ import { GuitarField, GuitarTag } from "../components/Guitar";
 import { Icon } from "../components/Icon";
 import { usePedal } from "../pedal";
 
-const BANK_SIZE = 3;
-
 export function Library({ onTry }: { onTry: () => void }) {
-  const { names, status, act, setCopyOf, guitars, setGuitar } = usePedal();
+  const { names, status, act, setCopyOf, guitars, setGuitar, model, num } = usePedal();
+  const BANK_SIZE = model.bank_size;
   const [filter, setFilter] = useState("");
   const [picked, setPicked] = useState<number | null>(null);
   const [backups, setBackups] = useState(false);
@@ -22,10 +21,10 @@ export function Library({ onTry }: { onTry: () => void }) {
     const out: number[][] = [];
     for (let i = 0; i < slots.length; i += BANK_SIZE) {
       const bank = slots.slice(i, i + BANK_SIZE);
-      if (!q || bank.some((n) => names[n].toLowerCase().includes(q) || String(n) === q || guitars.slots[n]?.toLowerCase().includes(q))) out.push(bank);
+      if (!q || bank.some((n) => names[n].toLowerCase().includes(q) || String(num(n)) === q || guitars.slots[n]?.toLowerCase().includes(q))) out.push(bank);
     }
     return out;
-  }, [slots, names, filter, guitars]);
+  }, [slots, names, filter, guitars, BANK_SIZE, num]);
 
   if (slots.length === 0) {
     return (
@@ -70,7 +69,7 @@ export function Library({ onTry }: { onTry: () => void }) {
                   onClick={() => { setPicked(n); setBackups(false); }}
                   aria-current={n === status?.current_slot ? "true" : undefined}
                 >
-                  <span className="slot-number">{n}</span>
+                  <span className="slot-number">{num(n)}</span>
                   <span className="slot-name">{n === status?.scratch_slot && names[n] === "Empty" ? "scratch" : names[n]}</span>
                   {names[n] !== "Empty" && <GuitarTag name={guitars.slots[n]} />}
                   {n === status?.current_slot && <span className="led on" aria-label="playing now" />}
@@ -89,7 +88,7 @@ export function Library({ onTry }: { onTry: () => void }) {
             isCurrent={picked === status?.current_slot}
             onSelect={() => act(() => api.select(picked), (r) => `Switched the pedal to ${r.name}`)}
             onTry={async () => {
-              const ok = await act(() => api.audition({ slot: picked }), () => `Copied ${names[picked]} to slot ${status?.scratch_slot} to tweak`);
+              const ok = await act(() => api.audition({ slot: picked }), () => `Copied ${names[picked]} to slot ${num(status?.scratch_slot ?? model.scratch_slot)} to tweak`);
               if (ok) {
                 const scratch = status?.scratch_slot;
                 if (scratch && (guitars.slots[picked] ?? "") !== (guitars.slots[scratch] ?? "")) setGuitar(scratch, guitars.slots[picked] ?? "");
@@ -115,6 +114,7 @@ interface DetailProps {
 }
 
 function PatchDetail({ slot, name, isCurrent, onSelect, onTry, onClose }: DetailProps) {
+  const { num } = usePedal();
   const [tone, setTone] = useState<Tone | null>(null);
   const [groups, setGroups] = useState<Record<string, string>>({});
   const [error, setError] = useState("");
@@ -133,7 +133,7 @@ function PatchDetail({ slot, name, isCurrent, onSelect, onTry, onClose }: Detail
     <aside className="detail" aria-labelledby="detail-title">
       <button className="detail-close" onClick={onClose} aria-label="Close"><Icon name="close" size={20} /></button>
       <div className="detail-head">
-        <span className="detail-slot vfd">{String(slot).padStart(3, "0")}</span>
+        <span className="detail-slot vfd">{String(num(slot)).padStart(3, "0")}</span>
         <h2 id="detail-title" className="detail-name">{name}</h2>
       </div>
       {name === "Empty" ? (

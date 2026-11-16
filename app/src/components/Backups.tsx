@@ -10,7 +10,7 @@ const when = (t: number) =>
   new Date(t * 1000).toLocaleString(undefined, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 
 export function Backups({ onClose }: { onClose: () => void }) {
-  const { act, names } = usePedal();
+  const { act, names, num } = usePedal();
   const [list, setList] = useState<Backup[] | null>(null);
   const [error, setError] = useState("");
   const [open, setOpen] = useState<string | null>(null);
@@ -22,9 +22,9 @@ export function Backups({ onClose }: { onClose: () => void }) {
 
   const putBack = async (from: Backup, slot: number, patch: string | null) => {
     const ok = window.confirm(
-      `Put slot ${slot} back to “${patch ?? "Empty"}” from ${when(from.time)}?\n\nIt holds “${names[slot] ?? "?"}” now; that's saved first.`,
+      `Put slot ${num(slot)} back to “${patch ?? "Empty"}” from ${when(from.time)}?\n\nIt holds “${names[slot] ?? "?"}” now; that's saved first.`,
     );
-    if (ok && (await act(() => api.restoreSlot(from.name, slot), (r) => `Slot ${slot} is ${r.patch} again`))) load();
+    if (ok && (await act(() => api.restoreSlot(from.name, slot), (r) => `Slot ${num(slot)} is ${r.patch} again`))) load();
   };
 
   return (
@@ -52,7 +52,7 @@ export function Backups({ onClose }: { onClose: () => void }) {
                 <ul className="backup-changes">
                   {b.changed.map((c) => (
                     <li key={c.slot}>
-                      <span className="backup-slot vfd">{String(c.slot).padStart(3, "0")}</span>
+                      <span className="backup-slot vfd">{String(num(c.slot)).padStart(3, "0")}</span>
                       <span className="backup-names">
                         {c.was ?? "Empty"} <span aria-hidden="true">→</span><span className="visually-hidden"> became </span> {c.now ?? "Empty"}
                       </span>

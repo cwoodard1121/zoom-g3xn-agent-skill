@@ -20,7 +20,30 @@ export interface Tone {
 
 export type Connection = "connecting" | "connected" | "disconnected" | "released";
 
+/** The pedal the app is on: its limits, so no screen assumes the G3Xn's numbers. */
+export interface PedalModel {
+  key: string; // "g3xn" | "b1xfour"
+  name: string; // "G3Xn" | "B1X FOUR"
+  kind: string; // "guitar" | "bass"
+  patches: number;
+  bank_size: number;
+  scratch_slot: number;
+  /** "positions": `max` chain positions, a big effect takes 2. "effects": `max` effects, whatever their size. */
+  chain: { rule: "positions" | "effects"; max: number };
+  /** The pedal's own screen shows slot n as n + this (the B1X FOUR counts from 10). */
+  screen_offset: number;
+}
+
+export interface PedalChoice {
+  key: string;
+  name: string;
+  kind: string;
+}
+
 export interface Status {
+  /** Older daemons don't say: they drive the G3Xn. */
+  model?: PedalModel;
+  modes?: PedalChoice[];
   connection: Connection;
   problem: string;
   doing: string | null;
@@ -285,6 +308,8 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
 
 export const api = {
   status: () => call<Status>("GET", "/api/status"),
+  /** Switch the app to the other pedal; the daemon restarts its pedal side on the same address. */
+  setMode: (pedal: string) => call<{ mode: string; name: string; restarting: boolean }>("POST", "/api/mode", { pedal }),
   live: () => call<Tone>("GET", "/api/live"),
   patch: (slot: number) => call<Tone>("GET", `/api/patches/${slot}`),
   select: (slot: number) => call<{ slot: number; name: string }>("POST", `/api/patches/${slot}/select`),

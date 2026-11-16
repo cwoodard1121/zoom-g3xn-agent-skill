@@ -74,6 +74,7 @@ class Chat:
         self._proc = None
         self._lock = threading.Lock()
         self._reply = None           # the Claude message being written
+        self._stale = False          # start Claude afresh before the next message (see refresh)
 
     # --- the conversation ---
 
@@ -136,6 +137,12 @@ class Chat:
         return {"busy": self.busy, "session": self.session, "messages": self.messages,
                 "available": bool(self._command_base())}
 
+    def refresh(self):
+        """Start Claude again (same conversation, --resume) before the next message: the app moved
+        to the other pedal, and Claude's instructions name the pedal. A reply being written finishes."""
+        with self._lock:
+            self._stale = True
+
     def close(self):
         with self._lock:
             self._close()
@@ -168,7 +175,9 @@ class Chat:
         config = os.path.join(self._folder, "mcp.json")
         prompt = os.path.join(self._folder, "prompt.md")
         with open(config, "w", encoding="utf-8") as f:
-            json.dump({"mcpServers": {"g3xn": {"command": sys.executable, "args": ["-m", "g3xn.mcp_server"],
+            # the frozen app (the release build) is one program: `g3xn-daemon mcp` is its MCP server
+            args = ["mcp"] if getattr(sys, "frozen", False) else ["-m", "g3xn.mcp_server"]
+            json.dump({"mcpServers": {"g3xn": {"command": sys.executable, "args": args,
                                                "env": {"G3XN_DAEMON": self.daemon_url}}}}, f)
         with open(prompt, "w", encoding="utf-8") as f:
             pedal = models.active()         # the app's own pedal: its daemon pins it
@@ -181,6 +190,9 @@ class Chat:
         return env
 
     def _process(self):
+        if self._stale:
+            self._close()
+            self._stale = False
         if self._proc and self._proc.poll() is None:
             return self._proc
         cmd = self._base_command()
