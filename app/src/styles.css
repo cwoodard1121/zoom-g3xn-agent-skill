@@ -729,6 +729,8 @@ select { cursor: pointer; }
 .github-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .github-token { display: grid; gap: 8px; width: 100%; }
 .github-token input { width: 100%; box-sizing: border-box; }
+.github-gigs .link-button { color: var(--ink-dim); padding-left: 0; }
+.github-gigs .link-button:hover:not(:disabled) { color: var(--ink); }
 .gig-empty { margin-top: 70px; }
 
 .gig-editor {
