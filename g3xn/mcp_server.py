@@ -295,6 +295,28 @@ def _saved(gig_id):
 
 
 @server.tool()
+def gigs_on_github(action: str = "status") -> dict:
+    """Move the app's gigs between computers through the user's GitHub (a private repo,
+    <login>/g3xn-gigs). action: "status" (signed in? which repo? last sync), "send" (every gig here
+    goes up; this computer's version wins), "get" (every gig there comes down; GitHub's wins). Signing
+    in is done in the app's Gigs view, or with `gh auth login`."""
+    if action not in ("status", "send", "get"):
+        return {"error": "action is status, send or get"}
+
+    def here(_):
+        from .gig import GigLibrary
+        from .gigsync import GigSync
+        sync = GigSync({m.key: GigLibrary(GIGS_FOLDER if m.key == "g3xn" else m.gigs_folder)
+                        for m in models.MODELS.values()})
+        return sync.status() if action == "status" else getattr(sync, action)()
+    try:
+        return _pedal(here, "GET" if action == "status" else "POST",
+                      "/api/github" if action == "status" else "/api/github/" + action, needs_pedal=False)
+    except Exception as err:            # SyncError when the app isn't running
+        return {"error": str(err)}
+
+
+@server.tool()
 def saved_gigs() -> dict:
     """The gigs (setlists) saved in the g3xn app: id, name, songs, first slot, when each was last
     loaded, which one is on the pedal (active) and which is locked for a show."""

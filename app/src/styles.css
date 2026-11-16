@@ -721,6 +721,14 @@ select { cursor: pointer; }
 .gig-new { display: flex; flex-wrap: wrap; gap: 8px; }
 .import-slots { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; width: 100%; }
 .import-slots input { width: 64px; }
+.github-gigs { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--edge); display: grid; gap: 10px; justify-items: start; }
+.github-title { margin: 0; font: 400 11px/1 var(--engraved); letter-spacing: 0.24em; text-transform: uppercase; color: var(--ink-dim); }
+.github-note { margin: 0; color: var(--ink-dim); font-size: 13px; overflow-wrap: anywhere; }
+.github-note.error { color: var(--led); }
+.github-code { font: 400 22px/1 var(--readout); letter-spacing: 0.08em; color: var(--ink); }
+.github-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.github-token { display: grid; gap: 8px; width: 100%; }
+.github-token input { width: 100%; box-sizing: border-box; }
 .gig-empty { margin-top: 70px; }
 
 .gig-editor {

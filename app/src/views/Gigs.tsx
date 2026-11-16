@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
 import type { Gig, GigEntry, PlanStep } from "../api";
+import { GitHubGigs } from "../components/GitHubGigs";
 import { Icon } from "../components/Icon";
 import { retunes, shapeSet } from "../setshape";
 import type { Shape } from "../setshape";
@@ -54,6 +55,7 @@ export function Gigs({ onStage }: { onStage: () => void }) {
           <button className="button primary" onClick={() => create({ ...BLANK, start_slot: firstEmpty(names, model.scratch_slot) })}>New gig</button>
           <ImportFromSlots onImport={create} />
         </div>
+        <GitHubGigs />
       </div>
       {draft ? (
         <GigEditor

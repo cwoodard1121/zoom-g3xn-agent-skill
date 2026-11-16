@@ -44,6 +44,7 @@ from . import protocol as P
 from . import service
 from . import gig as gig_files
 from .gig import GigLibrary, shown as shown_gig
+from .gigsync import GigSync, SyncError
 from .chat import Chat, ChatError
 from .footswitch import Footswitches
 from .backups import Backups, write as write_backup
@@ -360,6 +361,11 @@ class GuitarRequest(BaseModel):
     guitar: Optional[str] = None  # "Strat", "Les Paul"...; empty or null forgets it
 
 
+class GitHubRequest(BaseModel):
+    token: str | None = None          # sign in with a token pasted in
+    repo: str | None = None           # use another repo ("" = the default, <login>/g3xn-gigs)
+
+
 class RemoteRequest(BaseModel):
     on: bool = True
 
@@ -416,11 +422,12 @@ class TalkRequest(BaseModel):
 
 def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, gigs_folder=None,
                remote=None, remote_on=False, footswitches=None, chat=None, talk=None, backups_folder=None,
-               tracks_folder=None, guitars_file=None, model=None, switch=None, keep_chat=False):
+               tracks_folder=None, guitars_file=None, model=None, switch=None, keep_chat=False, gig_sync=None):
     """announce: write ~/.g3xn/daemon.json so g3xn-mcp finds this daemon.
     model: the pedal this app drives (default: the mode's). One app drives one pedal;
     switch(key): restart on the other pedal (see ModeServer), None = this daemon can't.
     keep_chat: the chat outlives this app (it carries on across a pedal switch): don't close it.
+    gig_sync: gigs on GitHub (a gigsync.GigSync over every pedal's gigs; None = off, as on a virtual pedal).
     history_file: where the time machine keeps its versions (None = memory only).
     gigs_folder: where saved gigs live (None = a temporary folder).
     remote: the phone remote (a remote.Remote; default: one that forgets phones on exit);
@@ -510,6 +517,10 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
     @app.exception_handler(PedalError)
     async def pedal_error(request, err):
         return JSONResponse({"error": str(err)}, status_code=503 if isinstance(err, NotConnected) else 409)
+
+    @app.exception_handler(SyncError)
+    async def sync_error(request, err):
+        return JSONResponse({"error": str(err)}, status_code=400)
 
     @app.exception_handler(PermissionError)
     async def refused(request, err):
@@ -952,6 +963,53 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
         except OSError:
             raise KeyError("no saved gig %r" % gig_id)
 
+    # --- gigs on GitHub ---
+
+    def need_sync():
+        if gig_sync is None:
+            raise ValueError("gigs on GitHub are off for a virtual pedal")
+        return gig_sync
+
+    @app.get("/api/github", tags=["gigs"])
+    async def github_status():
+        """Gigs on GitHub: signed in or not, as whom, the repo, and the last send or get."""
+        if gig_sync is None:
+            return {"available": False}
+        return dict(await asyncio.to_thread(gig_sync.status), available=True)
+
+    @app.post("/api/github/sign-in", tags=["gigs"])
+    async def github_sign_in():
+        """Start signing in to GitHub: type the code it returns at the address it returns."""
+        return await asyncio.to_thread(need_sync().sign_in)
+
+    @app.put("/api/github", tags=["gigs"])
+    async def github_settings(req: GitHubRequest):
+        """Sign in with a token (it needs the "repo" scope), or use another repo."""
+        sync = need_sync()
+        if req.token is not None:
+            await asyncio.to_thread(sync.use_token, req.token)
+        if req.repo is not None:
+            await asyncio.to_thread(sync.set_repo, req.repo)
+        return await asyncio.to_thread(sync.status)
+
+    @app.post("/api/github/sign-out", tags=["gigs"])
+    async def github_sign_out():
+        """Forget the GitHub sign-in g3xn kept."""
+        return await asyncio.to_thread(need_sync().sign_out)
+
+    @app.post("/api/github/send", tags=["gigs"])
+    async def github_send():
+        """Send every gig on this computer (both pedals') to the GitHub repo. This computer's version wins."""
+        return await asyncio.to_thread(need_sync().send)
+
+    @app.post("/api/github/get", tags=["gigs"])
+    async def github_get():
+        """Get every gig from the GitHub repo onto this computer. GitHub's version wins; the one it
+        replaces goes to the gigs' "deleted" folder."""
+        result = await asyncio.to_thread(need_sync().get)
+        hub.emit(gigs_event())
+        return result
+
     # --- the phone remote ---
 
     @app.get("/api/remote", tags=["remote"])
@@ -1252,12 +1310,12 @@ def create_app(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, 
 
 def start_in_thread(make_pedal, port=DEFAULT_PORT, announce=True, history_file=None, gigs_folder=None,
                     remote=None, footswitches=None, chat=None, talk=None, backups_folder=None, tracks_folder=None,
-                    guitars_file=None):
+                    guitars_file=None, gig_sync=None):
     """Run the daemon on a background thread (for the desktop window and tests).
     Returns (url, stop) once it is serving."""
     app = create_app(make_pedal, port, announce, history_file, gigs_folder, remote, footswitches=footswitches,
                      chat=chat, talk=talk, backups_folder=backups_folder, tracks_folder=tracks_folder,
-                     guitars_file=guitars_file)
+                     guitars_file=guitars_file, gig_sync=gig_sync)
     server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning"))
     thread = threading.Thread(target=server.run, name="g3xn-daemon", daemon=True)
     thread.start()
@@ -1342,6 +1400,7 @@ def app_builder(args, port=None):
     footswitches = Footswitches(MIDI_FILE if real else None)
     tracks = TRACKS_FOLDER if real else tempfile.mkdtemp(prefix="g3xn-tracks-")
     was = {"remote_on": getattr(args, "remote", False), "emit": None}
+    sync = GigSync({m.key: GigLibrary(m.gigs_folder) for m in models.MODELS.values()}) if real else None
 
     def emit(event):                                # to whichever app is up now
         with contextlib.suppress(RuntimeError):     # between two apps: nobody to tell
@@ -1363,7 +1422,7 @@ def app_builder(args, port=None):
                          backups_folder=service.backup_root_of(model) if real else None, tracks_folder=tracks,
                          guitars_file=model.guitars_file if real else None, remote=remote,
                          remote_on=was["remote_on"], footswitches=footswitches, chat=chat, keep_chat=True,
-                         model=model, switch=change)
+                         model=model, switch=change, gig_sync=sync)
         was["emit"] = app.state.emit
         return app
     build.close = chat.close

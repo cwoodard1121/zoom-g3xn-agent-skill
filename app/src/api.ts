@@ -40,6 +40,30 @@ export interface PedalChoice {
   kind: string;
 }
 
+export interface SyncResult {
+  action: "send" | "get";
+  repo: string;
+  sent?: string[];
+  got?: string[];
+  deleted: string[];
+  unchanged: number;
+  time: number;
+}
+
+/** Gigs on GitHub (GET /api/github). */
+export interface GitHubStatus {
+  available: boolean; // false on a virtual pedal
+  signed_in: boolean;
+  via: "app" | "gh" | null; // g3xn's own sign-in, or the GitHub CLI's
+  login: string | null;
+  repo: string | null;
+  can_sign_in: boolean; // "Sign in with GitHub" works (the app has a GitHub client id)
+  token_page: string;
+  signing_in: { code: string; url: string } | null;
+  problem: string;
+  last: SyncResult | null;
+}
+
 export interface Status {
   /** Older daemons don't say: they drive the G3Xn. */
   model?: PedalModel;
@@ -308,6 +332,12 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
 export const api = {
   status: () => call<Status>("GET", "/api/status"),
   /** Switch the app to the other pedal; the daemon restarts its pedal side on the same address. */
+  github: () => call<GitHubStatus>("GET", "/api/github"),
+  githubSignIn: () => call<{ code: string; url: string }>("POST", "/api/github/sign-in"),
+  githubToken: (token: string) => call<GitHubStatus>("PUT", "/api/github", { token }),
+  githubSignOut: () => call<GitHubStatus>("POST", "/api/github/sign-out"),
+  githubSend: () => call<SyncResult>("POST", "/api/github/send"),
+  githubGet: () => call<SyncResult>("POST", "/api/github/get"),
   setMode: (pedal: string) => call<{ mode: string; name: string; restarting: boolean }>("POST", "/api/mode", { pedal }),
   live: () => call<Tone>("GET", "/api/live"),
   patch: (slot: number) => call<Tone>("GET", `/api/patches/${slot}`),
