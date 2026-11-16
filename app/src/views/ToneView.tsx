@@ -9,8 +9,6 @@ import { EffectBrowser } from "../components/EffectBrowser";
 import { HistoryPanel } from "../components/HistoryPanel";
 import { Icon } from "../components/Icon";
 import { Knob } from "../components/Knob";
-import { Macros } from "../components/Macros";
-import { GuitarField } from "../components/Guitar";
 import { RackUnit } from "../components/RackUnit";
 import { usePedal } from "../pedal";
 import { SaveDialog } from "./SaveDialog";
@@ -25,8 +23,8 @@ export function ToneView() {
   const { live, status, onScratch, act, setLive, refreshLive, history, copyOf, setCopyOf, model, num } = pedal;
   const infos = useEffectInfos(live);
   const copyFirst = useCopyFirst();
-  const { draft, queue, queueMany } = useTweaks(setLive, refreshLive, pedal.say, copyFirst);
-  const [saving, setSaving] = useState<"new" | "over" | null>(null);
+  const { draft, queue } = useTweaks(setLive, refreshLive, pedal.say, copyFirst);
+  const [saving, setSaving] = useState(false);
   const [panel, setPanel] = useState<Panel>(null);
   const [drag, setDrag] = useState<{ from: number; over: number | null } | null>(null);
   const [opened, setOpened] = useState<number | null>(0); // the unit whose knobs are out
@@ -90,11 +88,13 @@ export function ToneView() {
                 ? `Copy of ${copyOf.name} on slot ${num(slot)} · slot ${num(copyOf.slot)} is untouched`
                 : `Trying out · slot ${num(slot)}`}
           </p>
-          <GuitarField slot={slot} className="tone-guitar" />
-          <div className="tone-meters">
-            <Meter label="DSP" value={tone.dsp_percent} max={100} text={`${Math.round(tone.dsp_percent)}%`} />
-            <Meter label={byEffect ? "Effects" : "Positions"} value={used} max={MAX_POSITIONS} text={`${used} of ${MAX_POSITIONS}`} />
-          </div>
+          {/* The meters only show when the pedal is nearly full: the effect list says what won't fit. */}
+          {(tone.dsp_percent >= 90 || used >= MAX_POSITIONS) && (
+            <div className="tone-meters">
+              <Meter label="DSP" value={tone.dsp_percent} max={100} text={`${Math.round(tone.dsp_percent)}%`} />
+              <Meter label={byEffect ? "Effects" : "Positions"} value={used} max={MAX_POSITIONS} text={`${used} of ${MAX_POSITIONS}`} />
+            </div>
+          )}
         </div>
         <div className="master-knobs">
           <Knob
@@ -104,16 +104,6 @@ export function ToneView() {
             text={String(tone.volume)}
             hint="Patch volume"
             onChange={(v) => queue("volume", { volume: v })}
-          />
-          <Macros
-            tone={tone}
-            infos={infos}
-            onMove={(m) =>
-              queueMany([
-                ...m.knobs.map((k) => [`k:${k.index + 1}:${k.knob}`, { change: { effect: k.index + 1, knob: k.knob, value: k.value } }] as const),
-                ...(m.volume !== undefined ? [["volume", { volume: m.volume }] as const] : []),
-              ])
-            }
           />
         </div>
       </div>
@@ -203,23 +193,25 @@ export function ToneView() {
         <span className="rail-label">Out</span>
         <span className="rail-line" aria-hidden="true" />
         {onScratch && copyOf && (
-          <button className="button primary" onClick={() => setSaving("over")}>Save over {copyOf.name}…</button>
+          <button
+            className="button primary"
+            onClick={() =>
+              // One click: the daemon keeps a copy of the old patch in a file first.
+              act(() => api.save(copyOf.slot, tone.name, true), (r) => `Saved over slot ${num(r.slot)}. The old ${copyOf.name} is kept in a file`)
+                .then((r) => r && setCopyOf(null))
+            }
+          >
+            Save over {copyOf.name}
+          </button>
         )}
         {onScratch && (
-          <button className={`button${copyOf ? "" : " primary"}`} onClick={() => setSaving("new")}>
+          <button className={`button${copyOf ? "" : " primary"}`} onClick={() => setSaving(true)}>
             {copyOf ? "Keep as a new patch…" : "Keep it in a slot…"}
           </button>
         )}
-        <span className="tone-hint">
-          {onScratch
-            ? "Open a unit to turn its knobs: drag up or down, scroll, or use the arrow keys. Drag a unit to move it."
-            : `Change anything and the pedal switches to a copy on slot ${num(status.scratch_slot ?? model.scratch_slot)}. ${tone.name} on slot ${num(slot)} stays as it is until you save over it.`}
-        </span>
       </div>
 
-      {saving && (
-        <SaveDialog tone={tone} over={saving === "over" ? copyOf ?? undefined : undefined} onClose={() => setSaving(null)} />
-      )}
+      {saving && <SaveDialog tone={tone} onClose={() => setSaving(false)} />}
       {(panel?.kind === "add" || panel?.kind === "swap") && (
         <EffectBrowser
           title={swapping ? `Swap ${swapping.effect} for…` : "Add an effect"}

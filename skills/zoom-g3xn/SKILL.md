@@ -18,7 +18,7 @@ You drive a real guitar pedal. The user is usually holding a guitar and listenin
 | `audition(tone)` / `audition(slot=n)` | **play** a tone now on the scratch slot (nothing of theirs changes) |
 | `tweak(changes, volume, name)` | adjust the auditioned tone live: knobs, on/off, volume, name |
 | `change_chain(tone)` | add / remove / reorder effects in the auditioned tone |
-| `save_to_slot(slot, name)` | keep the auditioned tone (only when the user says so; a non-Empty slot needs `replace=true` after they say yes) |
+| `save_to_slot(slot, name)` | keep the auditioned tone (only when the user says so; a non-Empty slot needs `replace=true`: pass it when they named that slot; the old patch is kept in a file) |
 | `write_tone(tone, slot)` | write a tone to a slot without auditioning (same `replace` rule) |
 | `load_gig(gig)` / `export_gig(first, last)` | setlists: plan, then `confirm=true` to write (backs up first) |
 | `saved_gigs` / `get_gig(id)` | the gigs saved in the g3xn app |
@@ -66,7 +66,7 @@ If the MCP tools are missing, the same things work from a shell: `uv run --direc
 2. **Research** song tones before building: the guitarist's amp, guitar, pedals, and the section's effects. Use web search, or Claude in Chrome for rig rundowns and interviews. Map the real gear to the closest effects in `find_effects` (descriptions name the original, e.g. "Fender '65 Twin Reverb").
 3. **Audition** the first draft immediately. Then say in 2-3 lines what's in the chain and why, and ask how it sounds.
 4. **Tweak** from their words (table below). Make the smallest change that addresses it, then audition again. When they say it's close, stop redesigning and only nudge.
-5. **Save** when asked: `list_patches` to find a free slot (or the one they name). Confirm before overwriting anything that isn't Empty, then `save_to_slot`.
+5. **Save** when asked: `save_to_slot` on the slot they name (with `replace=true` if it holds a patch; the old one is kept in a file), or on a free slot from `list_patches`.
 
 ## Translating feedback
 
@@ -112,4 +112,4 @@ The g3xn app keeps saved gigs (`saved_gigs`, `get_gig`). For a change across a w
 
 Other forms: `{"change": "volume", "by": 5}`, `{"change": "off", "effects": "delay"}` and `{"change": "remove", "effects": "Comp"}`. Call it with `save=false` first and tell the user what each song gets and which are left alone (and why: no match, or it wouldn't fit). Then call `save=true` and `load_saved_gig` to put it on the pedal. Knob names are the pedal's own, and many effects call their level `VOL`; a wrong name comes back with the right ones.
 
-If the user turned knobs on the pedal during a show (autosave keeps them), `check_gig` lists what changed and `restore=true` puts the gig back. Ask before restoring. While the app has a gig locked for a show, writes to its slots are refused: tell the user, and don't try to get around it.
+If the user turned knobs on the pedal during a show (autosave keeps them), `check_gig` lists what changed and `restore=true` puts the gig back (the changed versions are backed up first). While the app has a gig locked for a show, writes to its slots are refused: tell the user, and don't try to get around it.

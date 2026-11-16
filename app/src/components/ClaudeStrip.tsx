@@ -8,7 +8,7 @@ import { Icon } from "./Icon";
 import { MicSettings, TalkButton } from "./Talk";
 
 export function ClaudeStrip() {
-  const { chat, act, linked, model, num } = usePedal();
+  const { chat, act, linked, model, num, talk } = usePedal();
   const [text, setText] = useState("");
   const [open, setOpen] = useState(false);
   const input = useRef<HTMLInputElement>(null);
@@ -112,7 +112,7 @@ export function ClaudeStrip() {
           ) : (
             <button type="submit" className="button primary" disabled={!text.trim()}>Send</button>
           )}
-          <TalkButton />
+          {talk.installed && <TalkButton />}
         </form>
       </div>
     </section>

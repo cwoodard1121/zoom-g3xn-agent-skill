@@ -95,8 +95,7 @@ function StatusBar() {
       text = status.doing[0].toUpperCase() + status.doing.slice(1) + "…";
     } else if (status.connection === "connected") {
       light = "ok";
-      const fw = status.pedal.firmware ? ` · firmware ${status.pedal.firmware}` : "";
-      const which = status.pedal.virtual ? `Not your ${model.name}` : `${model.name} connected${fw}`;
+      const which = status.pedal.virtual ? `Not your ${model.name}` : `${model.name} connected`;
       const slot = status.current_slot ? num(status.current_slot) : status.current_slot;
       text = `${which} · on slot ${slot}${status.current_name ? `, ${status.current_name}` : ""}`;
       action = { label: "Let go of the pedal", run: () => act(() => api.release(), () => "The pedal is free for ToneLib and other programs") };

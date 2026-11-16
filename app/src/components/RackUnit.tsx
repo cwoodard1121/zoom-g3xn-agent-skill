@@ -54,6 +54,7 @@ export function RackUnit({ fx, info, open, onOpen, onKnob, onToggle, actions }: 
           ))}
         </div>
         <div className="unit-tools">
+          {open && (<>
           <button onClick={actions.onMoveUp} disabled={!actions.onMoveUp} aria-label={`Move ${fx.effect} earlier`} title="Earlier in the chain">
             <Icon name="up" />
           </button>
@@ -66,6 +67,7 @@ export function RackUnit({ fx, info, open, onOpen, onKnob, onToggle, actions }: 
           <button onClick={actions.onRemove} aria-label={`Remove ${fx.effect}`} title="Remove">
             <Icon name="close" />
           </button>
+          </>)}
         </div>
         <button
           className="power"
